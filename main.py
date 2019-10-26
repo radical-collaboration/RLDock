@@ -6,7 +6,7 @@ import numpy as np
 import tensorflow as tf
 from stable_baselines import PPO2
 from stable_baselines.bench import Monitor
-from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
+from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv, SubprocVecEnv
 from stable_baselines.results_plotter import load_results, ts2xy
 
 from rldock.environments.lactamase import LactamaseDocking
@@ -49,7 +49,7 @@ if  __name__ == '__main__':
 
     # Create and wrap the environment
 
-    env = VecNormalize(DummyVecEnv([lambda: Monitor(LactamaseDocking(), log_dir, allow_early_resets=True)]))
+    env = VecNormalize(SubprocVecEnv([lambda: Monitor(LactamaseDocking(), log_dir, allow_early_resets=True)]))
 
     policy_kwargs = dict(act_fun=tf.nn.relu, net_arch=[64, 64, 64, 32])
     model = PPO2(CustomPolicy, env, verbose=1, tensorboard_log="tensorlogs/")
