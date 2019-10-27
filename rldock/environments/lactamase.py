@@ -20,15 +20,15 @@ class LactamaseDocking(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
 
-        self.box_space  = spaces.Box(low=np.array( [-11, -21, -47, -180, -180, -180], dtype=np.float32),
-                                       high=np.array([48, 27, 7,  180,  180,  180], dtype=np.float32),
+        self.box_space  = spaces.Box(low=np.array( [-11, -21, -47, -360, -360, -360], dtype=np.float32),
+                                       high=np.array([48, 27, 7,  360,  360,  360], dtype=np.float32),
                                        dtype=np.float32)
 
         # self.start_space  = spaces.Box(low=np.array( [-28.9, -24, -26, -180, -180, -180], dtype=np.float32),
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([-5,  -5,  -5, -180, -180, -180], dtype=np.float32),
-                                       high=np.array([5,  5,   5,  180,  180,  180], dtype=np.float32),
+        self.action_space = spaces.Box(low=np.array([-1,  -1,  -1, -180, -180, -180], dtype=np.float32),
+                                       high=np.array([1,  1,   1,  180,  180,  180], dtype=np.float32),
                                        dtype=np.float32)
         self.reward_range = (np.inf * -1, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(29, 24, 27, 16),
@@ -116,7 +116,7 @@ class LactamaseDocking(gym.Env):
         return self.voxelizer(self.cur_atom.toPDB()).squeeze(0)
 
     def render(self, mode='human'):
-        print("Score", self.last_score, self.trans)
+        print("Score", self.last_score, self.trans, self.cur_atom.dump_coords())
         return self.cur_atom
 
     def close(self):
