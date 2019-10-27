@@ -20,21 +20,21 @@ class LactamaseDocking(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
 
-        self.box_space  = spaces.Box(low=np.array( [-15, -25, -52, -180, -180, -180], dtype=np.float32),
-                                       high=np.array([55, 27, 15,  180,  180,  180], dtype=np.float32),
+        self.box_space  = spaces.Box(low=np.array( [-11, -21, -47, -180, -180, -180], dtype=np.float32),
+                                       high=np.array([48, 27, 7,  180,  180,  180], dtype=np.float32),
                                        dtype=np.float32)
 
         # self.start_space  = spaces.Box(low=np.array( [-28.9, -24, -26, -180, -180, -180], dtype=np.float32),
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([-20,  -20,  -20, -180, -180, -180], dtype=np.float32),
-                                       high=np.array([20,  20,   20,  180,  180,  180], dtype=np.float32),
+        self.action_space = spaces.Box(low=np.array([-5,  -5,  -5, -180, -180, -180], dtype=np.float32),
+                                       high=np.array([5,  5,   5,  180,  180,  180], dtype=np.float32),
                                        dtype=np.float32)
         self.reward_range = (np.inf * -1, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.scorer = Scorer("resources/protein_chaina.oeb.oeb")
+        self.scorer = Scorer("resources/pdb2.oeb")
         atom = LigandPDB.parse("resources/ligand.pdb")
         self.voxelizer = Voxelizer('resources/protein_chainA_with_ligand.pdb')
 
@@ -88,7 +88,7 @@ class LactamaseDocking(gym.Env):
     def get_reward_from_ChemGauss4(self, score):
         return np.clip(np.array(score * -1), 0, 10000)
 
-    def reset(self, random=True):
+    def reset(self, random=False):
         if random:
             x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
             #
