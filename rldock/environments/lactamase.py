@@ -90,16 +90,21 @@ class LactamaseDocking(gym.Env):
 
         return np.clip(np.array(score * -1 + 50), 0, 100) + boost
 
-    def reset(self):
-        x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
-        #
-        self.trans = [x,y,z]
-        self.rot   = [theta_x, theta_y, theta_z]
-        self.align_rot()
-        #
-        #
-        random_pos = self.atom_center.translate(x,y,z)
-        random_pos = random_pos.rotate(theta_x, theta_y, theta_z)
+    def reset(self, random=False):
+        if random:
+            x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
+            #
+            self.trans = [x,y,z]
+            self.rot   = [theta_x, theta_y, theta_z]
+            self.align_rot()
+            #
+            #
+            random_pos = self.atom_center.translate(x,y,z)
+            random_pos = random_pos.rotate(theta_x, theta_y, theta_z)
+        else:
+            self.trans = [0,0,0]
+            self.rot = [0,0,0]
+            random_pos = copy.deepcopy(self.atom_center)
 
         # random_pos = copy.deepcopy(self.atom_center)
 
