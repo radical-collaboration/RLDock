@@ -20,25 +20,25 @@ class LactamaseDocking(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
 
-        self.box_space  = spaces.Box(low=np.array( [-11, -21, -47, -360, -360, -360], dtype=np.float32),
-                                       high=np.array([48, 27, 7,  360,  360,  360], dtype=np.float32),
-                                       dtype=np.float32)
+        # self.box_space  = spaces.Box(low=np.array( [-20, -30, -57, -360, -360, -360], dtype=np.float32),
+        #                                high=np.array([48, 27, 7,  360,  360,  360], dtype=np.float32),
+        #                                dtype=np.float32)
 
         # self.start_space  = spaces.Box(low=np.array( [-28.9, -24, -26, -180, -180, -180], dtype=np.float32),
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([-1,  -1,  -1, -180, -180, -180], dtype=np.float32),
-                                       high=np.array([1,  1,   1,  180,  180,  180], dtype=np.float32),
+        self.action_space = spaces.Box(low=np.array([-4,  -4,  -4, -90, -90, -90], dtype=np.float32),
+                                       high=np.array([4,  4,   4,  90,  90,  90], dtype=np.float32),
                                        dtype=np.float32)
-        self.reward_range = (np.inf * -1, np.inf)
+        self.reward_range = (0, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(20, 16, 18, 16), #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.scorer = Scorer("resources/pdb2.oeb")
+        self.scorer = Scorer("resources/center_prot.oeb")
         atom = LigandPDB.parse("resources/ligand.pdb")
         self.voxelizer = Voxelizer('resources/protein_chainA_with_ligand.pdb')
 
-        cb = CenterPDB(to_x=18.942, to_y = 2.82, to_z=-19.666)
+        cb = CenterPDB()
         #range -10.045, 47.93
         #range -20.959, 26.6
         #range -46.273, 6.9
@@ -124,6 +124,6 @@ class LactamaseDocking(gym.Env):
 
     def check_atom_in_box(self):
         ans = True
-        for atom in self.cur_atom.hetatoms:
-            ans &= self.box_space.contains([atom.x_ortho_a, atom.y_ortho_a, atom.z_ortho_a, 0 ,0 ,0])
+        # for atom in self.cur_atom.hetatoms:
+        #     ans &= self.box_space.contains([atom.x_ortho_a, atom.y_ortho_a, atom.z_ortho_a, 0 ,0 ,0])
         return ans
