@@ -16,7 +16,7 @@ class Scorer:
 
     def __init__(self, pdb_file):
         self.receptor = oechem.OEGraphMol()
-        self.score = oedocking.OEScore(oedocking.OEScoreType_Chemscore)
+        self.score = oedocking.OEScore(oedocking.OEScoreType_Shapegauss)
         oedocking.OEReadReceptorFile(self.receptor, pdb_file)
         self.score.Initialize(self.receptor)
 
