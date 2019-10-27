@@ -32,7 +32,7 @@ def ortho_init(scale=1.0):
             flat_shape = shape
         elif len(shape) == 4:  # assumes NHWC
             flat_shape = (np.prod(shape[:-1]), shape[-1])
-        elif len(shape) == 5: # assumes NHWDC
+        elif len(shape) == 5:  # assumes NHWDC
             flat_shape = (np.prod(shape[:-1]), shape[-1])
         else:
             raise NotImplementedError
@@ -44,8 +44,9 @@ def ortho_init(scale=1.0):
 
     return _ortho_init
 
+
 def voxel_conv(input_tensor, scope, *, n_filters, filter_size, stride,
-         pad='VALID', init_scale=1.0, data_format='NDHWC', one_dim_bias=False):
+               pad='VALID', init_scale=1.0, data_format='NDHWC', one_dim_bias=False):
     """
     Creates a 3d convolutional layer for TensorFlow
 
@@ -78,10 +79,10 @@ def voxel_conv(input_tensor, scope, *, n_filters, filter_size, stride,
     elif data_format == 'NCDHW':
         channel_ax = 1
         strides = [1, 1, stride, stride, stride]
-        bshape = [1, n_filters, 1, 1,1]
+        bshape = [1, n_filters, 1, 1, 1]
     else:
         raise NotImplementedError
-    bias_var_shape = [n_filters] if one_dim_bias else [1, 1, 1,1, n_filters]
+    bias_var_shape = [n_filters] if one_dim_bias else [1, 1, 1, 1, n_filters]
     n_input = input_tensor.get_shape()[channel_ax].value
     wshape = [filter_z, filter_height, filter_width, n_input, n_filters]
     with tf.variable_scope(scope):
@@ -90,6 +91,7 @@ def voxel_conv(input_tensor, scope, *, n_filters, filter_size, stride,
         if not one_dim_bias and data_format == 'NHWC':
             bias = tf.reshape(bias, bshape)
         return bias + tf.nn.conv3d(input_tensor, weight, strides=strides, padding=pad, data_format=data_format)
+
 
 def voxel_nature_cnn(scaled_images, **kwargs):
     """
@@ -100,8 +102,10 @@ def voxel_nature_cnn(scaled_images, **kwargs):
     :return: (TensorFlow Tensor) The CNN output layer
     """
     activ = tf.nn.relu
-    layer_1 = activ(voxel_conv(scaled_images, 'c1', n_filters=32, filter_size=8, stride=4, init_scale=np.sqrt(2), **kwargs))
+    layer_1 = activ(
+        voxel_conv(scaled_images, 'c1', n_filters=32, filter_size=8, stride=3, init_scale=np.sqrt(2), **kwargs))
     layer_2 = activ(voxel_conv(layer_1, 'c2', n_filters=64, filter_size=4, stride=2, init_scale=np.sqrt(2), **kwargs))
     layer_3 = activ(voxel_conv(layer_2, 'c3', n_filters=64, filter_size=3, stride=1, init_scale=np.sqrt(2), **kwargs))
-    layer_3 = conv_to_fc(layer_3)
-    return activ(linear(layer_3, 'fc1', n_hidden=512, init_scale=np.sqrt(2)))
+    layer_4 = activ(voxel_conv(layer_3, 'c4', n_filters=64, filter_size=3, stride=1, init_scale=np.sqrt(2), **kwargs))
+    layer_4 = conv_to_fc(layer_4)
+    return activ(linear(layer_4, 'fc1', n_hidden=512, init_scale=np.sqrt(2)))
