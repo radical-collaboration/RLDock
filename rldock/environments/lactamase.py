@@ -91,7 +91,6 @@ class LactamaseDocking(gym.Env):
     def reset(self, random=True):
         if random:
             x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
-            print(x,y,z)
             #
             self.trans = [x,y,z]
             self.rot   = [theta_x, theta_y, theta_z]
