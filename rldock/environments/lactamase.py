@@ -31,7 +31,7 @@ class LactamaseDocking(gym.Env):
                                        high=np.array([1,  1,   1,  180,  180,  180], dtype=np.float32),
                                        dtype=np.float32)
         self.reward_range = (np.inf * -1, np.inf)
-        self.observation_space = spaces.Box(low=-1000, high=1000, shape=(29, 24, 27, 16),
+        self.observation_space = spaces.Box(low=-1000, high=1000, shape=(20, 16, 18, 16), #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
         self.scorer = Scorer("resources/pdb2.oeb")
@@ -86,7 +86,7 @@ class LactamaseDocking(gym.Env):
 
 
     def get_reward_from_ChemGauss4(self, score):
-        return np.clip(np.array(score * -1), 0, 10000)
+        return np.clip(np.array(score * -1 + 500), 0, 10000)
 
     def reset(self, random=False):
         if random:

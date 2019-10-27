@@ -54,8 +54,8 @@ class Voxelizer:
 
         prot = Molecule(pdb_structure)
         prot = prepareProteinForAtomtyping(prot)
-        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0.5, voxelsize=2, boxsize=[self.x_size,self.y_size,self.z_size],
-                                                     center=[self.x_center, self.y_center, self.z_center], validitychecks=True)
+        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0.5, voxelsize=3, boxsize=[self.x_size,self.y_size,self.z_size],
+                                                     center=[self.x_center, self.y_center, self.z_center], validitychecks=False)
         nchannels = prot_vox.shape[1]
 
         self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
@@ -63,8 +63,8 @@ class Voxelizer:
 
     def __call__(self, lig_pdb):
         slig = SmallMol(AllChem.MolFromPDBBlock(lig_pdb))
-        lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0.5, voxelsize=2,  boxsize=[self.x_size,self.y_size,self.z_size],
-                                                     center=[self.x_center, self.y_center, self.z_center], validitychecks=True)
+        lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0.5, voxelsize=3,  boxsize=[self.x_size,self.y_size,self.z_size],
+                                                     center=[self.x_center, self.y_center, self.z_center], validitychecks=False)
         nchannels = lig_vox.shape[1]
         lig_vox_t = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]])
         return np.transpose(np.concatenate([self.prot_vox_t, lig_vox_t], axis=1), (0,2,3,4,1))
