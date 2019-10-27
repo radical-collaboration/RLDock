@@ -31,7 +31,7 @@ class LactamaseDocking(gym.Env):
                                        high=np.array([-10,  10,   10,  180,  180,  180], dtype=np.float32),
                                        dtype=np.float32)
         self.reward_range = (np.inf * -1, np.inf)
-        self.observation_space = spaces.Box(low=-1000, high=1000, shape=(58, 48, 54, 16),
+        self.observation_space = spaces.Box(low=-1000, high=1000, shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
         self.scorer = Scorer("resources/protein_chaina.oeb.oeb")

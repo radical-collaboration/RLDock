@@ -103,8 +103,8 @@ def voxel_nature_cnn(scaled_images, **kwargs):
     """
     activ = tf.nn.relu
     layer_1 = activ(
-        voxel_conv(scaled_images, 'c1', n_filters=32, filter_size=8, stride=3, init_scale=np.sqrt(2), **kwargs))
-    layer_2 = activ(voxel_conv(layer_1, 'c2', n_filters=64, filter_size=4, stride=2, init_scale=np.sqrt(2), **kwargs))
+        voxel_conv(scaled_images, 'c1', n_filters=32, filter_size=8, stride=2, init_scale=np.sqrt(2), **kwargs))
+    layer_2 = activ(voxel_conv(layer_1, 'c2', n_filters=64, filter_size=4, stride=1, init_scale=np.sqrt(2), **kwargs))
     layer_3 = activ(voxel_conv(layer_2, 'c3', n_filters=64, filter_size=3, stride=1, init_scale=np.sqrt(2), **kwargs))
     layer_4 = activ(voxel_conv(layer_3, 'c4', n_filters=64, filter_size=3, stride=1, init_scale=np.sqrt(2), **kwargs))
     layer_4 = conv_to_fc(layer_4)
