@@ -28,7 +28,7 @@ class LactamaseDocking(gym.Env):
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
         self.action_space = spaces.Box(low=np.array([-20,  -20,  -20, -180, -180, -180], dtype=np.float32),
-                                       high=np.array([-20,  20,   20,  180,  180,  180], dtype=np.float32),
+                                       high=np.array([20,  20,   20,  180,  180,  180], dtype=np.float32),
                                        dtype=np.float32)
         self.reward_range = (np.inf * -1, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(29, 24, 27, 16),
@@ -91,6 +91,7 @@ class LactamaseDocking(gym.Env):
     def reset(self, random=True):
         if random:
             x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
+            print(x,y,z)
             #
             self.trans = [x,y,z]
             self.rot   = [theta_x, theta_y, theta_z]
