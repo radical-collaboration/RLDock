@@ -27,8 +27,8 @@ class LactamaseDocking(gym.Env):
         # self.start_space  = spaces.Box(low=np.array( [-28.9, -24, -26, -180, -180, -180], dtype=np.float32),
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([-4,  -4,  -4, -90, -90, -90], dtype=np.float32),
-                                       high=np.array([4,  4,   4,  90,  90,  90], dtype=np.float32),
+        self.action_space = spaces.Box(low=np.array([-10, -10,  -10, -90, -90, -90], dtype=np.float32),
+                                       high=np.array([10,  10,   10,  90,  90,  90], dtype=np.float32),
                                        dtype=np.float32)
         self.reward_range = (0, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(20, 16, 18, 16), #shape=(29, 24, 27, 16),
@@ -82,13 +82,13 @@ class LactamaseDocking(gym.Env):
                {}
 
     def decide_reset(self, score):
-         return self.steps > 50 or (not self.check_atom_in_box())
+         return self.steps > 5 or (not self.check_atom_in_box())
 
 
     def get_reward_from_ChemGauss4(self, score):
         return np.clip(np.array(score * -1 + 500), 0, 10000)
 
-    def reset(self, random=False):
+    def reset(self, random=True):
         if random:
             x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
             #
