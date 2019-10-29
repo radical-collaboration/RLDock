@@ -3,7 +3,7 @@ import copy
 import gym
 import numpy as np
 from gym import spaces
-
+import random
 from rldock.environments.LPDB import LigandPDB
 from rldock.environments.pdb_utiils import CenterPDB
 from rldock.environments.utils import Scorer, Voxelizer, RosettaScorer
@@ -30,12 +30,12 @@ class LactamaseDocking(gym.Env):
         self.action_space = spaces.Box(low=np.array([-1, -1,  -1, -90, -90, -90], dtype=np.float32),
                                        high=np.array([1,  1,   1,  90,  90,  90], dtype=np.float32),
                                        dtype=np.float32)
-
+        self.file = "randoms/" + str(random.randint(0,1000000)) + "_temp.pdb"
         self.reward_range = (-100, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(20, 16, 18, 16), #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.scorer = RosettaScorer("resources/center_protein_wo_ligand.pdb")
+        self.scorer = RosettaScorer("resources/center_protein_wo_ligand.pdb", self.file)
         atom = LigandPDB.parse("resources/ligand.pdb")
         self.voxelizer = Voxelizer('resources/protein_chainA_with_ligand.pdb')
 

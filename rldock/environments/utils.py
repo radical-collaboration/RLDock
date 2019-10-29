@@ -11,10 +11,10 @@ import scipy.spatial
 
 import pyrosetta.rosetta.numeric
 class RosettaScorer:
-    def __init__(self, pdb_file):
+    def __init__(self, pdb_file, rf):
         import pyrosetta
         from pyrosetta import teaching
-
+        self.rf = rf
         pyrosetta.init()
         with open(pdb_file, 'r') as f:
             self.prior_detail = "".join(f.readlines()[:-1]) # strip off end.
@@ -22,7 +22,7 @@ class RosettaScorer:
         self.score  = teaching.get_fa_scorefxn()
 
     def reset(self, pdb):
-        with open("tempfile.pdb", 'w') as f:
+        with open(self.rf, 'w') as f:
             f.write(self.prior_detail)
             f.write(pdb)
         self.pose = self.ligand_maker("tempfile.pdb")
