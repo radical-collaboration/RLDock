@@ -6,7 +6,7 @@ from gym import spaces
 
 from rldock.environments.LPDB import LigandPDB
 from rldock.environments.pdb_utiils import CenterPDB
-from rldock.environments.utils import Scorer, Voxelizer
+from rldock.environments.utils import Scorer, Voxelizer, RosettaScorer
 
 
 # using 6DPT pdb from Lyu et al. (2019, nature)
@@ -27,18 +27,19 @@ class LactamaseDocking(gym.Env):
         # self.start_space  = spaces.Box(low=np.array( [-28.9, -24, -26, -180, -180, -180], dtype=np.float32),
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([-20, -20,  -20, -90, -90, -90], dtype=np.float32),
-                                       high=np.array([20,  20,   20,  90,  90,  90], dtype=np.float32),
+        self.action_space = spaces.Box(low=np.array([-1, -1,  -1, -90, -90, -90], dtype=np.float32),
+                                       high=np.array([1,  1,   1,  90,  90,  90], dtype=np.float32),
                                        dtype=np.float32)
-        self.reward_range = (0, np.inf)
+
+        self.reward_range = (-100, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(20, 16, 18, 16), #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.scorer = Scorer("resources/center_prot.oeb")
+        self.scorer = RosettaScorer("resources/center_protein_wo_ligand.pdb")
         atom = LigandPDB.parse("resources/ligand.pdb")
         self.voxelizer = Voxelizer('resources/protein_chainA_with_ligand.pdb')
 
-        cb = CenterPDB()
+        cb = CenterPDB(to_x=-18.942, to_y=-2.829, to_z=19.666)
         #range -10.045, 47.93
         #range -20.959, 26.6
         #range -46.273, 6.9
@@ -70,7 +71,7 @@ class LactamaseDocking(gym.Env):
 
         self.cur_atom = self.cur_atom.translate(action[0], action[1], action[2])
         self.cur_atom = self.cur_atom.rotate(action[3], action[4], action[5])
-        score = self.scorer(self.cur_atom.toPDB())
+        score = self.scorer(*action)
         reset = self.decide_reset(score)
 
         self.last_score = score
@@ -82,11 +83,11 @@ class LactamaseDocking(gym.Env):
                {}
 
     def decide_reset(self, score):
-         return self.steps > 5 or (not self.check_atom_in_box())
+         return self.steps > 100 or (not self.check_atom_in_box())
 
 
     def get_reward_from_ChemGauss4(self, score):
-        return np.clip(np.array(score * -1 + 500), 0, 10000)
+        return np.clip(np.array(score * -1), -100, 10000)
 
     def reset(self, random=True):
         if random:
@@ -105,8 +106,8 @@ class LactamaseDocking(gym.Env):
             random_pos = copy.deepcopy(self.atom_center)
 
         # random_pos = copy.deepcopy(self.atom_center)
-
-        score = self.scorer(random_pos.toPDB())
+        self.scorer.reset(random_pos.toPDB())
+        score = self.scorer(0,0,0,0,0,0)
         self.cur_atom = random_pos
         self.last_score = score
         self.steps = 0

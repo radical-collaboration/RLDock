@@ -3,13 +3,43 @@ import numpy as np
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rldock.environments import LPDB, pdb_utiils
-
+import scipy.spatial
 # self.ligand = oechem.OEGraphMol()
 # ligand_name = oechem.oemolistream("ligand.pdb")
 # oechem.OEReadPDBFile(ligand_name, ligand)
 #     print(score.ScoreLigand(ligand))
 
+import pyrosetta.rosetta.numeric
+class RosettaScorer:
+    def __init__(self, pdb_file):
+        import pyrosetta
+        from pyrosetta import teaching
 
+        pyrosetta.init()
+        with open(pdb_file, 'r') as f:
+            self.prior_detail = "".join(f.readlines()[:-1]) # strip off end.
+        self.ligand_maker = pyrosetta.pose_from_pdb
+        self.score  = teaching.get_fa_scorefxn()
+
+    def reset(self, pdb):
+        with open("tempfile.pdb", 'w') as f:
+            f.write(self.prior_detail)
+            f.write(pdb)
+        self.pose = self.ligand_maker("tempfile.pdb")
+
+    def __call__(self, x_pos, y_pos, z_pos, theta_x, theta_y, theta_z):
+        x = pyrosetta.rosetta.numeric.xyzMatrix_double_t()
+        #row1
+        x.xx, x.xy, x.xz, x.yx, x.yy, x.yz, x.zx, x.zy, x.zz =  \
+            scipy.spatial.transform.Rotation.from_euler('xyz', [theta_x, theta_y, theta_z]).as_dcm().ravel()
+
+        v = pyrosetta.rosetta.numeric.xyzVector_double_t()
+        v.x = x_pos
+        v.y = y_pos
+        v.z = z_pos
+
+        self.pose.apply_transform_Rx_plus_v(x,v)
+        return self.score(self.pose)
 
 ## Basic scorer, loads pdb from file
 class Scorer:

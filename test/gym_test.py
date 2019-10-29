@@ -1,7 +1,9 @@
-import gym
-env = gym.make('CartPole-v0')
-env.reset()
-for _ in range(1000):
-    env.render()
-    env.step(env.action_space.sample()) # take a random action
-env.close()
+from pyrosetta import teaching
+
+class RosettaScorer:
+    def __init__(self, pdb_file):
+
+        scorefxn = teaching.get_fa_scorefxn()
+        print(scorefxn)
+
+rs = RosettaScorer("hi")
