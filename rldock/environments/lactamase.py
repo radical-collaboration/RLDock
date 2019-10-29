@@ -20,22 +20,21 @@ class LactamaseDocking(gym.Env):
         # Define action and observation space
         # They must be gym.spaces objects
 
-        # self.box_space  = spaces.Box(low=np.array( [-20, -30, -57, -360, -360, -360], dtype=np.float32),
-        #                                high=np.array([48, 27, 7,  360,  360,  360], dtype=np.float32),
-        #                                dtype=np.float32)
+        self.box_space  = spaces.Box(low=np.array( [-5, -5, -5, -0, -0, -0], dtype=np.float32),
+                                       high=np.array([5, 5, 5,  0,  0,  0], dtype=np.float32),
+                                       dtype=np.float32)
 
         # self.start_space  = spaces.Box(low=np.array( [-28.9, -24, -26, -180, -180, -180], dtype=np.float32),
         #                                high=np.array([28.9,   24,  26,  180,  180,  180], dtype=np.float32),
         #                                dtype=np.float32)
-        self.action_space = spaces.Box(low=np.array([-1, -1,  -1, -90, -90, -90], dtype=np.float32),
-                                       high=np.array([1,  1,   1,  90,  90,  90], dtype=np.float32),
+        self.action_space = spaces.Box(low=np.array([-0.5, -0.5,  -0.5, -0, -0, -0], dtype=np.float32),
+                                       high=np.array([0.5,  0.5,   0.5,  0,  0,  0], dtype=np.float32),
                                        dtype=np.float32)
         self.file = "randoms/" + str(random.randint(0,1000000)) + "_temp.pdb"
         self.reward_range = (-100, np.inf)
         self.observation_space = spaces.Box(low=-1000, high=1000, shape=(20, 16, 18, 16), #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.scorer = RosettaScorer("resources/center_protein_wo_ligand.pdb", self.file)
         atom = LigandPDB.parse("resources/ligand.pdb")
         self.voxelizer = Voxelizer('resources/protein_chainA_with_ligand.pdb')
 
@@ -51,6 +50,8 @@ class LactamaseDocking(gym.Env):
         self.trans = [0,0,0]
         self.rot   = [0,0,0]
         self.steps = 0
+        self.scorer = RosettaScorer("resources/center_protein.pdb", self.file, self.cur_atom.toPDB())
+
 
     def align_rot(self):
         for i in range(3):
@@ -89,7 +90,7 @@ class LactamaseDocking(gym.Env):
     def get_reward_from_ChemGauss4(self, score):
         return np.clip(np.array(score * -1), -100, 10000)
 
-    def reset(self, random=True):
+    def reset(self, random=False):
         if random:
             x,y,z,theta_x, theta_y, theta_z = self.action_space.sample().flatten().ravel()
             #
@@ -107,7 +108,7 @@ class LactamaseDocking(gym.Env):
 
         # random_pos = copy.deepcopy(self.atom_center)
         self.scorer.reset(random_pos.toPDB())
-        score = self.scorer(0,0,0,0,0,0)
+        score = self.scorer(self.trans[0], self.trans[1], self.trans[2], self.rot[0], self.rot[1], self.rot[2])
         self.cur_atom = random_pos
         self.last_score = score
         self.steps = 0
@@ -117,14 +118,14 @@ class LactamaseDocking(gym.Env):
         return self.voxelizer(self.cur_atom.toPDB()).squeeze(0)
 
     def render(self, mode='human'):
-        print("Score", self.last_score, self.trans, self.cur_atom.dump_coords())
+        print("Score", self.last_score)
         return self.cur_atom
 
     def close(self):
         pass
 
     def check_atom_in_box(self):
-        ans = True
+        ans = self.box_space.contains([self.trans[0], self.trans[1], self.trans[2], 0,0 ,0])
         # for atom in self.cur_atom.hetatoms:
         #     ans &= self.box_space.contains([atom.x_ortho_a, atom.y_ortho_a, atom.z_ortho_a, 0 ,0 ,0])
         return ans

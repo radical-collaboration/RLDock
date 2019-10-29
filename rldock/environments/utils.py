@@ -11,7 +11,7 @@ import scipy.spatial
 
 import pyrosetta.rosetta.numeric
 class RosettaScorer:
-    def __init__(self, pdb_file, rf):
+    def __init__(self, pdb_file, rf, tw):
         import pyrosetta
         from pyrosetta import teaching
         self.rf = rf
@@ -20,12 +20,13 @@ class RosettaScorer:
             self.prior_detail = "".join(f.readlines()[:-1]) # strip off end.
         self.ligand_maker = pyrosetta.pose_from_pdb
         self.score  = teaching.get_fa_scorefxn()
+        self.reset(tw)
 
     def reset(self, pdb):
         with open(self.rf, 'w') as f:
             f.write(self.prior_detail)
             f.write(pdb)
-        self.pose = self.ligand_maker("tempfile.pdb")
+        self.pose = self.ligand_maker(self.rf)
 
     def __call__(self, x_pos, y_pos, z_pos, theta_x, theta_y, theta_z):
         x = pyrosetta.rosetta.numeric.xyzMatrix_double_t()
@@ -38,7 +39,7 @@ class RosettaScorer:
         v.y = y_pos
         v.z = z_pos
 
-        self.pose.apply_transform_Rx_plus_v(x,v)
+        self.pose.residue(len(self.pose.sequence())).apply_transform_Rx_plus_v(x,v)
         return self.score(self.pose)
 
 ## Basic scorer, loads pdb from file

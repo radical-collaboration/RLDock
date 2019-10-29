@@ -6,6 +6,7 @@ import numpy as np
 from stable_baselines import PPO2
 from stable_baselines.common.vec_env import VecNormalize, DummyVecEnv
 from stable_baselines.results_plotter import load_results, ts2xy
+from stable_baselines.bench import Monitor
 
 from rldock.environments.lactamase import LactamaseDocking
 from rldock.voxel_policy.actorcritic import CustomPolicy
@@ -58,7 +59,7 @@ if __name__ == '__main__':
     args = getargs()
     print(args)
 
-    env = VecNormalize(DummyVecEnv([lambda: LactamaseDocking()]))
+    env = VecNormalize(DummyVecEnv([lambda: Monitor(LactamaseDocking(), log_dir, allow_early_resets=True)]))
     model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
     model.learn(total_timesteps=args.e, callback=callback)
     model.save(args.s)
@@ -79,7 +80,7 @@ if __name__ == '__main__':
         fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
         fp.write(", ligand, " + str(i + 1) + "\n")
 
-        for i in range(1, 1000):
+        for i in range(1, 25):
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
 
@@ -93,7 +94,6 @@ if __name__ == '__main__':
                 f.write(cur_m.toPDB())
             fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
             fp.write(", ligand, " + str(i + 1) + "\n")
-
             if done:
                 obs = env.reset()
 
