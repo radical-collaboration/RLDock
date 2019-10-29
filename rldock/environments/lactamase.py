@@ -36,7 +36,7 @@ class LactamaseDocking(gym.Env):
                                             dtype=np.float32)
 
         atom = LigandPDB.parse("resources/ligand.pdb")
-        self.voxelizer = Voxelizer('resources/protein_chainA_with_ligand.pdb')
+        self.voxelizer = Voxelizer('resources/center_protein_wo_ligand.pdb')
 
         cb = CenterPDB(to_x=-18.942, to_y=-2.829, to_z=19.666)
         #range -10.045, 47.93
