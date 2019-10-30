@@ -35,7 +35,7 @@ class LactamaseDocking(gym.Env):
         self.observation_space = spaces.Box(low=0, high=1, shape=config['output_size'], #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.voxelizer = Voxelizer(config['protein_wo_ligand'])
+        self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
 
         self.last_score = 0
         self.atom_center =  LigandPDB.parse(config['ligand'])
