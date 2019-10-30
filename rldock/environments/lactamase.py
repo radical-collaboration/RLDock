@@ -44,8 +44,8 @@ class LactamaseDocking(gym.Env):
         self.steps = 0
         self.cur_reward_sum = 0
 
-        self.ro_scorer = RosettaScorer(config['protein-wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
-        self.oe_scorer = Scorer(config['protein-wo_ligand']) # takes input as pdb string of just ligand
+        self.ro_scorer = RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
+        self.oe_scorer = Scorer(config['protein_wo_ligand']) # takes input as pdb string of just ligand
 
     def align_rot(self):
         for i in range(3):
