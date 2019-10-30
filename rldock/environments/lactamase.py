@@ -16,7 +16,7 @@ class LactamaseDocking(gym.Env):
     ## Init the object
     def __init__(self, config ):
         super(LactamaseDocking, self).__init__()
-
+        self.config = config
         # Box space defines the voxel box around the BP. No atom should leave this box. This box is NOT the center.
         self.box_space  = spaces.Box(low=np.array(config['bp_min'], dtype=np.float32),
                                        high=np.array(config['bp_max'], dtype=np.float32),
@@ -84,7 +84,7 @@ class LactamaseDocking(gym.Env):
                {}
 
     def decide_reset(self, score):
-         return self.steps > 100 or (not self.check_atom_in_box())
+         return self.steps > self.config['max_steps'] or (not self.check_atom_in_box())
 
 
     def get_reward_from_ChemGauss4(self, score):
