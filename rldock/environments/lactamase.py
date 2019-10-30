@@ -73,7 +73,8 @@ class LactamaseDocking(gym.Env):
         self.last_score = oe_score
         self.steps += 1
 
-        reward = self.get_reward_from_ChemGauss4(oe_score)
+        reward = self.get_reward_from_ChemGauss4(oe_score, reset)
+
         if reset and self.ro_scorer is not None:
             reward += self.ro_scorer(*self.trans)
 
@@ -86,8 +87,12 @@ class LactamaseDocking(gym.Env):
     def decide_reset(self, score):
          return self.steps > self.config['max_steps'] or (not self.check_atom_in_box())
 
-    def get_reward_from_ChemGauss4(self, score):
-        return np.clip(np.array(score * -1), -0.25, 10000)
+    def get_reward_from_ChemGauss4(self, score, reset=False):
+        if reset:
+            return np.clip(np.array(score * -1), -1, 10000)  * 5
+        else:
+            return np.clip(np.array(score * -1), -1, 100)  * 0.1
+
 
     def reset(self, random=False):
         if random:

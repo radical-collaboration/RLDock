@@ -80,7 +80,7 @@ if __name__ == '__main__':
         fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
         fp.write(", ligand, " + str(i + 1) + "\n")
 
-        for i in range(1, 25):
+        for i in range(1, 100):
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
 
