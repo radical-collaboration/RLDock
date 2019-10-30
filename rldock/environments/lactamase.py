@@ -16,10 +16,10 @@ class LactamaseDocking(gym.Env):
     ## Init the object
     def __init__(self, config ):
         super(LactamaseDocking, self).__init__()
-
+        self.config = config
         # Box space defines the voxel box around the BP. No atom should leave this box. This box is NOT the center.
         self.box_space  = spaces.Box(low=np.array(config['bp_min'], dtype=np.float32),
-                                       high=np.array(['bp_max'], dtype=np.float32),
+                                       high=np.array(config['bp_max'], dtype=np.float32),
                                        dtype=np.float32)
 
         self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d']], dtype=np.float32),
@@ -35,7 +35,7 @@ class LactamaseDocking(gym.Env):
         self.observation_space = spaces.Box(low=0, high=1, shape=config['output_size'], #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
-        self.voxelizer = Voxelizer(config['protein_wo_ligand'])
+        self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
 
         self.last_score = 0
         self.atom_center =  LigandPDB.parse(config['ligand'])
@@ -44,8 +44,8 @@ class LactamaseDocking(gym.Env):
         self.steps = 0
         self.cur_reward_sum = 0
 
-        self.ro_scorer = RosettaScorer(config['protein-wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
-        self.oe_scorer = Scorer(config['protein-wo_ligand']) # takes input as pdb string of just ligand
+        self.ro_scorer = RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
+        self.oe_scorer = Scorer(config['protein_wo_ligand']) # takes input as pdb string of just ligand
 
     def align_rot(self):
         for i in range(3):
@@ -84,7 +84,7 @@ class LactamaseDocking(gym.Env):
                {}
 
     def decide_reset(self, score):
-         return self.steps > 100 or (not self.check_atom_in_box())
+         return self.steps > self.config['max_steps'] or (not self.check_atom_in_box())
 
 
     def get_reward_from_ChemGauss4(self, score):

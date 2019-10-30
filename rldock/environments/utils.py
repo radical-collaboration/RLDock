@@ -77,7 +77,7 @@ class Voxelizer:
         self.config = config
         prot = Molecule(pdb_structure)
         prot = prepareProteinForAtomtyping(prot)
-        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimensions'],
+        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
                                                      center=config['bp_centers'], validitychecks=False)
         nchannels = prot_vox.shape[1]
 
@@ -86,7 +86,7 @@ class Voxelizer:
 
     def __call__(self, lig_pdb):
         slig = SmallMol(AllChem.MolFromPDBBlock(lig_pdb))
-        lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0, voxelsize=self.config['voxelsize'], boxsize=self.config['bp_dimensions'],
+        lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0, voxelsize=self.config['voxelsize'], boxsize=self.config['bp_dimension'],
                                                      center=self.config['bp_centers'], validitychecks=False)
         nchannels = lig_vox.shape[1]
         lig_vox_t = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]])
