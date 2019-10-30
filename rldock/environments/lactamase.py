@@ -19,7 +19,7 @@ class LactamaseDocking(gym.Env):
 
         # Box space defines the voxel box around the BP. No atom should leave this box. This box is NOT the center.
         self.box_space  = spaces.Box(low=np.array(config['bp_min'], dtype=np.float32),
-                                       high=np.array(['bp_max'], dtype=np.float32),
+                                       high=np.array(config['bp_max'], dtype=np.float32),
                                        dtype=np.float32)
 
         self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d']], dtype=np.float32),
