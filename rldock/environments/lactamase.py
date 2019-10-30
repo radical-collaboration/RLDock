@@ -91,7 +91,7 @@ class LactamaseDocking(gym.Env):
         if reset:
             return np.clip(np.array(score * -1), -1, 10000)  * 5
         else:
-            return np.clip(np.array(score * -1), -1, 100)  * 0.1
+            return np.clip(np.array(score * -1), -1, 1)  * 0.01
 
 
     def reset(self, random=False):
