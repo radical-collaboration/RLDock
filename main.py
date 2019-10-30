@@ -9,7 +9,7 @@ from stable_baselines.results_plotter import load_results, ts2xy
 
 from rldock.environments.lactamase import LactamaseDocking
 from rldock.voxel_policy.actorcritic import CustomPolicy
-
+from config import config
 best_mean_reward, n_steps = -np.inf, 0
 
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     args = getargs()
     print(args)
 
-    env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking()] * args.p))
+    env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p))
     model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
     model.learn(total_timesteps=args.e, callback=callback)
     model.save(args.s)
