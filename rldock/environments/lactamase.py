@@ -44,8 +44,8 @@ class LactamaseDocking(gym.Env):
         self.steps = 0
         self.cur_reward_sum = 0
 
-        self.ro_scorer = RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
-        self.oe_scorer = Scorer(config['protein_wo_ligand']) # takes input as pdb string of just ligand
+        self.ro_scorer = None # RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
+        self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
 
     def align_rot(self):
         for i in range(3):
@@ -74,7 +74,7 @@ class LactamaseDocking(gym.Env):
         self.steps += 1
 
         reward = self.get_reward_from_ChemGauss4(oe_score)
-        if reset:
+        if reset and self.ro_scorer is not None:
             reward += self.ro_scorer(*self.trans)
 
         self.cur_reward_sum += reward
@@ -86,9 +86,8 @@ class LactamaseDocking(gym.Env):
     def decide_reset(self, score):
          return self.steps > self.config['max_steps'] or (not self.check_atom_in_box())
 
-
     def get_reward_from_ChemGauss4(self, score):
-        return np.clip(np.array(score * -1), -100, 10000)
+        return np.clip(np.array(score * -1), -0.25, 10000)
 
     def reset(self, random=False):
         if random:
@@ -103,7 +102,8 @@ class LactamaseDocking(gym.Env):
             self.rot = [0,0,0]
             random_pos = copy.deepcopy(self.atom_center)
 
-        self.ro_scorer.reset(random_pos.toPDB())
+        if self.ro_scorer is not None:
+            self.ro_scorer.reset(random_pos.toPDB())
         self.cur_atom = random_pos
         self.last_score = self.oe_scorer(self.cur_atom.toPDB())
         self.steps = 0
