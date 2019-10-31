@@ -8,7 +8,7 @@ from rldock.environments.LPDB import LigandPDB
 from rldock.environments.pdb_utiils import CenterPDB
 from rldock.environments.utils import Scorer, Voxelizer, RosettaScorer
 
-
+import math
 # using 6DPT pdb from Lyu et al. (2019, nature)
 class LactamaseDocking(gym.Env):
     metadata = {'render.modes': ['human']}
@@ -53,16 +53,17 @@ class LactamaseDocking(gym.Env):
             if self.rot[i] < 0:
                 self.rot[i] = 360 + self.rot[i]
 
+    def decay_action(self, action):
+        for i in range(len(action)):
+            action[i] *= math.pow(self.config['decay'], self.steps)
+        return action
 
     def step(self, action):
+        action = self.decay_action(action)
         self.trans[0] += action[0]
         self.trans[1] += action[1]
         self.trans[2] += action[2]
 
-        # self.rot[0] += action[3]
-        # self.rot[1] += action[4]
-        # self.rot[2] += action[5]
-        # self.align_rot()
 
         self.cur_atom = self.cur_atom.translate(action[0], action[1], action[2])
         # self.cur_atom = self.cur_atom.rotate(action[3], action[4], action[5])
@@ -97,10 +98,7 @@ class LactamaseDocking(gym.Env):
     def reset(self, random=False):
         if random:
             x,y,z = self.action_space.sample().flatten().ravel()
-            #
             self.trans = [x,y,z]
-            #
-            #
             random_pos = self.atom_center.translate(x,y,z)
         else:
             self.trans = [0,0,0]

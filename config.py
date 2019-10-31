@@ -9,5 +9,6 @@ config = {
     'bp_max' : [ 29.96999884,  17.09099936, -15.99400043],
     'voxelsize' : 1,
     'output_size' : (20,20,21,16),
-    'max_steps' : 25
+    'max_steps' : 25,
+    'decay' : 0.78 # ^25 = 0.001
 }
