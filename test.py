@@ -68,9 +68,9 @@ if __name__ == '__main__':
     states = []
     cur_m = 0
 
-    model.load("save_model.zip", env=env, policy=CustomPolicy)
-    model.learn(total_timesteps=2096)
-    model.save("save_model.zip")
+    model.load("save_model", policy=CustomPolicy)
+    model.learn(total_timesteps=10024)
+    model.save("save_model")
     obs = env.reset()
 
     fp_path = '/Users/austin/PycharmProjects/RLDock/'
