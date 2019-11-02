@@ -1,43 +1,12 @@
-import os
 import argparse
-import os
 
-import numpy as np
 from stable_baselines import PPO2
 from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv
-from stable_baselines.results_plotter import load_results, ts2xy
 
+from config import config
+from rldock.common import utils
 from rldock.environments.lactamase import LactamaseDocking
 from rldock.voxel_policy.actorcritic import CustomPolicy
-from config import config
-best_mean_reward, n_steps = -np.inf, 0
-
-
-def callback(_locals, _globals):
-    """
-    Callback called at each step (for DQN an others) or after n steps (see ACER or PPO2)
-    :param _locals: (dict)
-    :param _globals: (dict)
-    """
-    global n_steps, best_mean_reward
-    # Print stats every 1000 calls
-    if (n_steps + 1) % 100 == 0:
-        # Evaluate policy training performance
-        x, y = ts2xy(load_results(log_dir), 'timesteps')
-        if len(x) > 0:
-            mean_reward = np.mean(y[-100:])
-            print(x[-1], 'timesteps')
-            print(
-                "Best mean reward: {:.2f} - Last mean reward per episode: {:.2f}".format(best_mean_reward, mean_reward))
-
-            # New best model, you could save the agent here
-            if mean_reward > best_mean_reward:
-                best_mean_reward = mean_reward
-                # Example for saving best model
-                print("Saving new best model")
-                _locals['self'].save(log_dir + 'best_model.pkl')
-    n_steps += 1
-    return True
 
 
 def getargs():
@@ -50,18 +19,14 @@ def getargs():
 
 if __name__ == '__main__':
 
-    # Create log dir
-    log_dir = "/tmp/gym/"
-    os.makedirs(log_dir, exist_ok=True)
-
     # Create and wrap the environment
     args = getargs()
     print(args)
 
     env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p))
     model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
-    model.learn(total_timesteps=args.e, callback=callback)
-    model.save(args.s)
+    model.learn(total_timesteps=args.e)
+    utils.save_model_with_norm(model, env, path='translation_model')
     obs = env.reset()
 
     header = None
