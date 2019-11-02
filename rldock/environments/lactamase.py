@@ -97,9 +97,9 @@ class LactamaseDocking(gym.Env):
             return np.clip(np.array(score * -1), -1, 1)  * 0.01
 
 
-    def reset(self, random=False):
+    def reset(self, random=True):
         if random:
-            x,y,z = self.random_space_init.sample().flatten().ravel() * 0.25
+            x,y,z = self.random_space_init.sample().flatten().ravel() * 0.5
             self.trans = [x,y,z]
             random_pos = self.atom_center.translate(x,y,z)
         else:
