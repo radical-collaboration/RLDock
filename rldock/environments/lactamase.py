@@ -22,6 +22,8 @@ class LactamaseDocking(gym.Env):
                                        high=np.array(config['bp_max'], dtype=np.float32),
                                        dtype=np.float32)
 
+        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0), high=(np.max(config['bp_dimension']) / 2.0), dtype=np.float32, shape=(3,1))
+
         self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d']], dtype=np.float32),
                                        high=np.array(3 * [config['action_space_d']], dtype=np.float32),
                                        dtype=np.float32)
@@ -97,12 +99,12 @@ class LactamaseDocking(gym.Env):
 
     def reset(self, random=False):
         if random:
-            x,y,z = self.action_space.sample().flatten().ravel()
+            x,y,z = self.random_space_init.sample().flatten().ravel() * 0.25
             self.trans = [x,y,z]
             random_pos = self.atom_center.translate(x,y,z)
         else:
             self.trans = [0,0,0]
-            self.rot = [0,0,0]
+            self.rot   = [0,0,0]
             random_pos = copy.deepcopy(self.atom_center)
 
         if self.ro_scorer is not None:

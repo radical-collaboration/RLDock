@@ -12,6 +12,7 @@ from rldock.voxel_policy.actorcritic import CustomPolicy
 def getargs():
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', type=int, default=1)
+    parser.add_argument('-l', type=str, default=None)
     parser.add_argument('-s', type=str, default='save_model')
     parser.add_argument('-e', type=int, default=10)
     return parser.parse_args()
@@ -24,7 +25,10 @@ if __name__ == '__main__':
     print(args)
 
     env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p))
-    model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
+    if args.l is None:
+        model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
+    else:
+        model = utils.load_model_with_norm(PPO2, env, args.l)
     model.learn(total_timesteps=args.e)
     utils.save_model_with_norm(model, env, path=args.s)
     obs = env.reset()
