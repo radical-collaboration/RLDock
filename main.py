@@ -15,6 +15,7 @@ def getargs():
     parser.add_argument('-l', type=str, default=None)
     parser.add_argument('-s', type=str, default='save_model')
     parser.add_argument('-e', type=int, default=10)
+    parser.add_argument('-o', type=int, default=25)
     return parser.parse_args()
 
 
@@ -48,7 +49,7 @@ if __name__ == '__main__':
         fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
         fp.write(", ligand, " + str(i + 1) + "\n")
 
-        for i in range(1, config['max_steps']):
+        for i in range(1, args.o):
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
 
