@@ -10,5 +10,5 @@ config = {
     'voxelsize' : 1,
     'output_size' : (20,20,21,16),
     'max_steps' : 25,
-    'decay' : 0.78 # ^25 = 0.001
+    'decay' : 0.8 # ^25 = 0.001
 }
