@@ -31,8 +31,11 @@ class LactamaseDocking(gym.Env):
                                            dtype=np.float32,
                                            shape=(3,1))
 
-        self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
-                                       high=np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
+        lows = -1 * np.array(3 * [config['action_space_d']] + 3 * [config['action_space_r']], dtype=np.float32)
+        highs = np.array(3 * [config['action_space_d']] + 3 * [config['action_space_r']], dtype=np.float32)
+
+        self.action_space = spaces.Box(low=lows,
+                                       high=highs,
                                        dtype=np.float32)
         #tmp file for writing
         self.file = "randoms/" + str(random.randint(0,1000000)) + "_temp.pdb"
@@ -69,14 +72,11 @@ class LactamaseDocking(gym.Env):
         return action
 
     def step(self, action):
-        print(len(self.action_space.sample()))
-        assert(len(self.action_space.sample()) == 6)
-        assert(len(action)==6)
+
 
         action = self.decay_action(action)
         self.trans[0] += action[0]
         self.trans[1] += action[1]
-        print(len(action))
         self.trans[2] += action[2]
         self.rot[0] += action[3]
         self.rot[1] += action[4]
