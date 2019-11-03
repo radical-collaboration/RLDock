@@ -1,5 +1,6 @@
 config = {
     'action_space_d' : 2.5,
+    'action_space_r' : 15,
     'protein_wo_ligand' : 'resources/lactamase_wo_lignad.pdb',
     'ligand' : 'resources/lactamase_ligand.pdb',
     'oe_box' : 'resources/lacatamase.oeb',
@@ -10,5 +11,5 @@ config = {
     'voxelsize' : 1,
     'output_size' : (20,20,21,16),
     'max_steps' : 25,
-    'decay' : 0.8 # ^25 = 0.001
+    'decay' : 0.85 # ^25 = 0.001
 }

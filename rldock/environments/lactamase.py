@@ -22,10 +22,10 @@ class LactamaseDocking(gym.Env):
                                        high=np.array(config['bp_max'], dtype=np.float32),
                                        dtype=np.float32)
 
-        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0), high=(np.max(config['bp_dimension']) / 2.0), dtype=np.float32, shape=(3,1))
+        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0), high=(np.max(config['bp_dimension']) / 2.0), dtype=np.float32, shape=(6,1))
 
-        self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d']], dtype=np.float32),
-                                       high=np.array(3 * [config['action_space_d']], dtype=np.float32),
+        self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
+                                       high=np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
                                        dtype=np.float32)
         #tmp file for writing
         self.file = "randoms/" + str(random.randint(0,1000000)) + "_temp.pdb"
@@ -43,6 +43,7 @@ class LactamaseDocking(gym.Env):
         self.atom_center =  LigandPDB.parse(config['ligand'])
         self.cur_atom = copy.deepcopy(self.atom_center)
         self.trans = [0,0,0]
+        self.rot   = [0,0,0]
         self.steps = 0
         self.cur_reward_sum = 0
 
@@ -55,8 +56,8 @@ class LactamaseDocking(gym.Env):
             if self.rot[i] < 0:
                 self.rot[i] = 360 + self.rot[i]
 
-    def decay_action(self, action):
-        for i in range(len(action)):
+    def decay_action(self, action, just_trans=True):
+        for i in range(3 if just_trans else len(action)):
             action[i] *= math.pow(self.config['decay'], self.steps)
         return action
 
@@ -65,10 +66,14 @@ class LactamaseDocking(gym.Env):
         self.trans[0] += action[0]
         self.trans[1] += action[1]
         self.trans[2] += action[2]
-
+        self.rot[0] += action[3]
+        self.rot[1] += action[4]
+        self.rot[2] += action[5]
 
         self.cur_atom = self.cur_atom.translate(action[0], action[1], action[2])
-        # self.cur_atom = self.cur_atom.rotate(action[3], action[4], action[5])
+        self.cur_atom = self.cur_atom.rotate(action[3], action[4], action[5])
+        self.align_rot()
+
         oe_score = self.oe_scorer(self.cur_atom.toPDB())
         # ro_score = self.ro_scorer(*action) #rosetta pass trans
         reset = self.decide_reset(oe_score)
@@ -99,9 +104,11 @@ class LactamaseDocking(gym.Env):
 
     def reset(self, random=True):
         if random:
-            x,y,z = self.random_space_init.sample().flatten().ravel() * 0.5
+            x,y,z,x_theta,y_theta,z_theta = self.random_space_init.sample().flatten().ravel() * 0.25
             self.trans = [x,y,z]
+            self.rot = [x_theta, y_theta, z_theta]
             random_pos = self.atom_center.translate(x,y,z)
+            random_pos = random_pos.rotate(theta_x=x_theta, theta_y=y_theta, theta_z=z_theta)
         else:
             self.trans = [0,0,0]
             self.rot   = [0,0,0]
