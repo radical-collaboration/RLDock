@@ -25,11 +25,15 @@ class LactamaseDocking(gym.Env):
         self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0),
                                             high=(np.max(config['bp_dimension']) / 2.0),
                                             dtype=np.float32,
-                                            shape=(6,1))
+                                            shape=(3,1))
+        self.random_space_rot = spaces.Box(low=-15,
+                                           high=15,
+                                           dtype=np.float32,
+                                           shape=(3,1))
 
         self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
                                        high=np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
-                                       dtype=np.float32)
+                                       dtype=np.float32, shape=(6))
         #tmp file for writing
         self.file = "randoms/" + str(random.randint(0,1000000)) + "_temp.pdb"
 
@@ -108,7 +112,8 @@ class LactamaseDocking(gym.Env):
 
     def reset(self, random=True):
         if random:
-            x,y,z,x_theta,y_theta,z_theta = self.random_space_init.sample().flatten().ravel() * 0.25
+            x,y,z, = self.random_space_init.sample().flatten().ravel()  * 0.25
+            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 0.5
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
             random_pos = self.atom_center.translate(x,y,z)
