@@ -22,7 +22,10 @@ class LactamaseDocking(gym.Env):
                                        high=np.array(config['bp_max'], dtype=np.float32),
                                        dtype=np.float32)
 
-        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0), high=(np.max(config['bp_dimension']) / 2.0), dtype=np.float32, shape=(6,1))
+        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0),
+                                            high=(np.max(config['bp_dimension']) / 2.0),
+                                            dtype=np.float32,
+                                            shape=(6,1))
 
         self.action_space = spaces.Box(low=-1 * np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
                                        high=np.array(3 * [config['action_space_d'] + 3 * config['action_space_r']], dtype=np.float32),
@@ -62,6 +65,7 @@ class LactamaseDocking(gym.Env):
         return action
 
     def step(self, action):
+        assert(len(action)==6)
         action = self.decay_action(action)
         self.trans[0] += action[0]
         self.trans[1] += action[1]
