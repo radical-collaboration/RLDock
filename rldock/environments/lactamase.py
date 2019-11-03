@@ -69,6 +69,8 @@ class LactamaseDocking(gym.Env):
         return action
 
     def step(self, action):
+        print(len(self.action_space.sample()))
+        assert(len(self.action_space.sample()) == 6)
         assert(len(action)==6)
 
         action = self.decay_action(action)
