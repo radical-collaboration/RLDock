@@ -1,6 +1,6 @@
 config = {
     'action_space_d' : 2.5,
-    'action_space_r' : 15,
+    'action_space_r' : 5,
     'protein_wo_ligand' : 'resources/lactamase_wo_lignad.pdb',
     'ligand' : 'resources/lactamase_ligand.pdb',
     'oe_box' : 'resources/lacatamase.oeb',
