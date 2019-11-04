@@ -224,13 +224,39 @@ class LigandPDB:
 
         return pdb_c
 
+    def get_center(self):
+        max_x, max_y, max_z = None, None, None
+        min_x, min_y, min_z = None, None, None
+        for atom in self.hetatoms:
+            max_x = max(max_x, atom.x_ortho_a)
+            min_x = min(min_x, atom.x_ortho_a)
+            max_y = max(max_y, atom.y_ortho_a)
+            min_y = min(min_y, atom.y_ortho_a)
+            max_z = max(max_z, atom.z_ortho_a)
+            min_z = min(min_z, atom.z_ortho_a)
+
+        return (max_x + min_x) /2, (max_y + min_y) /2, (max_z + min_z) /2
+
+    def __translate(self, x, y, z):
+        pdb_c = copy.deepcopy(self)
+
+        for atom in pdb_c.hetatoms:
+            atom.x_ortho_a += x
+            atom.y_ortho_a += y
+            atom.z_ortho_a += z
+
+        return pdb_c
+
     # returns copy!!!
     def rotate(self, theta_x, theta_y, theta_z):
         pdb_c = copy.deepcopy(self)
+        c = np.array(pdb_c.get_center()).flatten()
         rot_mat = scipy.spatial.transform.Rotation.from_euler('xyz', [theta_x, theta_y, theta_z])
         for atom in pdb_c.hetatoms:
             vec = atom.get_coords()
+            vec -= c
             vec = rot_mat.apply(vec)
+            vec += c
             atom.set_coords(vec)
         return pdb_c
 
