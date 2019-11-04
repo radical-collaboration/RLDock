@@ -116,8 +116,8 @@ class LactamaseDocking(gym.Env):
 
     def reset(self, random=True):
         if random:
-            x,y,z, = self.random_space_init.sample().flatten().ravel()  * 0.5
-            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel()
+            x,y,z, = self.random_space_init.sample().flatten().ravel()  * 0.15
+            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 0.15
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
             random_pos = self.atom_center.translate(x,y,z)
