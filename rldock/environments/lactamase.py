@@ -66,7 +66,7 @@ class LactamaseDocking(gym.Env):
             if self.rot[i] < 0:
                 self.rot[i] = 360 + self.rot[i]
 
-    def decay_action(self, action, just_trans=True):
+    def decay_action(self, action, just_trans=False):
         for i in range(3 if just_trans else len(action)):
             action[i] *= math.pow(self.config['decay'], self.steps)
         return action
