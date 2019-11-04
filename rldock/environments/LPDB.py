@@ -9,6 +9,19 @@ class JUSTIF(Enum):
     LEFT = 0
     RIGHT = 1
 
+def minN(x,y):
+    if x is None:
+        return y
+    if y is None:
+        return x
+    return min(x,y)
+def maxN(x,y):
+    if x is None:
+        return y
+    if y is None:
+        return x
+    return max(x,y)
+
 '''
 For ligands two important blocks. HETATM block which has coordinates and types, connect block.
 
@@ -228,12 +241,12 @@ class LigandPDB:
         max_x, max_y, max_z = None, None, None
         min_x, min_y, min_z = None, None, None
         for atom in self.hetatoms:
-            max_x = max(max_x, atom.x_ortho_a)
-            min_x = min(min_x, atom.x_ortho_a)
-            max_y = max(max_y, atom.y_ortho_a)
-            min_y = min(min_y, atom.y_ortho_a)
-            max_z = max(max_z, atom.z_ortho_a)
-            min_z = min(min_z, atom.z_ortho_a)
+            max_x = maxN(max_x, atom.x_ortho_a)
+            min_x = minN(min_x, atom.x_ortho_a)
+            max_y = maxN(max_y, atom.y_ortho_a)
+            min_y = minN(min_y, atom.y_ortho_a)
+            max_z = maxN(max_z, atom.z_ortho_a)
+            min_z = minN(min_z, atom.z_ortho_a)
 
         return (max_x + min_x) /2, (max_y + min_y) /2, (max_z + min_z) /2
 
