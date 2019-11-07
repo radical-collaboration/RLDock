@@ -57,7 +57,7 @@ class LactamaseDocking(gym.Env):
         self.atom_center =  LigandPDB.parse(config['ligand'])
 
         if config['random_ligand_folder'] is not None:
-            self.rligands = glob.glob(config['random_ligand_folder'] + "/*.pdb") + config['ligand']
+            self.rligands = glob.glob(config['random_ligand_folder'] + "/*.pdb") + [config['ligand']]
             print(self.rligands)
             for i in range(len(self.rligands)):
                 self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
