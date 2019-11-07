@@ -54,15 +54,15 @@ if __name__ == '__main__':
             print(action, rewards, done)
             atom = env.env_method("render")[0]
 
-            with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-                f.write(atom.toPDB())
-            fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-            fp.write(", ligand" +str(ligand_counter) + ", " + str(i + 1 - i_adjust) + "\n")
-
             if done[0]:
                 obs = env.reset()
                 atom = env.env_method('render')[0]
                 ligand_counter += 1
                 i_adjust = i + 1
+
+            with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+                f.write(atom.toPDB())
+            fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+            fp.write(", ligand" + str(ligand_counter) + ", " + str(i + 1 - i_adjust) + "\n")
 
     env.close()
