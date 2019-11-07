@@ -39,9 +39,8 @@ if __name__ == '__main__':
     #
     env = VecNormalize(DummyVecEnv([lambda: LactamaseDocking(config)] * args.p))
     model = PPO2('3dvoxel', env, verbose=2, tensorboard_log="tensorlogs/")
-    model.learn(total_timesteps=10000)
-    exit()
-    
+    model.learn(total_timesteps=1000)
+
     
     obs = env.reset()
 
@@ -65,7 +64,7 @@ if __name__ == '__main__':
             cur_m = atom
 
             with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-                f.write(cur_m.toPDB())
+                f.write(atom.toPDB())
             fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
             fp.write(", ligand, " + str(i + 1) + "\n")
             if done:
