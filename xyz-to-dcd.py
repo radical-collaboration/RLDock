@@ -1,8 +1,8 @@
-import MDAnalysis
+from rldock.environments import LPDB
+from config import config
 
+lig = LPDB.LigandPDB.parse("/Users/austin/drugscreen/newpdbs/0.pdb")
 
-u = MDAnalysis.coordinates.XYZ.XYZReader("test.xyz")
-print(u.n_atoms, u.totaltime, u.n_frames)
-with MDAnalysis.coordinates.TRJ.TRJ("protein.dcd", u.n_atoms) as W:
-    for ts in u.trajectory:
-        print(ts)
+centers = lig.get_center()
+lig = lig.translate(*centers)
+

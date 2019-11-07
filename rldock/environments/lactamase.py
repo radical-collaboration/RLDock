@@ -4,10 +4,11 @@ import gym
 import numpy as np
 from gym import spaces
 import random
+from random import randint
 from rldock.environments.LPDB import LigandPDB
 from rldock.environments.pdb_utiils import CenterPDB
 from rldock.environments.utils import Scorer, Voxelizer, RosettaScorer
-
+import glob
 import math
 # using 6DPT pdb from Lyu et al. (2019, nature)
 class LactamaseDocking(gym.Env):
@@ -50,7 +51,18 @@ class LactamaseDocking(gym.Env):
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
 
         self.last_score = 0
+        self.reference_ligand = LigandPDB.parse(config['ligand'])
+        self.reference_centers = self.reference_ligand.get_center()
+
         self.atom_center =  LigandPDB.parse(config['ligand'])
+
+        if config['random_ligand_folder'] is not None:
+            self.rligands = glob.glob(config['random_ligand_folder'] + "/*.pdb")
+            for i in range(len(self.rligands)):
+                self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
+        else:
+            self.rligands = None
+
         self.cur_atom = copy.deepcopy(self.atom_center)
         self.trans = [0,0,0]
         self.rot   = [0,0,0]
@@ -59,6 +71,10 @@ class LactamaseDocking(gym.Env):
 
         self.ro_scorer = None # RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
         self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
+
+    def reset_ligand(self, newlig):
+        x,y,z  = newlig.get_center()
+        return newlig.translate(self.reference_centers[0] - x , self.reference_centers[1] - y, self.reference_centers - z)
 
     def align_rot(self):
         for i in range(3):
@@ -113,19 +129,23 @@ class LactamaseDocking(gym.Env):
         else:
             return np.clip(np.array(score * -1), -1, 1)  * 0.01
 
+    def reset(self, random=True, many_ligands =True):
+        if many_ligands and self.rligands != None:
+            start_atom = copy.deepcopy(self.rligands[randint(0, len(self.rligands))])
+        else:
+            start_atom = copy.deepcopy(self.atom_center)
 
-    def reset(self, random=True):
         if random:
             x,y,z, = self.random_space_init.sample().flatten().ravel()  * 1.0
             x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 1.0
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
-            random_pos = self.atom_center.translate(x,y,z)
+            random_pos = start_atom.translate(x,y,z)
             random_pos = random_pos.rotate(theta_x=x_theta, theta_y=y_theta, theta_z=z_theta)
         else:
             self.trans = [0,0,0]
             self.rot   = [0,0,0]
-            random_pos = copy.deepcopy(self.atom_center)
+            random_pos = start_atom
 
         if self.ro_scorer is not None:
             self.ro_scorer.reset(random_pos.toPDB())
