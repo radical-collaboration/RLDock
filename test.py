@@ -4,7 +4,7 @@ import os
 import numpy as np
 from stable_baselines import PPO2
 from stable_baselines.bench import Monitor
-from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv
+from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv
 from stable_baselines.results_plotter import load_results, ts2xy
 from stable_baselines.common.policies import register_policy
 
@@ -37,23 +37,9 @@ if __name__ == '__main__':
     args = getargs()
     # print(args)
     #
-    env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p))
-    #model = PPO2('3dvoxel', env, verbose=2, tensorboard_log="tensorlogs/")
-    #model.learn(total_timesteps=10000)
-    #model.save('save_model')
-    # obs = env.reset()
-    #
-    header = None
-    states = []
-    cur_m = 0
-
-
-    env.load_running_average("save_model_running_avg")
-    model = PPO2.load("save_model", env=env)
+    env = VecNormalize(DummyVecEnv([lambda: LactamaseDocking(config)] * args.p))
+    model = PPO2('3dvoxel', env, verbose=2, tensorboard_log="tensorlogs/")
     model.learn(total_timesteps=10000)
-    model.save("save_model")
-    #make_dir("save_model_running_avg")
-    env.save_running_average('save_model_running_avg')
     exit()
     
     

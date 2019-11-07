@@ -74,7 +74,7 @@ class LactamaseDocking(gym.Env):
 
     def reset_ligand(self, newlig):
         x,y,z  = newlig.get_center()
-        return newlig.translate(self.reference_centers[0] - x , self.reference_centers[1] - y, self.reference_centers - z)
+        return newlig.translate(self.reference_centers[0] - x , self.reference_centers[1] - y, self.reference_centers[2] - z)
 
     def align_rot(self):
         for i in range(3):
