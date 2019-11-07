@@ -171,3 +171,15 @@ class LactamaseDocking(gym.Env):
         for atom in self.cur_atom.hetatoms:
             ans &= self.box_space.contains([atom.x_ortho_a, atom.y_ortho_a, atom.z_ortho_a])
         return ans
+
+    def eval_ligands(self):
+        self.rligands = glob.glob(self.config['random_ligand_folder_test'])
+        print(self.rligands)
+        for i in range(len(self.rligands)):
+            self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
+
+    def train_ligands(self):
+        self.rligands = glob.glob(self.config['random_ligand_folder'] + "/*.pdb") + [self.config['ligand']]
+        print(self.rligands)
+        for i in range(len(self.rligands)):
+            self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))

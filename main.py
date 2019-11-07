@@ -33,6 +33,8 @@ if __name__ == '__main__':
     model.learn(total_timesteps=args.e)
     utils.save_model_with_norm(model, env, path=args.s)
 
+    env.env_method('eval_ligands')
+
     header = None
     cur_m = 0
 
