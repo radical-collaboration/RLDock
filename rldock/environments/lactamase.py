@@ -131,7 +131,7 @@ class LactamaseDocking(gym.Env):
 
     def reset(self, random=True, many_ligands =True):
         if many_ligands and self.rligands != None:
-            start_atom = copy.deepcopy(self.rligands[randint(0, len(self.rligands))])
+            start_atom = copy.deepcopy(self.rligands[randint(0, len(self.rligands) - 1)])
         else:
             start_atom = copy.deepcopy(self.atom_center)
 
