@@ -61,7 +61,8 @@ if __name__ == '__main__':
 
             if done[0]:
                 obs = env.reset()
+                atom = env.env_method('render')[0]
                 ligand_counter += 1
-                i_adjust = i
+                i_adjust = i + 1
 
     env.close()
