@@ -137,7 +137,14 @@ class LactamaseDocking(gym.Env):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
-            self.name = self.names[idz]
+            try:
+                self.name = self.names[idz]
+            except:
+                print(len(self.names), len(self.rligands))
+                print(self.names)
+                print(self.name)
+                print(idz)
+                exit()
         elif many_ligands and self.rligands != None :
             start_atom = copy.deepcopy(self.rligands.pop(0))
             self.name = self.names.pop(0)
