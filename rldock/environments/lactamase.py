@@ -185,21 +185,13 @@ class LactamaseDocking(gym.Env):
 
     def eval_ligands(self):
         self.rligands = glob.glob(self.config['random_ligand_folder_test'] + "/*.pdb")
-        print(self.config['random_ligand_folder_test'] + "/*.pdb")
         self.names = copy.deepcopy(self.rligands)
-        assert(len(self.names) > 10)
-        print(self.rligands)
         for i in range(len(self.rligands)):
             self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
 
     def train_ligands(self):
-        import os
-        os.getcwd()
-        print(os.getcwd())
-        print(glob.glob(self.config['random_ligand_folder'] + "/*.pdb"))
         self.rligands = glob.glob(self.config['random_ligand_folder'] + "/*.pdb") + [self.config['ligand']]
-        print(glob.glob(self.config['random_ligand_folder'] + "/*.pdb") + [self.config['ligand']])
-        self.names = copy.deepcopy(self.rligands)
+        self.names = copy.deepcopy(self.rligands) + ['rL']
         assert(len(self.names) > 10)
         print(self.names)
         print(self.rligands)
