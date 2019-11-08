@@ -40,31 +40,32 @@ if __name__ == '__main__':
 
     obs = env.reset()
     ligand_counter = 0
+    lignad_name = 0
     fp_path = '/Users/austin/PycharmProjects/RLDock/'
     with open('run.pml', 'w') as fp:
         i = 0
         with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-            cur_m = env.env_method("render")[0]
+            cur_m, name = env.env_method("render")[0]
             f.write(cur_m.toPDB())
         fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-        fp.write(", ligand0, " + str(i + 1) + "\n")
+        fp.write(", ligand" + name + ", " + str(i + 1) + "\n")
         i_adjust = 0
         for i in range(1, args.o):
             action, _states = model.predict(obs)
             obs, rewards, done, info = env.step(action)
 
             print(action, rewards, done)
-            atom = env.env_method("render")[0]
+            atom, name = env.env_method("render")[0]
 
             if done[0]:
                 obs = env.reset()
-                atom = env.env_method('render')[0]
+                atom, name = env.env_method('render')[0]
                 ligand_counter += 1
                 i_adjust = 0
 
             with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
                 f.write(atom.toPDB())
             fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-            fp.write(", ligand" + str(ligand_counter) + ", " + str(i + 1 - i_adjust) + "\n")
+            fp.write(", ligand" + name + ", " + str(i + 1 - i_adjust) + "\n")
 
     env.close()

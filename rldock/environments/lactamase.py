@@ -69,6 +69,8 @@ class LactamaseDocking(gym.Env):
         self.rot   = [0,0,0]
         self.steps = 0
         self.cur_reward_sum = 0
+        self.names = []
+        self.name = ""
 
         self.ro_scorer = None # RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
         self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
@@ -136,9 +138,12 @@ class LactamaseDocking(gym.Env):
 
     def reset(self, random=True, many_ligands =True):
         if many_ligands and self.rligands != None and self.use_random:
-            start_atom = copy.deepcopy(self.rligands[randint(0, len(self.rligands) - 1)])
+            idz = randint(0, len(self.rligands) - 1)
+            start_atom = copy.deepcopy(self.rligands[idz])
+            self.name = self.names[idz]
         elif many_ligands and self.rligands != None :
             start_atom = copy.deepcopy(self.rligands.pop(0))
+            self.name = self.names.pop(0)
         else:
             start_atom = copy.deepcopy(self.atom_center)
 
@@ -167,7 +172,7 @@ class LactamaseDocking(gym.Env):
 
     def render(self, mode='human'):
         print("Score", self.last_score, self.cur_reward_sum)
-        return self.cur_atom
+        return self.cur_atom, self.name
 
     def close(self):
         pass
@@ -181,8 +186,9 @@ class LactamaseDocking(gym.Env):
     def disable_random(self):
         self.use_random = False
 
-    def eval_ligands(self, random=False):
+    def eval_ligands(self):
         self.rligands = glob.glob(self.config['random_ligand_folder_test'] + "/*.pdb")
+        self.names = copy.deepcopy(self.rligands)
         print(self.rligands)
         for i in range(len(self.rligands)):
             self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
