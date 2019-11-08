@@ -177,7 +177,7 @@ class LactamaseDocking(gym.Env):
         return ans
 
     def eval_ligands(self):
-        self.rligands = glob.glob(self.config['random_ligand_folder_test'])
+        self.rligands = glob.glob(self.config['random_ligand_folder_test'] + "/*.pdb")
         print(self.rligands)
         for i in range(len(self.rligands)):
             self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
