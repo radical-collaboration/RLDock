@@ -60,7 +60,7 @@ if __name__ == '__main__':
                 obs = env.reset()
                 atom = env.env_method('render')[0]
                 ligand_counter += 1
-                i_adjust = i + 1
+                i_adjust = 0
 
             with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
                 f.write(atom.toPDB())
