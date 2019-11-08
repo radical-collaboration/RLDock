@@ -16,6 +16,7 @@ def getargs():
     parser.add_argument('-s', type=str, default='save_model')
     parser.add_argument('-e', type=int, default=10)
     parser.add_argument('-o', type=int, default=25)
+    parser.add_argument('-r', type=float, default=2.5e-4)
     return parser.parse_args()
 
 
@@ -27,7 +28,7 @@ if __name__ == '__main__':
 
     env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p))
     if args.l is None:
-        model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
+        model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/", learning_rate=args.r)
     else:
         model = utils.load_model_with_norm(PPO2, env, args.l)
     model.learn(total_timesteps=args.e)
