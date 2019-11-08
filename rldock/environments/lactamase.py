@@ -34,7 +34,7 @@ class LactamaseDocking(gym.Env):
 
         lows = -1 * np.array(3 * [config['action_space_d']] + 3 * [config['action_space_r']], dtype=np.float32)
         highs = np.array(3 * [config['action_space_d']] + 3 * [config['action_space_r']], dtype=np.float32)
-
+        self.use_random = True
         self.action_space = spaces.Box(low=lows,
                                        high=highs,
                                        dtype=np.float32)
@@ -135,8 +135,10 @@ class LactamaseDocking(gym.Env):
             return np.clip(np.array(score * -1), -1, 1)  * 0.01
 
     def reset(self, random=True, many_ligands =True):
-        if many_ligands and self.rligands != None:
+        if many_ligands and self.rligands != None and self.use_random:
             start_atom = copy.deepcopy(self.rligands[randint(0, len(self.rligands) - 1)])
+        elif many_ligands and self.rligands != None :
+            start_atom = copy.deepcopy(self.rligands.pop(0))
         else:
             start_atom = copy.deepcopy(self.atom_center)
 
@@ -176,7 +178,10 @@ class LactamaseDocking(gym.Env):
             ans &= self.box_space.contains([atom.x_ortho_a, atom.y_ortho_a, atom.z_ortho_a])
         return ans
 
-    def eval_ligands(self):
+    def disable_random(self):
+        self.use_random = False
+
+    def eval_ligands(self, random=False):
         self.rligands = glob.glob(self.config['random_ligand_folder_test'] + "/*.pdb")
         print(self.rligands)
         for i in range(len(self.rligands)):

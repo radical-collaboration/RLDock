@@ -34,7 +34,7 @@ if __name__ == '__main__':
     utils.save_model_with_norm(model, env, path=args.s)
 
     env.env_method('eval_ligands')
-
+    env.env_method('disable_random')
     header = None
     cur_m = 0
 
