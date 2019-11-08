@@ -197,3 +197,4 @@ class LactamaseDocking(gym.Env):
         print(self.rligands)
         for i in range(len(self.rligands)):
             self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
+        assert(len(self.rligands) == len(self.names))
