@@ -88,9 +88,13 @@ class LactamaseDocking(gym.Env):
             action[i] *= math.pow(self.config['decay'], self.steps)
         return action
 
+    def get_action(self, action):
+        for i in range(6):
+            action[i] *= 2.0
+        return action
+
     def step(self, action):
-
-
+        action = self.get_action(action)
         action = self.decay_action(action)
         self.trans[0] += action[0]
         self.trans[1] += action[1]
@@ -122,7 +126,7 @@ class LactamaseDocking(gym.Env):
                {}
 
     def decide_reset(self, score):
-         return self.steps > self.config['max_steps'] or (not self.check_atom_in_box())
+         return self.steps > self.config['max_steps'] or (self.steps > 10 and not self.check_atom_in_box())
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
         if reset:
