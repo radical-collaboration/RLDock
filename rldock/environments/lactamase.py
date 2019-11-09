@@ -89,7 +89,7 @@ class LactamaseDocking(gym.Env):
 
     def get_action(self, action):
         for i in range(6):
-            action[i] *= 2.0
+            action[i] *= 3
         return action
 
     def step(self, action):

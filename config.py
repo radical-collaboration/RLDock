@@ -11,7 +11,7 @@ config = {
     'voxelsize' : 1,
     'output_size' : (20,20,21,16),
     'max_steps' : 30,
-    'decay' : 0.93, # ^25 = 0.001,
+    'decay' : 0.86, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
     'random_ligand_folder_test' : 'resources/rligands_eval'
 }
