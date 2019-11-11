@@ -19,8 +19,8 @@ class LactamaseDocking(gym.Env):
         super(LactamaseDocking, self).__init__()
         self.config = config
         # Box space defines the voxel box around the BP. No atom should leave this box. This box is NOT the center.
-        self.box_space  = spaces.Box(low=np.array(config['bp_min'], dtype=np.float32),
-                                       high=np.array(config['bp_max'], dtype=np.float32),
+        self.box_space  = spaces.Box(low=np.array(config['bp_min'], dtype=np.float32) + 5,
+                                       high=np.array(config['bp_max'], dtype=np.float32) + 5,
                                        dtype=np.float32)
 
         self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0),
@@ -88,8 +88,8 @@ class LactamaseDocking(gym.Env):
         return action
 
     def get_action(self, action):
-        for i in range(6):
-            action[i] *= 2
+        for i in range(3):
+            action[i] *= 1.5
         return action
 
     def step(self, action):
