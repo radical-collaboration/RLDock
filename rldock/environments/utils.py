@@ -87,7 +87,7 @@ class Voxelizer:
     def __call__(self, lig_pdb):
         slig = SmallMol(AllChem.MolFromPDBBlock(lig_pdb))
         lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0, voxelsize=self.config['voxelsize'], boxsize=self.config['bp_dimension'],
-                                                     center=self.config['bp_centers'], validitychecks=False)
+                                                     center=self.config['bp_centers'], validitychecks=False, method=self.config['voxel_method'])
         nchannels = lig_vox.shape[1]
         lig_vox_t = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]])
         return np.transpose(np.concatenate([self.prot_vox_t, lig_vox_t], axis=1), (0,2,3,4,1))

@@ -13,5 +13,6 @@ config = {
     'max_steps' : 30,
     'decay' : 0.9, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
-    'random_ligand_folder_test' : 'resources/rligands_eval'
+    'random_ligand_folder_test' : 'resources/rligands_eval',
+    'voxel_method' : 'numba'
 }
