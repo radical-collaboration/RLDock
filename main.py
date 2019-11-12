@@ -1,7 +1,7 @@
 import argparse
 
 from stable_baselines import PPO2
-from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv
+from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, VecFrameStack
 
 from config import config
 from rldock.common import utils
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     args = getargs()
     print(args)
 
-    env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p))
+    env = VecFrameStack(VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * args.p)), 4)
     if args.l is None:
         model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/", learning_rate=args.r)
     else:

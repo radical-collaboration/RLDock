@@ -4,7 +4,7 @@ import os
 import numpy as np
 from stable_baselines import PPO2
 from stable_baselines.bench import Monitor
-from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv
+from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv, VecFrameStack
 from stable_baselines.results_plotter import load_results, ts2xy
 from stable_baselines.common.policies import register_policy
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     args = getargs()
     # print(args)
     #
-    env = VecNormalize(DummyVecEnv([lambda: LactamaseDocking(config)] * args.p))
+    env = VecFrameStack(VecNormalize(DummyVecEnv([lambda: LactamaseDocking(config)] * args.p)), 3)
     model = PPO2('3dvoxel', env, verbose=2, tensorboard_log="tensorlogs/")
     model.learn(total_timesteps=1000)
 

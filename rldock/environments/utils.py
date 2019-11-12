@@ -90,4 +90,4 @@ class Voxelizer:
                                                      center=self.config['bp_centers'], validitychecks=False, method=self.config['voxel_method'])
         nchannels = lig_vox.shape[1]
         lig_vox_t = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]])
-        return np.transpose(np.concatenate([self.prot_vox_t, lig_vox_t], axis=1), (0,2,3,4,1))
+        return np.transpose(np.concatenate([ lig_vox_t], axis=1), (0,2,3,4,1))

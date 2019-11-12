@@ -23,8 +23,8 @@ class LactamaseDocking(gym.Env):
                                        high=np.array(config['bp_max'], dtype=np.float32) + 5,
                                        dtype=np.float32)
 
-        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 2.0),
-                                            high=(np.max(config['bp_dimension']) / 2.0),
+        self.random_space_init = spaces.Box(low=(-1 * np.max(config['bp_dimension']) / 4.0),
+                                            high=(np.max(config['bp_dimension']) / 4.0),
                                             dtype=np.float32,
                                             shape=(3,1))
         self.random_space_rot = spaces.Box(low=0,
@@ -32,8 +32,8 @@ class LactamaseDocking(gym.Env):
                                            dtype=np.float32,
                                            shape=(3,1))
 
-        lows = -1 * np.array(3 * [config['action_space_d']] + 3 * [config['action_space_r']], dtype=np.float32)
-        highs = np.array(3 * [config['action_space_d']] + 3 * [config['action_space_r']], dtype=np.float32)
+        lows = -1 * np.array(list(config['action_space_d']) + list(config['action_space_r']), dtype=np.float32)
+        highs = np.array(list(config['action_space_d']) + list(config['action_space_r']), dtype=np.float32)
         self.use_random = True
         self.action_space = spaces.Box(low=lows,
                                        high=highs,
@@ -88,10 +88,10 @@ class LactamaseDocking(gym.Env):
         return action
 
     def get_action(self, action):
-        for i in range(3):
-            action[i] *= 1
-        for i in [3,4,5]:
-            action[i] /= 1.59154
+        # for i in range(3):
+        #     action[i] *= 1
+        # for i in [3,4,5]:
+        #     action[i] /= 1.59154
         return action
 
     def step(self, action):
@@ -148,8 +148,8 @@ class LactamaseDocking(gym.Env):
             start_atom = copy.deepcopy(self.atom_center)
 
         if random:
-            x,y,z, = self.random_space_init.sample().flatten().ravel()  * 0.25
-            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 1.0
+            x,y,z, = self.random_space_init.sample().flatten().ravel()
+            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel()
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
             random_pos = start_atom.translate(x,y,z)
