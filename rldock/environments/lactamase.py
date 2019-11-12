@@ -89,7 +89,7 @@ class LactamaseDocking(gym.Env):
 
     def get_action(self, action):
         for i in range(3):
-            action[i] *= 1.5
+            action[i] *= 1
         for i in [3,4,5]:
             action[i] /= 1.59154
         return action
@@ -131,9 +131,9 @@ class LactamaseDocking(gym.Env):
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
         if reset:
-            return np.clip(np.array(score * -1), -1, 10000)  * 5
+            return np.clip(np.array(score * -1), -1, 10000)  * 10
         else:
-            return np.clip(np.array(score * -1), -1, 1)  * 0.1
+            return np.clip(np.array(score * -1), -1, 1)  * 0.05
 
     def reset(self, random=True, many_ligands =True):
         if many_ligands and self.rligands != None and self.use_random:
@@ -148,7 +148,7 @@ class LactamaseDocking(gym.Env):
             start_atom = copy.deepcopy(self.atom_center)
 
         if random:
-            x,y,z, = self.random_space_init.sample().flatten().ravel()  * 0.1
+            x,y,z, = self.random_space_init.sample().flatten().ravel()  * 0.25
             x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 1.0
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
