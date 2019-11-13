@@ -32,42 +32,41 @@ if __name__ == '__main__':
 
     # Create log dir
 
-    register_policy('3dvoxel', CustomPolicy)
     # Create and wrap the environment
     args = getargs()
     # print(args)
     #
-    env = VecFrameStack(VecNormalize(DummyVecEnv([lambda: LactamaseDocking(config)] * args.p)), 3)
-    model = PPO2('3dvoxel', env, verbose=2, tensorboard_log="tensorlogs/")
+    env = VecNormalize(SubprocVecEnv([lambda: LactamaseDocking(config)] * 4))
+    model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
     model.learn(total_timesteps=1000)
 
     
-    obs = env.reset()
-
-    fp_path = '/Users/austin/PycharmProjects/RLDock/'
-    with open('run.pml', 'w') as fp:
-        i = 0
-        with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-            cur_m = env.env_method("render")[0]
-            f.write(cur_m.toPDB())
-        fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-        fp.write(", ligand, " + str(i + 1) + "\n")
-
-        for i in range(1, 100):
-            action, _states = model.predict(obs)
-            obs, rewards, done, info = env.step(action)
-
-            print(action, rewards, done)
-            atom = env.env_method("render")[0]
-            header = atom.dump_header()
-            states.append(atom.dump_coords())
-            cur_m = atom
-
-            with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-                f.write(atom.toPDB())
-            fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-            fp.write(", ligand, " + str(i + 1) + "\n")
-            if done:
-                obs = env.reset()
+    # obs = env.reset()
+    #
+    # fp_path = '/Users/austin/PycharmProjects/RLDock/'
+    # with open('run.pml', 'w') as fp:
+    #     i = 0
+    #     with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+    #         cur_m = env.env_method("render")[0]
+    #         f.write(cur_m.toPDB())
+    #     fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+    #     fp.write(", ligand, " + str(i + 1) + "\n")
+    #
+    #     for i in range(1, 100):
+    #         action, _states = model.predict(obs)
+    #         obs, rewards, done, info = env.step(action)
+    #
+    #         print(action, rewards, done)
+    #         atom = env.env_method("render")[0]
+    #         header = atom.dump_header()
+    #         states.append(atom.dump_coords())
+    #         cur_m = atom
+    #
+    #         with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+    #             f.write(atom.toPDB())
+    #         fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+    #         fp.write(", ligand, " + str(i + 1) + "\n")
+    #         if done:
+    #             obs = env.reset()
 
     env.close()

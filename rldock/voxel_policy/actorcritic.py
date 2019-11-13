@@ -1,7 +1,8 @@
 import tensorflow as tf
-from stable_baselines.common.policies import ActorCriticPolicy
-
-from rldock.voxel_policy.utils import voxel_nature_cnn
+from stable_baselines.common.policies import ActorCriticPolicy, LstmPolicy
+from stable_baselines.common.policies import RecurrentActorCriticPolicy
+from stable_baselines.a2c.utils import linear, lstm, batch_to_seq, seq_to_batch
+from rldock.voxel_policy.utils import voxel_kdeep_paper
 
 
 # Custom MLP policy of three layers of size 128 each for the actor and 2 layers of 32 for the critic,
@@ -13,16 +14,15 @@ class CustomPolicy(ActorCriticPolicy):
         with tf.variable_scope("model", reuse=reuse):
             activ = tf.nn.relu
 
-            extracted_features = voxel_nature_cnn(self.processed_obs, **kwargs)
-            extracted_features = tf.layers.flatten(extracted_features)
+            extracted_features = voxel_kdeep_paper(self.processed_obs, **kwargs)
 
             pi_h = extracted_features
-            for i, layer_size in enumerate([128, 128, 128]):
+            for i, layer_size in enumerate([128, 128, 64]):
                 pi_h = activ(tf.layers.dense(pi_h, layer_size, name='pi_fc' + str(i)))
             pi_latent = pi_h
 
             vf_h = extracted_features
-            for i, layer_size in enumerate([32, 32]):
+            for i, layer_size in enumerate([128, 128, 64]):
                 vf_h = activ(tf.layers.dense(vf_h, layer_size, name='vf_fc' + str(i)))
             value_fn = tf.layers.dense(vf_h, 1, name='vf')
             vf_latent = vf_h
