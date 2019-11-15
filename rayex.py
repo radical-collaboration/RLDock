@@ -76,7 +76,8 @@ config['replay_proportion'] = 0.2
 config["replay_buffer_num_slots"] = 20
 config["learner_queue_size"] = 32
 config["broadcast_interval"] = 5
-
+config["grad_clip"] =  10.0,
+config["lr"] = 0.0001
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
 config["num_cpus_per_worker"] = 1
