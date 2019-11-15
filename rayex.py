@@ -75,7 +75,7 @@ config['replay_proportion'] = 0.1
 config["replay_buffer_num_slots"] = 128
 config["learner_queue_size"] = 256
 config["broadcast_interval"] = 5
-config["grad_clip"] =  10.0
+config["grad_clip"] =  1.0
 config["lr"] = 0.0001
 
 
