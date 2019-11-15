@@ -77,7 +77,7 @@ config["learner_queue_size"] = 256
 config["broadcast_interval"] = 1
 config["grad_clip"] =  1.0
 config["lr"] = 0.0001
-
+config["learner_queue_timeout"]=600
 
 
 config["num_gpus"] = args.ngpu # used for trainer process
