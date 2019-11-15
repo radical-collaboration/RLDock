@@ -96,7 +96,7 @@ class LactamaseDocking(gym.Env):
         return action
 
     def step(self, action):
-
+        print("action", action)
         action = self.get_action(action)
         action = self.decay_action(action)
         self.trans[0] += action[0]
