@@ -126,7 +126,7 @@ class LactamaseDocking(gym.Env):
 
         if self.next_exit:
             self.next_exit = False
-            return (None, None, True, {})
+            return self.get_obs(), reward, True, {}
 
         if reset:
             self.next_exit = True

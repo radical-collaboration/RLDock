@@ -117,6 +117,26 @@ def squeeze_module(image, sx, ex1, ex2, p, sc, ec):
 
     return tf.concat([layer_2, layer_3], axis=-1)
 
+import tensorflow.keras as k
+def keras_squeeze_module(incoming_layer, sx, ex1, ex2, p, sc, ec):
+    layer_1 = k.layers.Conv3D(sc, sx,  padding='SAME', strides=1, activation='relu')(incoming_layer)
+    layer_2 = k.layers.Conv3D(ec, ex1, padding='SAME', strides=1, activation='relu')(layer_1)
+    layer_3 = k.layers.Conv3D(ec, ex2, padding='SAME', strides=1, activation='relu')(layer_1)
+
+    return k.layers.Concatenate()([layer_2, layer_3])
+
+def kerasVoxelExtractor(im):
+    layer_1 = k.layers.Conv3D(96, 1, strides=2, activation='relu')(im)
+    layer_2 = keras_squeeze_module(layer_1, 1, 1, 3, 1, 16, 64)
+    layer_3 = keras_squeeze_module(layer_2, 1, 1, 3, 2, 16, 64)
+    layer_4 = keras_squeeze_module(layer_3, 1, 1, 3, 3, 32, 128)
+    layer_5 = k.layers.MaxPool3D(2, 2, 'VALID')(layer_4)
+    layer_6 = keras_squeeze_module(layer_5, 1, 1, 3, 4, 32, 128)
+    layer_7 = keras_squeeze_module(layer_6, 1, 1, 3, 5, 48, 192)
+    layer_8 = keras_squeeze_module(layer_7, 1, 1, 3, 6, 48, 192)
+    layer_9 = keras_squeeze_module(layer_8, 1, 1, 3, 7, 64, 256)
+    layer_10 = k.layers.AveragePooling3D(2, 2, 'VALID')(layer_9)
+    return k.layers.Flatten()(layer_10)
 
 '''
 https://pubs.acs.org/doi/10.1021/acs.jcim.7b00650

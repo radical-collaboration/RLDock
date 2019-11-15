@@ -1,4 +1,7 @@
-import numba
+import faulthandler
+import sys
+faulthandler.enable(file=sys.stderr, all_threads=True)
+
 from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.models.tf.fcnet_v2 import FullyConnectedNetwork
@@ -12,7 +15,7 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
-
+from rldock.voxel_policy.utils import kerasVoxelExtractor
 tf = try_import_tf()
 
 class MyKerasModel(TFModelV2):
@@ -24,13 +27,9 @@ class MyKerasModel(TFModelV2):
                                            num_outputs, model_config, name)
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
-        layer_1 = tf.keras.layers.Conv3D(
-            2,
-            4,
-            name="my_layer1",
-            activation=tf.nn.relu,
-            kernel_initializer=normc_initializer(1.0))(self.inputs)
-        layer_1 = tf.keras.layers.Flatten()(layer_1)
+
+
+        layer_1 = kerasVoxelExtractor(self.inputs)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
@@ -56,15 +55,26 @@ from ray.tune.logger import pretty_print
 
 
 from ray.rllib.models import ModelCatalog
+from argparse import ArgumentParser
+parser = ArgumentParser()
+parser.add_argument('--ngpu', type=int, default=0)
+parser.add_argument('--ncpu', type=int, default=4)
+args = parser.parse_args()
+
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 
 ray.init()
 config = impala.DEFAULT_CONFIG.copy()
-config["num_gpus"] = 0
-config["num_workers"] = 4
+config["num_gpus"] = args.ngpu # used for trainer process
+config["num_workers"] = args.ncpu
+config["num_cpus_per_worker"] = 1
+config["num_gpus_per_worker"] = 0
+config["num_cpus_for_driver"] = 1 # only used for tune.
+
 config["eager"] = False
 config['env_config'] = envconf
+# config['reuse_actors'] = True
 config['model'] = {"custom_model": 'keras_model' }
 
 trainer = impala.ImpalaTrainer(config=config, env=LactamaseDocking)
@@ -74,7 +84,9 @@ trainer = impala.ImpalaTrainer(config=config, env=LactamaseDocking)
 for i in range(1000):
    # Perform one iteration of training the policy with PPO
    result = trainer.train()
-   print(pretty_print(result))
+
+   if i % 3 == 0:
+       print(pretty_print(result))
 
    if i % 100 == 0:
        checkpoint = trainer.save()
