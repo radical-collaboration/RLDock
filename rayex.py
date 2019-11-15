@@ -107,7 +107,7 @@ for i in range(1000):
    # Perform one iteration of training the policy with PPO
    result = trainer.train()
 
-   if i % 3 == 0:
+   if i % 1 == 0:
        print(pretty_print(result))
 
    if i % 100 == 0:
