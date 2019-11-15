@@ -67,17 +67,19 @@ ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 ray.init()
 config = impala.DEFAULT_CONFIG.copy()
 config['sample_batch_size'] = 62
-config['train_batch_size'] = 496
-
-config["num_data_loader_buffers"] =  4
-config["minibatch_buffer_size"] =  4
-config["num_sgd_iter"] = 4
-config['replay_proportion'] = 0.2
-config["replay_buffer_num_slots"] = 20
-config["learner_queue_size"] = 32
+config['train_batch_size'] = 310
+config["num_data_loader_buffers"] = 1
+config["minibatch_buffer_size"] =  1
+config["num_sgd_iter"] = 1
+config['replay_proportion'] = 0.1
+config["replay_buffer_num_slots"] = 128
+config["learner_queue_size"] = 256
 config["broadcast_interval"] = 5
 config["grad_clip"] =  10.0
 config["lr"] = 0.0001
+
+
+
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
 config["num_cpus_per_worker"] = 1
