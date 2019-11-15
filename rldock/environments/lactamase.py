@@ -68,6 +68,7 @@ class LactamaseDocking(gym.Env):
         self.steps = 0
         self.cur_reward_sum = 0
         self.name = ""
+        self.next_exit = False
 
         self.ro_scorer = None # RosettaScorer(config['protein_wo_ligand'], self.file, self.cur_atom.toPDB()) #takes current action as input, requires reset
         self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
@@ -95,6 +96,7 @@ class LactamaseDocking(gym.Env):
         return action
 
     def step(self, action):
+
         action = self.get_action(action)
         action = self.decay_action(action)
         self.trans[0] += action[0]
@@ -121,6 +123,14 @@ class LactamaseDocking(gym.Env):
             reward += self.ro_scorer(*self.trans)
 
         self.cur_reward_sum += reward
+
+        if self.next_exit:
+            self.next_exit = False
+            return (None, None, True, {})
+
+        if reset:
+            self.next_exit = True
+
         return self.get_obs(),\
                reward,\
                reset, \
