@@ -47,7 +47,7 @@ class MyKerasModel(TFModelV2):
         value_out = tf.keras.layers.Dense(
             1,
             name="value_out",
-            activation='relu',
+            activation=None,
             kernel_initializer=normc_initializer(0.01))(layer_5v)
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
         self.register_variables(self.base_model.variables)
