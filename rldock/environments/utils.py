@@ -1,19 +1,16 @@
 from openeye import oechem, oedocking
 import numpy as np
-from rdkit import Chem
 from rdkit.Chem import AllChem
-from rldock.environments import LPDB, pdb_utiils
+from rldock.environments import LPDB
 import scipy
-# self.ligand = oechem.OEGraphMol()
-# ligand_name = oechem.oemolistream("ligand.pdb")
-# oechem.OEReadPDBFile(ligand_name, ligand)
-#     print(score.ScoreLigand(ligand))
 
-import pyrosetta.rosetta.numeric
 class RosettaScorer:
     def __init__(self, pdb_file, rf, tw):
         import pyrosetta
         from pyrosetta import teaching
+        import pyrosetta.rosetta.numeric
+        self.rose = pyrosetta.rosetta.numeric
+
         self.rf = rf
         pyrosetta.init()
         with open(pdb_file, 'r') as f:
@@ -29,11 +26,11 @@ class RosettaScorer:
         self.pose = self.ligand_maker(self.rf)
 
     def __call__(self, x_pos, y_pos, z_pos):
-        x = pyrosetta.rosetta.numeric.xyzMatrix_double_t()
+        x = self.rose.xyzMatrix_double_t()
         # #row1
         x.xx, x.xy, x.xz, x.yx, x.yy, x.yz, x.zx, x.zy, x.zz = scipy.identity(3).flatten().ravel()
 
-        v = pyrosetta.rosetta.numeric.xyzVector_double_t()
+        v = self.rose.xyzVector_double_t()
         v.x = x_pos
         v.y = y_pos
         v.z = z_pos

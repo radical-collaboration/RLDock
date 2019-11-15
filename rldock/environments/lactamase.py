@@ -6,10 +6,10 @@ from gym import spaces
 import random
 from random import randint
 from rldock.environments.LPDB import LigandPDB
-from rldock.environments.pdb_utiils import CenterPDB
-from rldock.environments.utils import Scorer, Voxelizer, RosettaScorer
+from rldock.environments.utils import Scorer, Voxelizer
 import glob
 import math
+
 # using 6DPT pdb from Lyu et al. (2019, nature)
 class LactamaseDocking(gym.Env):
     metadata = {'render.modes': ['human']}
