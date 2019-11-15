@@ -30,11 +30,12 @@ class MyKerasModel(TFModelV2):
 
 
         layer_1 = kerasVoxelExtractor(self.inputs)
-        layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_1)
+        ll = tf.keras.layers.BatchNormalization()(layer_1)
+        layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(ll)
         layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
         layer_5p = tf.keras.layers.Dense(64, activation='relu', name='ftp3')(layer_4p)
 
-        layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(layer_1)
+        layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(ll)
         layer_4v = tf.keras.layers.Dense(64, activation='relu', name='ftv2')(layer_3v)
         layer_5v = tf.keras.layers.Dense(64, activation='relu', name='ftv3')(layer_4v)
         layer_out = tf.keras.layers.Dense(
@@ -86,7 +87,7 @@ config = impala.DEFAULT_CONFIG.copy()
 config["grad_clip"] =  1.0
 config["lr"] = 0.0001
 # config["learner_queue_timeout"]=600
-config["opt_type"] =  "sgd"
+config["opt_type"] =  "adam"
 
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu

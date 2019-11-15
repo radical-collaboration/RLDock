@@ -96,7 +96,8 @@ class LactamaseDocking(gym.Env):
         return action
 
     def step(self, action):
-        print(action)
+        if random.random() < 0.2:
+            print(action)
         if np.any(np.isnan(action)):
             print(action)
             print("ERROR, nan action from get action")
