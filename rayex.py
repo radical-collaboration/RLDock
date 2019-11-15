@@ -72,9 +72,10 @@ config['train_batch_size'] = 496
 config["num_data_loader_buffers"] =  4
 config["minibatch_buffer_size"] =  4
 config["num_sgd_iter"] = 4
-config["replay_buffer_num_slots"] = 10
+config['replay_proportion'] = 0.2
+config["replay_buffer_num_slots"] = 20
 config["learner_queue_size"] = 32
-
+config["broadcast_interval"] = 5
 
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
