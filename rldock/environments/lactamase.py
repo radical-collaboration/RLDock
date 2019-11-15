@@ -206,11 +206,8 @@ class LactamaseDocking(gym.Env):
 
     def train_ligands(self):
         self.rligands = glob.glob(self.config['random_ligand_folder'] + "/*.pdb") + [self.config['ligand']]
-        print(self.rligands)
         self.names = list(map(lambda x : x.split('/')[-1].split('.')[0], self.rligands))
 
-        print(self.names)
-        print(self.rligands)
         for i in range(len(self.rligands)):
             self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
         assert(len(self.rligands) == len(self.names))
