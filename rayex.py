@@ -86,7 +86,7 @@ config = impala.DEFAULT_CONFIG.copy()
 config["grad_clip"] =  1.0
 config["lr"] = 0.0001
 # config["learner_queue_timeout"]=600
-config["opt_type"] =  "adam"
+config["opt_type"] =  "sgd"
 
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
