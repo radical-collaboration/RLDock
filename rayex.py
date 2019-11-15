@@ -83,10 +83,10 @@ config = impala.DEFAULT_CONFIG.copy()
 # config["replay_buffer_num_slots"] = 128
 # config["learner_queue_size"] = 256
 # config["broadcast_interval"] = 1
-# config["grad_clip"] =  1.0
-# config["lr"] = 0.0001
+config["grad_clip"] =  1.0
+config["lr"] = 0.0001
 # config["learner_queue_timeout"]=600
-
+config["opt_type"] =  "adam"
 
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
