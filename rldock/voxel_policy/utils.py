@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow.nn
+# import tensorflow.nn
 from stable_baselines.a2c.utils import linear, conv_to_fc
 
 
