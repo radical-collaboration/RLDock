@@ -98,7 +98,7 @@ class LactamaseDocking(gym.Env):
     def step(self, action):
         if np.any(np.isnan(action)):
             print(action)
-            print("ERROR, nan action")
+            print("ERROR, nan action from get action")
             exit()
 
         action = self.get_action(action)
@@ -135,7 +135,12 @@ class LactamaseDocking(gym.Env):
         if reset:
             self.next_exit = True
 
-        return self.get_obs(),\
+        obs = self.get_obs()
+        if np.any(np.isnan(obs)):
+            print(obs)
+            print("ERROR, nan action from get obs")
+
+        return obs,\
                reward,\
                reset, \
                {}
