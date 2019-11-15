@@ -30,13 +30,13 @@ class MyKerasModel(TFModelV2):
 
 
         layer_1 = kerasVoxelExtractor(self.inputs)
-        layer_3p = tf.keras.layers.Dense(128, actvation='relu', name='ftp')(layer_1)
-        layer_4p = tf.keras.layers.Dense(64, actvation='relu', name='ftp2')(layer_3p)
-        layer_5p = tf.keras.layers.Dense(64, actvation='relu', name='ftp3')(layer_4p)
+        layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_1)
+        layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
+        layer_5p = tf.keras.layers.Dense(64, activation='relu', name='ftp3')(layer_4p)
 
-        layer_3v = tf.keras.layers.Dense(128, actvation='relu', name='ftv')(layer_1)
-        layer_4v = tf.keras.layers.Dense(64, actvation='relu', name='ftv2')(layer_3v)
-        layer_5v = tf.keras.layers.Dense(64, actvation='relu', name='ftv3')(layer_4v)
+        layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(layer_1)
+        layer_4v = tf.keras.layers.Dense(64, activation='relu', name='ftv2')(layer_3v)
+        layer_5v = tf.keras.layers.Dense(64, activation='relu', name='ftv3')(layer_4v)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
