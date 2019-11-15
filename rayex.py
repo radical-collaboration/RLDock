@@ -70,7 +70,7 @@ config['sample_batch_size'] = 62
 config['train_batch_size'] = 496
 
 config["num_data_loader_buffers"] =  4,
-config["minibatch_buffer_size"] =  30,
+config["minibatch_buffer_size"] =  4,
 config["num_sgd_iter"] = 4,
 config["replay_buffer_num_slots"] = 10
 config["learner_queue_size"] = 32
