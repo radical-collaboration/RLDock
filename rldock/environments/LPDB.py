@@ -3,7 +3,9 @@ import copy
 from enum import Enum
 from typing import List
 import numpy as np
+import scipy
 import scipy.spatial
+import scipy.spatial.transform
 
 class JUSTIF(Enum):
     LEFT = 0
