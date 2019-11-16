@@ -125,7 +125,7 @@ def lrelu(x):
 
 def keras_squeeze_module(incoming_layer, sx, ex1, ex2, p, sc, ec):
     layer_1 = k.layers.Conv3D(sc, sx,  padding='SAME', strides=1, activation=lrelu, name="s1" + str(p))(incoming_layer)
-    layer_2 = k.layers.Conv3D(ec, ex1, padding='SAME', strides=1, activation=lrelu', name="s2" + str(p))(layer_1)
+    layer_2 = k.layers.Conv3D(ec, ex1, padding='SAME', strides=1, activation=lrelu, name="s2" + str(p))(layer_1)
     layer_3 = k.layers.Conv3D(ec, ex2, padding='SAME', strides=1, activation=lrelu, name="s3" + str(p))(layer_1)
 
     return k.layers.Concatenate(name='hi' + str(p))([layer_2, layer_3])
