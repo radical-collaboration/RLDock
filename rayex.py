@@ -68,10 +68,10 @@ from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 
-memory_story = 285.51  * 1e+9
-obj_store = 140.63 * 1e+9
-ray.init(memory=memory_story, object_store_memory=obj_store)
-
+# memory_story = 285.51  * 1e+9
+# obj_store = 140.63 * 1e+9
+# ray.init(memory=memory_story, object_store_memory=obj_store)
+ray.init()
 
 parser = ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=0)
@@ -88,10 +88,10 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
-config["num_data_loader_buffers"] = 2
-config["minibatch_buffer_size"] = 2
-config["num_sgd_iter"] = 2
-config["replay_proportion"] = 0.15
+config["num_data_loader_buffers"] = 1
+config["minibatch_buffer_size"] = 1
+config["num_sgd_iter"] = 1
+config["replay_proportion"] = 0
 config["replay_buffer_num_slots"] = 512
 config["learner_queue_size"] = 64
 config["learner_queue_timeout"] =  300

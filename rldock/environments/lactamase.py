@@ -146,12 +146,14 @@ class LactamaseDocking(gym.Env):
         return r
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
-        if reset:
-            return np.clip(np.array(score * -1), -10, 10)  * self.get_score_weight()
-        else:
-            return np.clip(np.array(score * -1), -10, 10)  * self.get_score_weight()
+        boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
 
-    def reset(self, random=0.2, many_ligands = False):
+        if reset:
+            return np.clip(np.array(score * -1), -10, 10)  * self.get_score_weight() * boost
+        else:
+            return np.clip(np.array(score * -1), -10, 10)  * self.get_score_weight() * boost
+
+    def reset(self, random=0.5, many_ligands = True):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
@@ -163,7 +165,7 @@ class LactamaseDocking(gym.Env):
         else:
             start_atom = copy.deepcopy(self.atom_center)
 
-        if random:
+        if random is not None and float(random) != 0:
             x,y,z, = self.random_space_init.sample().flatten().ravel() * float(random)
             x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * float(random)
             self.trans = [x,y,z]
@@ -199,19 +201,17 @@ class LactamaseDocking(gym.Env):
         self.use_random = False
 
     def eval_ligands(self):
-        return None
-        # self.rligands = glob.glob(self.config['random_ligand_folder_test'] + "/*.pdb")
-        # self.names = copy.deepcopy(self.rligands)
-        # self.names = list(map(lambda x : x.split('/')[-1].split('.')[0], self.rligands))
-        #
-        # for i in range(len(self.rligands)):
-        #     self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
+        self.rligands = glob.glob(self.config['random_ligand_folder_test'] + "/*.pdb")
+        self.names = copy.deepcopy(self.rligands)
+        self.names = list(map(lambda x : x.split('/')[-1].split('.')[0], self.rligands))
+
+        for i in range(len(self.rligands)):
+            self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
 
     def train_ligands(self):
-        return None
-        # self.rligands = glob.glob(self.config['random_ligand_folder'] + "/*.pdb") + [self.config['ligand']]
-        # self.names = list(map(lambda x : x.split('/')[-1].split('.')[0], self.rligands))
-        #
-        # for i in range(len(self.rligands)):
-        #     self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
-        # assert(len(self.rligands) == len(self.names))
+        self.rligands = glob.glob(self.config['random_ligand_folder'] + "/*.pdb") + [self.config['ligand']]
+        self.names = list(map(lambda x : x.split('/')[-1].split('.')[0], self.rligands))
+
+        for i in range(len(self.rligands)):
+            self.rligands[i] = self.reset_ligand(LigandPDB.parse(self.rligands[i]))
+        assert(len(self.rligands) == len(self.names))
