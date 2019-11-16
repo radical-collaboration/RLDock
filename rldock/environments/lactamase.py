@@ -122,8 +122,6 @@ class LactamaseDocking(gym.Env):
 
         reward = self.get_reward_from_ChemGauss4(oe_score, reset)
 
-        if reset and self.ro_scorer is not None:
-            reward += self.ro_scorer(*self.trans)
 
         self.cur_reward_sum += reward
 
