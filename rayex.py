@@ -68,7 +68,9 @@ from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 
-ray.init()
+memory_story = 245.51  * 1e+9
+obj_store = 180.63 * 1e+9
+ray.init(memory=memory_story, object_store_memory=obj_store)
 
 
 parser = ArgumentParser()
