@@ -100,11 +100,14 @@ config['log_level'] = 'DEBUG'
 config['broadcast_interval'] = 5
 config['max_sample_requests_in_flight_per_worker'] = 1
 config['num_data_loader_buffers'] =  4
-config['sample_batch_size'] = 320
-config['train_batch_size']  = 1600
+config['sample_batch_size'] = 320 / 2
+config['train_batch_size']  = 1600 / 4
+
+
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 6
+config['num_envs_per_worker'] = 4
+
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model' }
 config['horizon'] = envconf['max_steps']
