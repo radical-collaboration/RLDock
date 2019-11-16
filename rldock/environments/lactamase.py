@@ -103,6 +103,11 @@ class LactamaseDocking(gym.Env):
             print("ERROR, nan action from get action")
             exit()
 
+
+        if self.next_exit:
+            self.next_exit = False
+            return self.get_obs(), 0, True, {}
+
         action = self.get_action(action)
         action = self.decay_action(action)
         self.trans[0] += action[0]
@@ -130,12 +135,10 @@ class LactamaseDocking(gym.Env):
 
         self.cur_reward_sum += reward
 
-        if self.next_exit:
-            self.next_exit = False
-            return self.get_obs(), reward, True, {}
 
         if reset:
             self.next_exit = True
+            self.reset = False
 
         obs = self.get_obs()
         if np.any(np.isnan(obs)):
@@ -156,7 +159,7 @@ class LactamaseDocking(gym.Env):
         else:
             return np.clip(np.array(score * -1), -10, 10)  * 0.01
 
-    def reset(self, random=True, many_ligands =True):
+    def reset(self, random=True, many_ligands =False):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])

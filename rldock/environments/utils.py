@@ -72,13 +72,13 @@ class Voxelizer:
         from moleculekit.molecule import Molecule
         from moleculekit.tools.atomtyper import prepareProteinForAtomtyping
         self.config = config
-        prot = Molecule(pdb_structure)
-        prot = prepareProteinForAtomtyping(prot, verbose=False)
-        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
-                                                     center=config['bp_centers'], validitychecks=False)
-        nchannels = prot_vox.shape[1]
-
-        self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
+        # prot = Molecule(pdb_structure)
+        # prot = prepareProteinForAtomtyping(prot, verbose=False)
+        # prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
+        #                                              center=config['bp_centers'], validitychecks=False)
+        # nchannels = prot_vox.shape[1]
+        #
+        # self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
 
 
     def __call__(self, lig_pdb):

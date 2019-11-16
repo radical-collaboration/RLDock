@@ -1,5 +1,6 @@
 import faulthandler
 import sys
+
 faulthandler.enable(file=sys.stderr, all_threads=True)
 
 from ray.rllib.models import ModelCatalog
@@ -77,8 +78,14 @@ parser.add_argument('--ngpu', type=int, default=0)
 parser.add_argument('--ncpu', type=int, default=4)
 args = parser.parse_args()
 
-ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
+from ray.tune.registry import register_env
+
+ModelCatalog.register_custom_model("keras_model", MyKerasModel)
+def env_creator(env_config):
+    return LactamaseDocking(envconf)  # return an env instance
+
+register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
 config["num_data_loader_buffers"] = 1
@@ -87,17 +94,24 @@ config["num_sgd_iter"] = 1
 config["replay_proportion"] = 0.1,
 config["replay_buffer_num_slots"] = 256
 config["learner_queue_size"] = 64
-config["learner_queue_timeout"] =  900
+config["learner_queue_timeout"] =  300
 config['log_level'] = 'DEBUG'
 
+config['broadcast_interval'] = 5
+config['max_sample_requests_in_flight_per_worker'] = 1
+config['num_data_loader_buffers'] =  4
+config['sample_batch_size'] = 50
+config['train_batch_size']  = 1000
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 16
+config['num_envs_per_worker'] = 4
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model' }
 
-trainer = impala.ImpalaTrainer(config=config, env=LactamaseDocking)
+trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 
+policy = trainer.get_policy()
+print(policy.model.base_model.summary())
 # Can optionally call trainer.restore(path) to load a checkpoint.
 
 for i in range(1000):
