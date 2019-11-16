@@ -94,6 +94,11 @@ config = ppo.DEFAULT_CONFIG.copy()
 # config["learner_queue_timeout"]=600
 # config["opt_type"] =  "adam"
 
+config["sample_batch_size"] = 200
+# Number of timesteps collected for each SGD round
+config["train_batch_size"] = 2000
+# Total SGD batch size across all devices for SGD
+config["sgd_minibatch_size"] = 64
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
 # config["num_cpus_per_worker"] = 1
