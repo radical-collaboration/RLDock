@@ -60,7 +60,8 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 import ray
 # from ray.rllib.agents.impala import impala
-from ray.rllib.agents.ppo import appo
+# from ray.rllib.agents.ppo import appo
+from ray.rllib.agents.dqn import apex
 from ray.tune.logger import pretty_print
 
 
@@ -80,7 +81,7 @@ args = parser.parse_args()
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 
-config = appo.DEFAULT_CONFIG.copy()
+config = apex.APEX_DEFAULT_CONFIG.copy()
 # config['sample_batch_size'] = 62
 # config['train_batch_size'] = 310
 # config["num_data_loader_buffers"] = 1
@@ -111,8 +112,8 @@ config['env_config'] = envconf
 # config['reuse_actors'] = True
 config['model'] = {"custom_model": 'keras_model' }
 
-trainer = appo.APPOTrainer(config=config, env=LactamaseDocking)
-
+# trainer = appo.APPOTrainer(config=config, env=LactamaseDocking)
+trainer = apex.ApexTrainer(config=config, env=LactamaseDocking)
 # Can optionally call trainer.restore(path) to load a checkpoint.
 
 for i in range(1000):
