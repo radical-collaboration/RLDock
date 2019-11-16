@@ -30,7 +30,7 @@ class MyKerasModel(TFModelV2):
 
 
         layer_1 = kerasVoxelExtractor(self.inputs)
-        # ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
+        ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
         # layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(ll)
         # layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_1)
@@ -41,7 +41,7 @@ class MyKerasModel(TFModelV2):
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation=None,
+            activation='relu',
             kernel_initializer=normc_initializer(0.1))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
