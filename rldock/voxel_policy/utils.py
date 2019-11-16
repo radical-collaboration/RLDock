@@ -124,14 +124,14 @@ def lrelu(x):
 
 
 def keras_squeeze_module(incoming_layer, sx, ex1, ex2, p, sc, ec):
-    layer_1 = k.layers.Conv3D(sc, sx,  padding='SAME', strides=1, activation='lrelu', name="s1" + str(p))(incoming_layer)
-    layer_2 = k.layers.Conv3D(ec, ex1, padding='SAME', strides=1, activation='lrelu', name="s2" + str(p))(layer_1)
-    layer_3 = k.layers.Conv3D(ec, ex2, padding='SAME', strides=1, activation='lrelu', name="s3" + str(p))(layer_1)
+    layer_1 = k.layers.Conv3D(sc, sx,  padding='SAME', strides=1, activation=lrelu, name="s1" + str(p))(incoming_layer)
+    layer_2 = k.layers.Conv3D(ec, ex1, padding='SAME', strides=1, activation=lrelu', name="s2" + str(p))(layer_1)
+    layer_3 = k.layers.Conv3D(ec, ex2, padding='SAME', strides=1, activation=lrelu, name="s3" + str(p))(layer_1)
 
     return k.layers.Concatenate(name='hi' + str(p))([layer_2, layer_3])
 
 def kerasVoxelExtractor(im):
-    layer_1 = k.layers.Conv3D(96, 1, strides=2, activation='lrelu',name='convfirst')(im)
+    layer_1 = k.layers.Conv3D(96, 1, strides=2, activation=lrelu,name='convfirst')(im)
     layer_2 = keras_squeeze_module(layer_1, 1, 1, 3, 1, 16, 64)
     ll = k.layers.BatchNormalization()(layer_2)
     layer_3 = keras_squeeze_module(ll, 1, 1, 3, 2, 16, 64)

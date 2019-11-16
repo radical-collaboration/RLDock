@@ -16,7 +16,7 @@ from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
-from rldock.voxel_policy.utils import kerasVoxelExtractor
+from rldock.voxel_policy.utils import kerasVoxelExtractor, lrelu
 tf = try_import_tf()
 
 class MyKerasModel(TFModelV2):
@@ -34,22 +34,22 @@ class MyKerasModel(TFModelV2):
         ll = tf.keras.layers.BatchNormalization()(layer_1)
         # layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(ll)
         # layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
-        layer_5p = tf.keras.layers.Dense(64, activation='relu', name='ftp3')(ll)
+        layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(ll)
 
         # layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(ll)
         # layer_4v = tf.keras.layers.Dense(64, activation='relu', name='ftv2')(layer_3v)
-        layer_5v = tf.keras.layers.Dense(64, activation='relu', name='ftv3')(ll)
+        layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(ll)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation='tanh',
-            kernel_initializer=normc_initializer(0.01))(layer_5p)
+            activation=None,
+            kernel_initializer=normc_initializer(0.1))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
             1,
             name="value_out",
             activation=None,
-            kernel_initializer=normc_initializer(0.01))(layer_5v)
+            kernel_initializer=normc_initializer(0.1))(layer_5v)
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
         self.register_variables(self.base_model.variables)
 
@@ -96,7 +96,7 @@ config["num_workers"] = args.ncpu
 # config["num_cpus_per_worker"] = 1
 # config["num_gpus_per_worker"] = 0
 # config["num_cpus_for_driver"] = 1 # only used for tune.
-config['num_envs_per_worker'] = 2
+config['num_envs_per_worker'] = 16
 # config["eager"] = False
 config['env_config'] = envconf
 # config['reuse_actors'] = True
