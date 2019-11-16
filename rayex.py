@@ -68,8 +68,8 @@ from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 
-memory_story = 245.51  * 1e+9
-obj_store = 180.63 * 1e+9
+memory_story = 285.51  * 1e+9
+obj_store = 140.63 * 1e+9
 ray.init(memory=memory_story, object_store_memory=obj_store)
 
 
@@ -88,11 +88,11 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
-config["num_data_loader_buffers"] = 1
-config["minibatch_buffer_size"] = 1
-config["num_sgd_iter"] = 1
-config["replay_proportion"] = 0.1
-config["replay_buffer_num_slots"] = 256
+config["num_data_loader_buffers"] = 2
+config["minibatch_buffer_size"] = 2
+config["num_sgd_iter"] = 2
+config["replay_proportion"] = 0.15
+config["replay_buffer_num_slots"] = 512
 config["learner_queue_size"] = 64
 config["learner_queue_timeout"] =  300
 config['log_level'] = 'DEBUG'
@@ -100,11 +100,11 @@ config['log_level'] = 'DEBUG'
 config['broadcast_interval'] = 5
 config['max_sample_requests_in_flight_per_worker'] = 1
 config['num_data_loader_buffers'] =  4
-config['sample_batch_size'] = 50
-config['train_batch_size']  = 1000
+config['sample_batch_size'] = 320
+config['train_batch_size']  = 1600
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 4
+config['num_envs_per_worker'] = 6
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model' }
 

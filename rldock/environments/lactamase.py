@@ -61,6 +61,7 @@ class LactamaseDocking(gym.Env):
         self.trans = [0,0,0]
         self.rot   = [0,0,0]
         self.steps = 0
+        self.score_balance_weight = self.config['max_steps'] * float(np.sum([(x * x)/config['max_steps'] for x in range(1, self.config['max_steps'] + 1)]))
         self.cur_reward_sum = 0
         self.name = ""
         self.next_exit = False
@@ -141,8 +142,8 @@ class LactamaseDocking(gym.Env):
          return (self.steps > self.config['max_steps']) or (not self.check_atom_in_box())
 
     def get_score_weight(self):
-        r = (float(self.steps) / 30.0)
-        return r * 2
+        r = (float(self.steps) * float(self.steps))  / self.score_balance_weight
+        return r
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
         if reset:
