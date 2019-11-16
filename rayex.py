@@ -31,7 +31,7 @@ class MyKerasModel(TFModelV2):
 
 
         layer_1 = kerasVoxelExtractor(self.inputs)
-        ll = tf.keras.layers.BatchNormalization()(layer_1)
+        ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
         # layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(ll)
         # layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(ll)
@@ -67,6 +67,10 @@ from ray.tune.logger import pretty_print
 
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
+
+ray.init()
+
+
 parser = ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=0)
 parser.add_argument('--ncpu', type=int, default=4)
@@ -75,7 +79,6 @@ args = parser.parse_args()
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 
-ray.init()
 config = ppo.DEFAULT_CONFIG.copy()
 # config['sample_batch_size'] = 62
 # config['train_batch_size'] = 310
