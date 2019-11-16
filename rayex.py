@@ -88,21 +88,12 @@ config["replay_proportion"] = 0.1,
 config["replay_buffer_num_slots"] = 256
 config["learner_queue_size"] = 64
 config["learner_queue_timeout"] =  900
-#
-# config["sample_batch_size"] = 200
-# # Number of timesteps collected for each SGD round
-# config["train_batch_size"] = 2000
-# # Total SGD batch size across all devices for SGD
-# config["sgd_minibatch_size"] = 64
+config['log_level'] = 'DEBUG'
+
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
-# config["num_cpus_per_worker"] = 1
-# config["num_gpus_per_worker"] = 0
-# config["num_cpus_for_driver"] = 1 # only used for tune.
 config['num_envs_per_worker'] = 16
-# config["eager"] = False
 config['env_config'] = envconf
-# config['reuse_actors'] = True
 config['model'] = {"custom_model": 'keras_model' }
 
 trainer = impala.ImpalaTrainer(config=config, env=LactamaseDocking)
