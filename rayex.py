@@ -60,7 +60,8 @@ class MyKerasModel(TFModelV2):
     def value_function(self):
         return tf.reshape(self._value_out, [-1])
 import ray
-from ray.rllib.agents.impala import impala
+# from ray.rllib.agents.impala import impala
+from ray.rllib.agents.ppo import ppo
 from ray.tune.logger import pretty_print
 
 
@@ -75,7 +76,7 @@ ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 
 ray.init()
-config = impala.DEFAULT_CONFIG.copy()
+config = ppo.DEFAULT_CONFIG.copy()
 config['sample_batch_size'] = 62
 config['train_batch_size'] = 310
 config["num_data_loader_buffers"] = 1
@@ -95,13 +96,13 @@ config["num_workers"] = args.ncpu
 # config["num_cpus_per_worker"] = 1
 # config["num_gpus_per_worker"] = 0
 # config["num_cpus_for_driver"] = 1 # only used for tune.
-# config['num_envs_per_worker'] = 1
+config['num_envs_per_worker'] = 2
 # config["eager"] = False
 config['env_config'] = envconf
 # config['reuse_actors'] = True
 config['model'] = {"custom_model": 'keras_model' }
 
-trainer = impala.ImpalaTrainer(config=config, env=LactamaseDocking)
+trainer = ppo.PPOTrainer(config=config, env=LactamaseDocking)
 
 # Can optionally call trainer.restore(path) to load a checkpoint.
 
