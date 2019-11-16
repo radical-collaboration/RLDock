@@ -136,18 +136,20 @@ def keras_squeeze_module(incoming_layer, sx, ex1, ex2, p, sc, ec):
 #     return k.layers.Concatenate(name='hi' + str(p))([layer_2, layer_3])
 
 def kerasVoxelExtractor(im):
-    layer_1 = k.layers.Conv3D(96, 1, strides=2, activation=lrelu,name='convfirst')(im)
+    layer_1 = k.layers.Conv3D(64, 3, strides=2, activation=lrelu,name='convfirst')(im)
     layer_2 = keras_squeeze_module(layer_1, 1, 3, 3, 1, 16, 64)
     ll = k.layers.BatchNormalization(name='bbn0')(layer_2)
     layer_3 = keras_squeeze_module(ll, 1, 3, 3, 2, 16, 64)
-    layer_4 = keras_squeeze_module(layer_3, 1, 3, 3, 3, 32, 128)
-    layer_5 = k.layers.MaxPool3D(2, 2, 'VALID',name='maxps')(layer_4)
+    layer_4 = keras_squeeze_module(layer_3, 1, 3, 3, 3, 32, 96)
+    ll = k.layers.BatchNormalization(name='bbn0.2')(layer_4)
+    layer_5 = k.layers.MaxPool3D(2, 2, 'VALID',name='maxps')(ll)
     layer_6 = keras_squeeze_module(layer_5, 1, 3, 3, 4, 32, 128)
-    layer_7 = keras_squeeze_module(layer_6, 1, 3, 3, 5, 48, 192)
+    layer_7 = keras_squeeze_module(layer_6, 1, 3, 3, 5, 48, 128)
     ll = k.layers.BatchNormalization(name='bbn1')(layer_7)
     layer_8 = keras_squeeze_module(ll, 1, 3, 3, 6, 48, 192)
-    layer_9 = keras_squeeze_module(layer_8, 1, 3, 3, 7, 64, 256)
-    layer_10 = k.layers.AveragePooling3D(2, 2, 'VALID', name='avgps')(layer_9)
+    layer_9 = keras_squeeze_module(layer_8, 1, 3, 3, 7, 64, 128)
+    ll = k.layers.BatchNormalization(name='bbn1')(layer_9)
+    layer_10 = k.layers.AveragePooling3D(2, 2, 'VALID', name='avgps')(ll)
     return k.layers.Flatten(name='flat')(layer_10)
 
 # '''
