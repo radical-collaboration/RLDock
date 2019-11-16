@@ -140,9 +140,9 @@ def kerasVoxelExtractor(im):
     layer_6 = keras_squeeze_module(layer_5, 1, 1, 3, 4, 32, 128)
     layer_7 = keras_squeeze_module(layer_6, 1, 1, 3, 5, 48, 192)
     ll = k.layers.BatchNormalization(name='bbn1')(layer_7)
-    # layer_8 = keras_squeeze_module(ll, 1, 1, 3, 6, 48, 192)
-    # layer_9 = keras_squeeze_module(layer_8, 1, 1, 3, 7, 64, 256)
-    layer_10 = k.layers.AveragePooling3D(2, 2, 'VALID', name='avgps')(ll)
+    layer_8 = keras_squeeze_module(ll, 1, 1, 3, 6, 48, 192)
+    layer_9 = keras_squeeze_module(layer_8, 1, 1, 3, 7, 64, 256)
+    layer_10 = k.layers.AveragePooling3D(2, 2, 'VALID', name='avgps')(layer_9)
     return k.layers.Flatten(name='flat')(layer_10)
 
 # '''
