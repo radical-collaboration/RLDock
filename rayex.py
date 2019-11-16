@@ -60,7 +60,7 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 import ray
 # from ray.rllib.agents.impala import impala
-from ray.rllib.agents.ppo import ppo
+from ray.rllib.agents.ppo import appo
 from ray.tune.logger import pretty_print
 
 
@@ -80,7 +80,7 @@ args = parser.parse_args()
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 
-config = ppo.DEFAULT_CONFIG.copy()
+config = appo.DEFAULT_CONFIG.copy()
 # config['sample_batch_size'] = 62
 # config['train_batch_size'] = 310
 # config["num_data_loader_buffers"] = 1
@@ -94,12 +94,12 @@ config = ppo.DEFAULT_CONFIG.copy()
 # config["lr"] = 0.0004
 # config["learner_queue_timeout"]=600
 # config["opt_type"] =  "adam"
-
-config["sample_batch_size"] = 200
-# Number of timesteps collected for each SGD round
-config["train_batch_size"] = 2000
-# Total SGD batch size across all devices for SGD
-config["sgd_minibatch_size"] = 64
+#
+# config["sample_batch_size"] = 200
+# # Number of timesteps collected for each SGD round
+# config["train_batch_size"] = 2000
+# # Total SGD batch size across all devices for SGD
+# config["sgd_minibatch_size"] = 64
 config["num_gpus"] = args.ngpu # used for trainer process
 config["num_workers"] = args.ncpu
 # config["num_cpus_per_worker"] = 1
@@ -111,7 +111,7 @@ config['env_config'] = envconf
 # config['reuse_actors'] = True
 config['model'] = {"custom_model": 'keras_model' }
 
-trainer = ppo.PPOTrainer(config=config, env=LactamaseDocking)
+trainer = appo.APPOTrainer(config=config, env=LactamaseDocking)
 
 # Can optionally call trainer.restore(path) to load a checkpoint.
 
