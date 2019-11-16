@@ -62,6 +62,7 @@ class MyKerasModel(TFModelV2):
 import ray
 from ray.rllib.agents.impala import impala
 # from ray.rllib.agents.ppo import appo
+from ray.rllib.agents.ddpg import apex
 from ray.tune.logger import pretty_print
 
 
@@ -88,20 +89,20 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
-config["num_data_loader_buffers"] = 1
-config["minibatch_buffer_size"] = 1
-config["num_sgd_iter"] = 1
-config["replay_proportion"] = 0
-config["replay_buffer_num_slots"] = 512
-config["learner_queue_size"] = 64
-config["learner_queue_timeout"] =  300
+# config["num_data_loader_buffers"] = 1
+# config["minibatch_buffer_size"] = 1
+# config["num_sgd_iter"] = 1
+# config["replay_proportion"] = 0
+# config["replay_buffer_num_slots"] = 512
+# config["learner_queue_size"] = 64
+# config["learner_queue_timeout"] =  300
 config['log_level'] = 'DEBUG'
 
-config['broadcast_interval'] = 5
-config['max_sample_requests_in_flight_per_worker'] = 1
-config['num_data_loader_buffers'] =  4
-config['sample_batch_size'] = 320 / 2
-config['train_batch_size']  = 1600 / 4
+# config['broadcast_interval'] = 5
+# config['max_sample_requests_in_flight_per_worker'] = 1
+# config['num_data_loader_buffers'] =  4
+config['sample_batch_size'] = 160
+config['train_batch_size']  = 800
 
 
 config["num_gpus"] = args.ngpu # used for trainer process
