@@ -138,7 +138,7 @@ class LactamaseDocking(gym.Env):
 
         if reset:
             self.next_exit = True
-            self.reset = False
+            reset = False
 
         obs = self.get_obs()
         if np.any(np.isnan(obs)):
