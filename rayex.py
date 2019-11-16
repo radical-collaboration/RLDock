@@ -60,8 +60,7 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 import ray
 # from ray.rllib.agents.impala import impala
-# from ray.rllib.agents.ppo import appo
-from ray.rllib.agents.ddpg import apex
+from ray.rllib.agents.ppo import appo
 from ray.tune.logger import pretty_print
 
 
@@ -81,20 +80,14 @@ args = parser.parse_args()
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 
-config = apex.APEX_DDPG_DEFAULT_CONFIG.copy()
-# config['sample_batch_size'] = 62
-# config['train_batch_size'] = 310
-# config["num_data_loader_buffers"] = 1
-# config["minibatch_buffer_size"] =  1
-# config["num_sgd_iter"] = 2
-# config['replay_proportion'] = 0.1
-# config["replay_buffer_num_slots"] = 128
-# config["learner_queue_size"] = 256
-# # config["broadcast_interval"] = 1
-# config["grad_clip"] =  1.0
-# config["lr"] = 0.0004
-# config["learner_queue_timeout"]=600
-# config["opt_type"] =  "adam"
+config = appo.DEFAULT_CONFIG.copy()
+config["num_data_loader_buffers"] = 1
+config["minibatch_buffer_size"] = 1
+config["num_sgd_iter"] = 1
+config["replay_proportion"] = 0.1,
+config["replay_buffer_num_slots"] = 256
+config["learner_queue_size"] = 64
+config["learner_queue_timeout"] =  900
 #
 # config["sample_batch_size"] = 200
 # # Number of timesteps collected for each SGD round
@@ -112,8 +105,8 @@ config['env_config'] = envconf
 # config['reuse_actors'] = True
 config['model'] = {"custom_model": 'keras_model' }
 
-# trainer = appo.APPOTrainer(config=config, env=LactamaseDocking)
-trainer = apex.ApexDDPGTrainer(config=config, env=LactamaseDocking)
+trainer = appo.APPOTrainer(config=config, env=LactamaseDocking)
+
 # Can optionally call trainer.restore(path) to load a checkpoint.
 
 for i in range(1000):
