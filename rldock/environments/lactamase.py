@@ -147,13 +147,13 @@ class LactamaseDocking(gym.Env):
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
         boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
+        s = np.clip(np.array(score * -1), -10, 10) * boost
+        if s < 0:
+            return s * 0.01
+        if s > 0:
+            return s
 
-        if reset:
-            return np.clip(np.array(score * -1), -10, 10)  * self.get_score_weight() * boost
-        else:
-            return np.clip(np.array(score * -1), -10, 10)  * self.get_score_weight() * boost
-
-    def reset(self, random=0.5, many_ligands = True):
+    def reset(self, random=0.3, many_ligands = True):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
