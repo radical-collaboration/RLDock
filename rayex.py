@@ -1,3 +1,4 @@
+import numba
 import faulthandler
 import sys
 
@@ -33,23 +34,22 @@ class MyKerasModel(TFModelV2):
             shape=obs_space.shape, name="observations")
 
         # layer_1 = kerasVoxelExtractor(self.inputs)
-        # ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
         layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
-        layer_11 = tf.keras.layers.Conv3D(4, 5, strides=2)(layer_1)
+        layer_11 = tf.keras.layers.Conv3D(8, 6, strides=2)(layer_1)
         ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_11)
-        layer_12 = tf.keras.layers.Conv3D(2, 4, strides=1)(ll)
-        layer_13 = tf.keras.layers.Conv3D(2, 2, strides=2)(layer_12)
+        layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(ll)
+        layer_13 = tf.keras.layers.Conv3D(4, 2, strides=2)(layer_12)
         ll = tf.keras.layers.BatchNormalization(name='bbn0.3')(layer_13)
-        layer_14 = tf.keras.layers.Conv3D(2, 2, strides=1)(ll)
+        layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(ll)
 
         layer_2 = tf.keras.layers.Flatten()(layer_14)
-        layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_2)
-        layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
+        layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)
+        layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_3p)
         ll = tf.keras.layers.BatchNormalization(name='bbn0.1')(layer_4p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(ll)
 
-        layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(layer_2)
-        layer_4v = tf.keras.layers.Dense(64, activation='relu', name='ftv2')(layer_3v)
+        layer_3v = tf.keras.layers.Dense(256, activation='relu', name='ftv')(layer_2)
+        layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_3v)
         ll = tf.keras.layers.BatchNormalization(name='bbn0.7')(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(ll)
         layer_out = tf.keras.layers.Dense(
@@ -99,7 +99,7 @@ config['train_batch_size'] = 800
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 6
+config['num_envs_per_worker'] = 8
 
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
@@ -116,6 +116,6 @@ for i in range(1000):
     if i % 1 == 0:
         print(pretty_print(result))
 
-    if i % 100 == 0:
+    if i % 50 == 0:
         checkpoint = trainer.save()
         print("checkpoint saved at", checkpoint)

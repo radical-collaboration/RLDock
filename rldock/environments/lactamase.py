@@ -65,6 +65,7 @@ class LactamaseDocking(gym.Env):
         self.cur_reward_sum = 0
         self.name = ""
         self.next_exit = False
+        self.decay_value = 1.0
 
         self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
 
@@ -74,13 +75,14 @@ class LactamaseDocking(gym.Env):
 
     def align_rot(self):
         for i in range(3):
-            self.rot[i] = self.rot[i] % (2 * 3.14159265)
             if self.rot[i] < 0:
                 self.rot[i] = 2*3.14159265 + self.rot[i]
+            self.rot[i] = self.rot[i] % (2 * 3.14159265)
 
     def decay_action(self, action, just_trans=False):
         for i in range(3 if just_trans else len(action)):
-            action[i] *= math.pow(self.config['decay'], self.steps)
+            action[i] *= self.decay_v
+        self.decay_v = max(0, self.decay_v - self.config['decay'])
         return action
 
     def get_action(self, action):
@@ -153,7 +155,7 @@ class LactamaseDocking(gym.Env):
         if s > 0:
             return s
 
-    def reset(self, random=0.3, many_ligands = True):
+    def reset(self, random=0.4, many_ligands = False):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
@@ -182,6 +184,8 @@ class LactamaseDocking(gym.Env):
         self.last_score = self.oe_scorer(self.cur_atom.toPDB())
         self.steps = 0
         self.cur_reward_sum=0
+        self.next_exit = False
+        self.decay_v = 1.0
         return self.get_obs()
 
     def get_obs(self):
