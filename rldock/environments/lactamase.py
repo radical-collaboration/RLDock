@@ -190,7 +190,6 @@ class LactamaseDocking(gym.Env):
 
     def get_obs(self):
         x= self.voxelizer(self.cur_atom.toPDB()).squeeze(0)
-        print("OBS", x.shape)
         return x
 
     def render(self, mode='human'):

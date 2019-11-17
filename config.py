@@ -10,7 +10,7 @@ config = {
     'bp_min' : [ 10.81699991,  -2.4230001 , -36.79400158],
     'bp_max' : [ 29.96999884,  17.09099936, -15.99400043],
     'voxelsize' : 0.5,
-    'output_size' : (40,40,42,8),
+    'output_size' : (39,40,42,8),
     'max_steps' : 100,
     'decay' : 0.01, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
