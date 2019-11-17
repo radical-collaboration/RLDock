@@ -2,22 +2,23 @@ import faulthandler
 import sys
 
 faulthandler.enable(file=sys.stderr, all_threads=True)
+import ray
+from ray.rllib.agents.impala import impala
+# from ray.rllib.agents.ppo import appo
+from ray.tune.logger import pretty_print
 
 from ray.rllib.models import ModelCatalog
-from ray.rllib.models.tf.tf_modelv2 import TFModelV2
-from ray.rllib.models.tf.fcnet_v2 import FullyConnectedNetwork
+from argparse import ArgumentParser
 
-from rldock.environments.lactamase import LactamaseDocking
 from config import config as envconf
 
-import ray
-from ray import tune
-from ray.rllib.models import ModelCatalog
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
-from rldock.voxel_policy.utils import kerasVoxelExtractor, lrelu
+from rldock.voxel_policy.utils import lrelu
+
 tf = try_import_tf()
+
 
 class MyKerasModel(TFModelV2):
     """Custom model for policy gradient algorithms."""
@@ -29,14 +30,15 @@ class MyKerasModel(TFModelV2):
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
 
-
-        layer_1 = kerasVoxelExtractor(self.inputs)
+        # layer_1 = kerasVoxelExtractor(self.inputs)
         # ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
-        layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_1)
+        layer_1 = tf.keras.layers.Conv2D(2, 1)(self.inputs)
+        layer_2 = tf.keras.layers.flatten()(layer_1)
+        layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_2)
         layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
 
-        layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(layer_1)
+        layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(layer_2)
         layer_4v = tf.keras.layers.Dense(64, activation='relu', name='ftv2')(layer_3v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
         layer_out = tf.keras.layers.Dense(
@@ -59,19 +61,12 @@ class MyKerasModel(TFModelV2):
 
     def value_function(self):
         return tf.reshape(self._value_out, [-1])
-import ray
-from ray.rllib.agents.impala import impala
-# from ray.rllib.agents.ppo import appo
-from ray.rllib.agents.ddpg import apex
-from ray.tune.logger import pretty_print
 
-
-from ray.rllib.models import ModelCatalog
-from argparse import ArgumentParser
 
 # memory_story = 285.51  * 1e+9
 # obj_store = 140.63 * 1e+9
 # ray.init(memory=memory_story, object_store_memory=obj_store)
+
 ray.init()
 
 parser = ArgumentParser()
@@ -79,53 +74,37 @@ parser.add_argument('--ngpu', type=int, default=0)
 parser.add_argument('--ncpu', type=int, default=4)
 args = parser.parse_args()
 
-
-from ray.tune.registry import register_env
-
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
-def env_creator(env_config):
-    return LactamaseDocking(envconf)  # return an env instance
 
-register_env("lactamase_docking", env_creator)
+# def env_creator(env_config):
+#     return LactamaseDocking(env_config)  # return an env instance
+# register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
-# config["num_data_loader_buffers"] = 1
-# config["minibatch_buffer_size"] = 1
-# config["num_sgd_iter"] = 1
-# config["replay_proportion"] = 0
-# config["replay_buffer_num_slots"] = 512
-# config["learner_queue_size"] = 64
-# config["learner_queue_timeout"] =  300
 config['log_level'] = 'DEBUG'
 
-# config['broadcast_interval'] = 5
-# config['max_sample_requests_in_flight_per_worker'] = 1
-# config['num_data_loader_buffers'] =  4
 config['sample_batch_size'] = 160
-config['train_batch_size']  = 800
+config['train_batch_size'] = 800
 
-
-config["num_gpus"] = args.ngpu # used for trainer process
+config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'keras_model' }
+config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps']
 
 trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
-# Can optionally call trainer.restore(path) to load a checkpoint.
 
 for i in range(1000):
-   # Perform one iteration of training the policy with PPO
-   result = trainer.train()
+    result = trainer.train()
 
-   if i % 1 == 0:
-       print(pretty_print(result))
+    if i % 1 == 0:
+        print(pretty_print(result))
 
-   if i % 100 == 0:
-       checkpoint = trainer.save()
-       print("checkpoint saved at", checkpoint)
+    if i % 100 == 0:
+        checkpoint = trainer.save()
+        print("checkpoint saved at", checkpoint)
