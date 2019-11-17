@@ -19,7 +19,7 @@ class LactamaseDocking(gym.Env):
         super(LactamaseDocking, self).__init__()
         self.config = config
 
-
+        self.viewer = None
         #translations that do not move center outside box
         dims = np.array(config['bp_dimension']).flatten().astype(np.float32)
         self.random_space_init = spaces.Box(low=-0.5 * dims,
@@ -80,17 +80,16 @@ class LactamaseDocking(gym.Env):
             self.rot[i] = self.rot[i] % (2 * 3.14159265)
 
     def decay_action(self, action, just_trans=False):
-        for i in range(3 if just_trans else len(action)):
-            action[i] *= math.pow((1.0 - self.config['decay']), 100)
-        # self.decay_v = max(0, self.decay_v - self.config['decay'])
+        for i in range(6):
+            action[i] *= math.pow(self.config['decay'], self.steps)
         return action
 
     def get_action(self, action):
-        # for i in range(3):
-        #     action[i] *= 1
-        # for i in [3,4,5]:
-        #     action[i] /= 1.59154
         return action
+
+    def get_reward_from_action(self, action):
+        l2 = -1 * np.sum(np.power(np.array(action),2))
+        return l2 * (self.steps * 0.001)
 
     def step(self, action):
         if np.any(np.isnan(action)):
@@ -113,18 +112,15 @@ class LactamaseDocking(gym.Env):
         self.align_rot()
         self.steps += 1
 
-
         oe_score = self.oe_scorer(self.cur_atom.toPDB())
         reset = self.decide_reset(oe_score)
 
         self.last_score = oe_score
 
-        reward = self.get_reward_from_ChemGauss4(oe_score, reset)
+        reward = self.get_reward_from_ChemGauss4(oe_score, reset) + self.get_reward_from_action(action)
 
-
+        self.last_reward = reward
         self.cur_reward_sum += reward
-
-
 
         obs = self.get_obs()
 
@@ -142,13 +138,16 @@ class LactamaseDocking(gym.Env):
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
         # boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
-        s = np.clip(np.array(score * -1), -10, 10)
-        if s < 0:
-            return s * 0.001
-        if s > 0:
-            return s
+        score = -1 * score
+        if score < -1e-10:
+            return -0.001
+        elif score < 0:
+            return 1
+        else:
+            return score
 
-    def reset(self, random=0.4, many_ligands = False):
+
+    def reset(self, random=0.1, many_ligands = False):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
@@ -172,23 +171,82 @@ class LactamaseDocking(gym.Env):
             self.rot   = [0,0,0]
             random_pos = start_atom
 
-
         self.cur_atom = random_pos
         self.last_score = self.oe_scorer(self.cur_atom.toPDB())
         self.steps = 0
         self.cur_reward_sum=0
+        self.last_reward = 0
         self.next_exit = False
         self.decay_v = 1.0
         return self.get_obs()
 
-    def get_obs(self):
-        x= self.voxelizer(self.cur_atom.toPDB()).squeeze(0)
-        # print(x.shape)
+    def get_obs(self, quantity='all'):
+        x= self.voxelizer(self.cur_atom.toPDB(), quantity=quantity).squeeze(0)
         return x
 
     def render(self, mode='human'):
-        print("Score", self.last_score, self.cur_reward_sum)
-        return self.cur_atom, self.name
+        from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import pyplot as plt
+        from matplotlib.figure import Figure
+
+        obs = (self.get_obs(quantity='ligand')[:,:,:,0]).squeeze()
+        obs1 = (self.get_obs(quantity='protein')[:,:,:,0]).squeeze()
+
+        print(obs.shape)
+        fig = plt.figure(figsize=(10, 10), dpi=100)
+        ax = fig.gca(projection='3d')
+        canvas = FigureCanvas(fig)
+
+        coords_x = []
+        coords_y = []
+        coords_z = []
+        for i in range(obs.shape[0]):
+            for j in range(obs.shape[1]):
+                for z in range(obs.shape[2]):
+                    if obs[i,j,z] == 1:
+                        coords_x.append(i)
+                        coords_y.append(j)
+                        coords_z.append(z)
+
+        coords_x1 = []
+        coords_y1 = []
+        coords_z1 = []
+        for i in range(obs.shape[0]):
+            for j in range(obs.shape[1]):
+                for z in range(obs.shape[2]):
+                    if obs1[i,j,z] == 1:
+                        coords_x1.append(i)
+                        coords_y1.append(j)
+                        coords_z1.append(z)
+
+        ax.set_title("Current step:" + str(self.steps) + ", Curr Reward" + str(self.last_reward) + ', Curr RSUm' + str(self.cur_reward_sum))
+        try:
+            ax.plot_trisurf(coords_x, coords_y, coords_z, linewidth=0.2, antialiased=True)
+            ax.plot_trisurf(coords_x1, coords_y1, coords_z1, linewidth=0.2, antialiased=True, alpha=0.5)
+
+        except:
+            pass
+
+        ax.set_xlim(0,25)
+        ax.set_ylim(0,26)
+        ax.set_zlim(0,27)
+        # fig.show()
+        canvas.draw()  # draw the canvas, cache the renderer
+        width , height = fig.get_size_inches() * fig.get_dpi()
+        print(fig.get_size_inches())
+        img = np.fromstring(canvas.tostring_rgb(), dtype=np.uint8)
+        print(img.shape)
+        img = img.reshape(100 * 10, 100 * 10, 3)
+
+        if mode == 'rgb_array':
+            return img
+        elif mode == 'human':
+            from gym.envs.classic_control import rendering
+            if self.viewer is None:
+                self.viewer = rendering.SimpleImageViewer()
+            self.viewer.imshow(img)
+            return self.viewer.isopen
 
     def close(self):
         pass

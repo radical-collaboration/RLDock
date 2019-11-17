@@ -54,7 +54,7 @@ class MyKerasModel(TFModelV2):
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation='tanh',
+            activation=None,
             kernel_initializer=normc_initializer(0.1))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
@@ -92,8 +92,8 @@ register_env("lactamase_docking", env_creator)
 config = impala.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
-# config['sample_batch_size'] = 160
-# config['train_batch_size'] = 400
+config['sample_batch_size'] = 160
+config['train_batch_size'] = 400
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu

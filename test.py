@@ -40,38 +40,19 @@ if __name__ == '__main__':
     # args = getargs()
     # # print(args)
     # #
-    env = VecNormalize(DummyVecEnv([lambda: LactamaseDocking(config)] * 1))
+    env = LactamaseDocking(config)
     # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
     # model.learn(total_timesteps=3000)
 
     
     obs = env.reset()
 
-    fp_path = '/Users/austin/PycharmProjects/RLDock/'
-    with open('run.pml', 'w') as fp:
-        i = 0
-        with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-            cur_m = env.env_method("render")[0]
-            f.write(cur_m.toPDB())
-        fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-        fp.write(", ligand, " + str(i + 1) + "\n")
+    for i in range(1, 10000):
+        action = env.action_space.sample()
+        obs, rewards, done, info = env.step(action)
+        atom = env.render()
+        if done:
+            env.reset()
 
-        for i in range(1, 100):
-            action = env.action_space.sample()
-            obs, rewards, done, info = env.step(action)
-
-            print(action, rewards, done)
-            atom = env.env_method("render")[0]
-            header = atom.dump_header()
-            # states.append(atom.dump_coords())
-            cur_m = atom
-
-            with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-                f.write(atom.toPDB())
-            fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-            fp.write(", ligand, " + str(i + 1) + "\n")
-            if done:
-                obs = env.reset()
-            print("hi")
 
     env.close()

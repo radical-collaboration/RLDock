@@ -72,19 +72,26 @@ class Voxelizer:
         from moleculekit.molecule import Molecule
         from moleculekit.tools.atomtyper import prepareProteinForAtomtyping
         self.config = config
-        # prot = Molecule(pdb_structure)
-        # prot = prepareProteinForAtomtyping(prot, verbose=False)
-        # prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
-        #                                              center=config['bp_centers'], validitychecks=False)
-        # nchannels = prot_vox.shape[1]
-        #
-        # self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
+        prot = Molecule(pdb_structure)
+        prot = prepareProteinForAtomtyping(prot, verbose=False)
+        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
+                                                     center=config['bp_centers'], validitychecks=False)
+        nchannels = prot_vox.shape[1]
+
+        self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
 
 
-    def __call__(self, lig_pdb):
+    def __call__(self, lig_pdb, quantity='all'):
         slig = SmallMol(AllChem.MolFromPDBBlock(lig_pdb, sanitize=True, removeHs=False))
         lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0, voxelsize=self.config['voxelsize'], boxsize=self.config['bp_dimension'],
                                                      center=self.config['bp_centers'], validitychecks=False, method=self.config['voxel_method'])
         nchannels = lig_vox.shape[1]
-        lig_vox_t = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]])
-        return np.transpose(np.concatenate([ lig_vox_t], axis=1), (0,2,3,4,1))
+        if quantity == 'all':
+            x = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]]) + self.prot_vox_t
+        elif quantity == 'ligand':
+            x = lig_vox.transpose().reshape([1, nchannels, lig_N[0], lig_N[1], lig_N[2]])
+        else:
+            x = self.prot_vox_t
+
+
+        return np.transpose(np.concatenate([ x], axis=1), (0,2,3,4,1))

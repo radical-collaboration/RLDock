@@ -1,7 +1,7 @@
 import math
 config = {
-    'action_space_d' : (5, 5, 5),
-    'action_space_r' : (0.96, 0.96, 0.96),
+    'action_space_d' : (19.15 / 2.0, 19.51 / 2.0, 20.8 / 2.0),
+    'action_space_r' : (2 * math.pi, 2 * math.pi, 2 * math.pi),
     'protein_wo_ligand' : 'resources/lactamase_wo_lignad.pdb',
     'ligand' : 'resources/lactamase_ligand.pdb',
     'oe_box' : 'resources/lacatamase.oeb',
@@ -12,7 +12,7 @@ config = {
     'voxelsize' : 0.75,
     'output_size' : (26, 27, 28, 8), # (39,40,42,8),
     'max_steps' : 100,
-    'decay' : 0.03, # ^25 = 0.001,
+    'decay' : 0.93, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
     'random_ligand_folder_test' : 'resources/rligands_eval',
     'voxel_method' : 'C'
