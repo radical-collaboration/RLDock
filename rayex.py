@@ -17,6 +17,8 @@ from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils import lrelu
 
+from rldock.environments.lactamase import  LactamaseDocking
+
 tf = try_import_tf()
 
 
@@ -32,7 +34,7 @@ class MyKerasModel(TFModelV2):
 
         # layer_1 = kerasVoxelExtractor(self.inputs)
         # ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
-        layer_1 = tf.keras.layers.Conv2D(2, 1)(self.inputs)
+        layer_1 = tf.keras.layers.Conv3D(2, 4, strides=3)(self.inputs)
         layer_2 = tf.keras.layers.flatten()(layer_1)
         layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_2)
         layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
@@ -76,9 +78,9 @@ args = parser.parse_args()
 
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
-# def env_creator(env_config):
-#     return LactamaseDocking(env_config)  # return an env instance
-# register_env("lactamase_docking", env_creator)
+def env_creator(env_config):
+    return LactamaseDocking(env_config)  # return an env instance
+register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
