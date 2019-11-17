@@ -76,7 +76,7 @@ class MyKerasModel(TFModelV2):
 memory_story = 200.00  * 1e+9
 obj_store = 64.00 * 1e+9
 ray.init(memory=memory_story, object_store_memory=obj_store)
-ray.init()
+# ray.init()
 
 parser = ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=0)
