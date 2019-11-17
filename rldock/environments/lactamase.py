@@ -180,7 +180,7 @@ class LactamaseDocking(gym.Env):
         self.decay_v = 1.0
         return self.get_obs()
 
-    def get_obs(self, quantity='all'):
+    def get_obs(self, quantity='ligand'):
         x= self.voxelizer(self.cur_atom.toPDB(), quantity=quantity).squeeze(0)
         print("SHAPE", x.shape)
         return x
