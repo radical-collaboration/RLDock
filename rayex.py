@@ -92,8 +92,8 @@ register_env("lactamase_docking", env_creator)
 config = impala.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
-config['sample_batch_size'] = 400
-config['train_batch_size'] = 800
+# config['sample_batch_size'] = 160
+# config['train_batch_size'] = 400
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
