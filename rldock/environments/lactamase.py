@@ -142,7 +142,7 @@ class LactamaseDocking(gym.Env):
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
         # boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
-        s = np.clip(np.array(score * -1), -10, 10) * boost
+        s = np.clip(np.array(score * -1), -10, 10)
         if s < 0:
             return s * 0.001
         if s > 0:
