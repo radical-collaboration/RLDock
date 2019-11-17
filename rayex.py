@@ -39,18 +39,18 @@ class MyKerasModel(TFModelV2):
         ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_11)
         layer_12 = tf.keras.layers.Conv3D(2, 4, strides=1)(ll)
         layer_13 = tf.keras.layers.Conv3D(2, 2, strides=2)(layer_12)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_13)
+        ll = tf.keras.layers.BatchNormalization(name='bbn0.3')(layer_13)
         layer_14 = tf.keras.layers.Conv3D(2, 2, strides=1)(ll)
 
         layer_2 = tf.keras.layers.Flatten()(layer_14)
         layer_3p = tf.keras.layers.Dense(128, activation='relu', name='ftp')(layer_2)
         layer_4p = tf.keras.layers.Dense(64, activation='relu', name='ftp2')(layer_3p)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_4p)
+        ll = tf.keras.layers.BatchNormalization(name='bbn0.1')(layer_4p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(ll)
 
         layer_3v = tf.keras.layers.Dense(128, activation='relu', name='ftv')(layer_2)
         layer_4v = tf.keras.layers.Dense(64, activation='relu', name='ftv2')(layer_3v)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_4v)
+        ll = tf.keras.layers.BatchNormalization(name='bbn0.7')(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(ll)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
