@@ -235,9 +235,7 @@ class LactamaseDocking(gym.Env):
         # fig.show()
         canvas.draw()  # draw the canvas, cache the renderer
         width , height = fig.get_size_inches() * fig.get_dpi()
-        print(fig.get_size_inches())
         img = np.fromstring(canvas.tostring_rgb(), dtype=np.uint8)
-        print(img.shape)
         img = img.reshape(100 * 10, 100 * 10, 3)
 
         if mode == 'rgb_array':
