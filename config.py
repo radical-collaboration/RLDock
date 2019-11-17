@@ -15,5 +15,5 @@ config = {
     'decay' : 0.01, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
     'random_ligand_folder_test' : 'resources/rligands_eval',
-    'voxel_method' : 'numba'
+    'voxel_method' : 'C'
 }

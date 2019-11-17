@@ -1,4 +1,3 @@
-import numba
 import faulthandler
 import sys
 
