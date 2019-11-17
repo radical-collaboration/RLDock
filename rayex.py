@@ -112,7 +112,7 @@ for i in range(1000):
     result = trainer.train()
 
     if i % 1 == 0:
-        print(pretty_print(result))d
+        print(pretty_print(result))
 
     if i % 50 == 0:
         checkpoint = trainer.save()
