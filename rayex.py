@@ -35,7 +35,7 @@ class MyKerasModel(TFModelV2):
         # layer_1 = kerasVoxelExtractor(self.inputs)
         # ll = tf.keras.layers.BatchNormalization(name='bbn3')(layer_1)
         layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
-        layer_11 = tf.keras.layers.Conv3D(4, 5, strides=2)(self.inputs)
+        layer_11 = tf.keras.layers.Conv3D(4, 5, strides=2)(layer_1)
         ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_11)
         layer_12 = tf.keras.layers.Conv3D(2, 4, strides=1)(ll)
         layer_13 = tf.keras.layers.Conv3D(2, 2, strides=2)(layer_12)
