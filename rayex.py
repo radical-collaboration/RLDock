@@ -6,7 +6,6 @@ import ray
 from ray.rllib.agents.impala import impala
 # from ray.rllib.agents.ppo import appo
 from ray.tune.logger import pretty_print
-
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 
@@ -80,7 +79,7 @@ ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
-register_env("lactamase_docking", env_creator)
+ModelCatalog.register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
@@ -96,7 +95,7 @@ config['num_envs_per_worker'] = 4
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps']
 
-trainer = impala.ImpalaTrainer(config=config, env='CartPole-v0')
+trainer = impala.ImpalaTrainer(config=config, env="lactamase_docking")
 
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
