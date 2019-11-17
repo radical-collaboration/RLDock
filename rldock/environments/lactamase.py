@@ -189,7 +189,9 @@ class LactamaseDocking(gym.Env):
         return self.get_obs()
 
     def get_obs(self):
-        return self.voxelizer(self.cur_atom.toPDB()).squeeze(0)
+        x= self.voxelizer(self.cur_atom.toPDB()).squeeze(0)
+        print("OBS", x.shape)
+        return x
 
     def render(self, mode='human'):
         print("Score", self.last_score, self.cur_reward_sum)
