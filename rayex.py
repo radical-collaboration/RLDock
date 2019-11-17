@@ -10,6 +10,7 @@ from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 
 from config import config as envconf
+from ray.tune.registry import register_env
 
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
@@ -79,7 +80,7 @@ ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
-ModelCatalog.register_env("lactamase_docking", env_creator)
+register_env("lactamase_docking", env_creator)
 
 config = impala.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
