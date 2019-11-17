@@ -81,8 +81,8 @@ class LactamaseDocking(gym.Env):
 
     def decay_action(self, action, just_trans=False):
         for i in range(3 if just_trans else len(action)):
-            action[i] *= self.decay_v
-        self.decay_v = max(0, self.decay_v - self.config['decay'])
+            action[i] *= math.pow((1.0 - self.config['decay']), 100)
+        # self.decay_v = max(0, self.decay_v - self.config['decay'])
         return action
 
     def get_action(self, action):
@@ -98,10 +98,6 @@ class LactamaseDocking(gym.Env):
             print("ERROR, nan action from get action")
             exit()
 
-
-        if self.next_exit:
-            self.next_exit = False
-            return self.get_obs(), 0, True, {}
 
         action = self.get_action(action)
         action = self.decay_action(action)
@@ -129,9 +125,6 @@ class LactamaseDocking(gym.Env):
         self.cur_reward_sum += reward
 
 
-        if reset:
-            self.next_exit = True
-            reset = False
 
         obs = self.get_obs()
 
@@ -148,10 +141,10 @@ class LactamaseDocking(gym.Env):
         return r
 
     def get_reward_from_ChemGauss4(self, score, reset=False):
-        boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
+        # boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
         s = np.clip(np.array(score * -1), -10, 10) * boost
         if s < 0:
-            return s * 0.01
+            return s * 0.001
         if s > 0:
             return s
 

@@ -12,7 +12,7 @@ config = {
     'voxelsize' : 0.75,
     'output_size' : (26, 27, 28, 8), # (39,40,42,8),
     'max_steps' : 100,
-    'decay' : 0.01, # ^25 = 0.001,
+    'decay' : 0.03, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
     'random_ligand_folder_test' : 'resources/rligands_eval',
     'voxel_method' : 'C'
