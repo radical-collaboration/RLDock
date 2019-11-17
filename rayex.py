@@ -90,11 +90,11 @@ config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 
-config['env_config'] = envconf
+# config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps']
 
-trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
+trainer = impala.ImpalaTrainer(config=config, env='CartPole-v0')
 
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
