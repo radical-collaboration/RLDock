@@ -73,10 +73,10 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 
 
-memory_story = 200.00  * 1e+9
-obj_store = 64.00 * 1e+9
-ray.init(memory=memory_story, object_store_memory=obj_store)
-# ray.init()
+# memory_story = 200.00  * 1e+9
+# obj_store = 64.00 * 1e+9
+# ray.init(memory=memory_story, object_store_memory=obj_store)
+ray.init()
 
 parser = ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=0)
@@ -97,7 +97,7 @@ config['train_batch_size'] = 400
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 4
+config['num_envs_per_worker'] = 6
 
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
@@ -112,7 +112,7 @@ for i in range(1000):
     result = trainer.train()
 
     if i % 1 == 0:
-        print(pretty_print(result))
+        print(pretty_print(result))d
 
     if i % 50 == 0:
         checkpoint = trainer.save()
