@@ -97,7 +97,7 @@ config['train_batch_size'] = 800
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 6
+config['num_envs_per_worker'] = 2
 
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
