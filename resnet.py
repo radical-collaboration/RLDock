@@ -223,6 +223,8 @@ class Resnet3DBuilder(object):
                                       repetitions=r, is_first_layer=(i == 0)
                                       )(block)
             filters *= 2
+            if i == 1:
+                break
 
         # last activation
         block_output = _bn_relu(block)
