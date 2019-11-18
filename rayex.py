@@ -21,7 +21,7 @@ from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
 
 from rldock.environments.lactamase import  LactamaseDocking
-from resnet import resnet18
+from resnet import Resnet3DBuilder
 tf = try_import_tf()
 
 
@@ -38,12 +38,8 @@ class MyKerasModel(TFModelV2):
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
 
-        # layer_1 = kerasVoxelExtractor(self.inputs)
-        layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
-        layer_11 = tf.keras.layers.Conv3D(8, 6, strides=2)(layer_1)
-        layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(layer_11)
-        layer_13 = tf.keras.layers.Conv3D(4, 2, strides=2)(layer_12)
-        layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(layer_13)
+        layer_14 =  Resnet3DBuilder.build_resnet_34((26,26,26,8), 400)
+
 
         layer_2 = tf.keras.layers.Flatten()(layer_14)
         layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)

@@ -31,32 +31,33 @@ def getargs():
     parser.add_argument('-e', type=int, default=10)
     return parser.parse_args()
 
+from resnet import Resnet3DBuilder
 
 if __name__ == '__main__':
-
-    # Create log dir
-
-    # # Create and wrap the environment
-    # args = getargs()
-    # # print(args)
-    # #
-    env = DummyVecEnv([lambda: LactamaseDocking(config)])
-    envs = SubprocVecEnv([lambda: LactamaseDocking(config)] * 8)
-
-    model = PPO2(CustomPolicy, envs, verbose=2, tensorboard_log="tensorlogs/")
-    # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
-    # model.learn(total_timesteps=3000)
-
-    for i in range(10):
-        model.learn(total_timesteps=1000)
-
-        obs = env.reset()
-        for i in range(1, 200):
-            action = model.predict(obs)
-            obs, rewards, done, info = env.step(action)
-            atom = env.render()
-            if done:
-                obs = env.reset()
-
-
-    env.close()
+    rn = Resnet3DBuilder.build_resnet_34((26,26,26,8), 400)
+    # # Create log dir
+    #
+    # # # Create and wrap the environment
+    # # args = getargs()
+    # # # print(args)
+    # # #
+    # env = DummyVecEnv([lambda: LactamaseDocking(config)])
+    # envs = SubprocVecEnv([lambda: LactamaseDocking(config)] * 8)
+    #
+    # model = PPO2(CustomPolicy, envs, verbose=2, tensorboard_log="tensorlogs/")
+    # # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
+    # # model.learn(total_timesteps=3000)
+    #
+    # for i in range(10):
+    #     model.learn(total_timesteps=1000)
+    #
+    #     obs = env.reset()
+    #     for i in range(1, 200):
+    #         action = model.predict(obs)
+    #         obs, rewards, done, info = env.step(action)
+    #         atom = env.render()
+    #         if done:
+    #             obs = env.reset()
+    #
+    #
+    # env.close()
