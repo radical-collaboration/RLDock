@@ -63,6 +63,7 @@ class MyKerasModel(TFModelV2):
         model = self.base_model
 
 
+
         d = torch.load("models/resnet-34-kinetics-cpu.pth")['state_dict']
         convs = (list(filter( lambda x : "conv" in x, d.keys())))
 
@@ -86,6 +87,8 @@ class MyKerasModel(TFModelV2):
                         print(e)
                 except IndexError:
                     print("no torch", print(layer, layer.get_weights()[0].shape))
+
+        model.save_weights('my_model_weights.h5')
 
         self.register_variables(self.base_model.variables)
 
