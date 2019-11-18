@@ -205,12 +205,7 @@ class Resnet3DBuilder(object):
         """
         _handle_data_format()
         input_shape = input.shape
-        if len(input_shape) != 4:
-            raise ValueError("Input shape should be a tuple "
-                             "(conv_dim1, conv_dim2, conv_dim3, channels) "
-                             "for tensorflow as backend or "
-                             "(channels, conv_dim1, conv_dim2, conv_dim3) "
-                             "for theano as backend")
+
 
         block_fn = _get_block(block_fn)
         # first conv
