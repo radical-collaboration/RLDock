@@ -148,7 +148,7 @@ config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
 
 trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-trainer.load('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/')
+trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
