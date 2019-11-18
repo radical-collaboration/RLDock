@@ -37,7 +37,7 @@ class MyKerasModel(TFModelV2):
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
 
-        layer_14 =  Resnet3DBuilder.build_resnet_34((26,26,26,8), 400)
+        layer_14 =  Resnet3DBuilder.build_resnet_34(self.inputs, 400)
 
 
         layer_2 = tf.keras.layers.Flatten()(layer_14)

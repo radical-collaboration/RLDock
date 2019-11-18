@@ -189,7 +189,7 @@ class Resnet3DBuilder(object):
     """ResNet3D."""
 
     @staticmethod
-    def build(input_shape, num_outputs, block_fn, repetitions, reg_factor):
+    def build(input, num_outputs, block_fn, repetitions, reg_factor):
         """Instantiate a vanilla ResNet3D keras model.
 
         # Arguments
@@ -204,7 +204,8 @@ class Resnet3DBuilder(object):
             in batch) as input and returns a 1D vector (prediction) as output.
         """
         _handle_data_format()
-        if len(input_shape) != 4:
+        input_shape = input.shape
+        if len(input_shape.shape) != 4:
             raise ValueError("Input shape should be a tuple "
                              "(conv_dim1, conv_dim2, conv_dim3, channels) "
                              "for tensorflow as backend or "
@@ -212,7 +213,6 @@ class Resnet3DBuilder(object):
                              "for theano as backend")
 
         block_fn = _get_block(block_fn)
-        input = Input(shape=input_shape)
         # first conv
         conv1 = _conv_bn_relu3D(filters=64, kernel_size=(7, 7, 7),
                                 strides=(2, 2, 2),
@@ -247,8 +247,7 @@ class Resnet3DBuilder(object):
                           kernel_initializer="he_normal",
                           activation="relu")(flatten1)
 
-        model = Model(inputs=input, outputs=dense)
-        return model
+        return dense
 
     @staticmethod
     def build_resnet_18(input_shape, num_outputs, reg_factor=1e-4):
