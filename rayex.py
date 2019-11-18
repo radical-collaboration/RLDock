@@ -31,7 +31,7 @@ class MyTorchModel(TorchModelV2, nn.Module):
     def __init__(self, *args, **kwargs):
         TorchModelV2.__init__(self, *args, **kwargs)
         nn.Module.__init__(self)
-        self._hidden_layers = resnet18(num_classes=128, sample_size=26)
+        self._hidden_layers = resnet18(num_classes=128, sample_duration=26)
         self._hidden_layers.load_state_dict("models/resnet-34-kinetics-cpu.pth")
 
         self._logits = nn.Sequential(nn.ReLU(), nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, 6), nn.Sigmoid())
