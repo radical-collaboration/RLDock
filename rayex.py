@@ -31,13 +31,14 @@ class MyTorchModel(TorchModelV2, nn.Module):
     def __init__(self, *args, **kwargs):
         TorchModelV2.__init__(self, *args, **kwargs)
         nn.Module.__init__(self)
-        self._hidden_layers = resnet18(num_classes=128)
+        self._hidden_layers = resnet18(num_classes=128, sample_size=26)
         self._hidden_layers.load_state_dict("models/resnet-34-kinetics-cpu.pth")
 
         self._logits = nn.Sequential(nn.ReLU(), nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, 6), nn.Sigmoid())
         self._value_branch = nn.Sequential(nn.ReLU(), nn.Linear(128, 64), nn.ReLU(), nn.Linear(64, 1))
 
     def forward(self, input_dict, state, seq_lens):
+        obs = input_dict["obs"][:,:26, :26, :26, :3].permute((0,4,1,2,3))
         features = self._hidden_layers(input_dict["obs"])
         self._value_out = self._value_branch(features)
         return self._logits(features), state
