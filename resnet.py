@@ -256,7 +256,6 @@ class Resnet3DBuilder(object):
         m = Resnet3DBuilder.build(input_shape, num_outputs, basic_block,
                                      [3, 4, 6, 3], reg_factor=reg_factor)
 
-        weights_list = m.get_weights()
         # for i, weights in enumerate(weights_list[:9]):
         #     if i == 0:
         #         continue
