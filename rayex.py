@@ -89,12 +89,30 @@ register_env("lactamase_docking", env_creator)
 config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
-config['sample_batch_size'] = 160
-config['train_batch_size'] = 400
+ppo_conf = {"lambda": 0.95,
+    "kl_coeff": 0.2,
+    "sgd_minibatch_size": 128,
+    "shuffle_sequences": True,
+    "num_sgd_iter": 5,
+    "lr": 1e-4,
+    "lr_schedule": None,
+    "vf_share_layers": False,
+    "vf_loss_coeff": 0.5,
+    "entropy_coeff": 0.01,
+    "entropy_coeff_schedule": None,
+    "clip_param": 0.3,
+    "vf_clip_param": 5.0,
+    "grad_clip": 10.0,
+    "kl_target": 0.01}
+
+config.update(ppo_conf)
+
+config['sample_batch_size'] = 100
+config['train_batch_size'] = 1200
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 2
+config['num_envs_per_worker'] = 1
 
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}

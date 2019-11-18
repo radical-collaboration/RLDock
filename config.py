@@ -1,6 +1,6 @@
 import math
 config = {
-    'action_space_d' : (19.15 / 2.0, 19.51 / 2.0, 20.8 / 2.0),
+    'action_space_d' : (19.15 / 10.0, 19.51 / 10.0, 20.8 / 10.0),
     'action_space_r' : (2 * math.pi, 2 * math.pi, 2 * math.pi),
     'protein_wo_ligand' : 'resources/lactamase_wo_lignad.pdb',
     'ligand' : 'resources/lactamase_ligand.pdb',
