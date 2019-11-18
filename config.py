@@ -15,5 +15,6 @@ config = {
     'decay' : 0.93, # ^25 = 0.001,
     'random_ligand_folder' :      'resources/rligands',
     'random_ligand_folder_test' : 'resources/rligands_eval',
-    'voxel_method' : 'C'
+    'voxel_method' : 'C',
+    'debug' : False
 }
