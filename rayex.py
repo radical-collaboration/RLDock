@@ -139,9 +139,9 @@ config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 1
 
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'torch_model'}
+config['model'] = {"custom_model": 'torch_model', 'use_pytorch' : True}
 config['horizon'] = envconf['max_steps'] + 2
-config["use_pytorch"] = True,
+#config["use_pytorch"] = True,
 trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 
 policy = trainer.get_policy()
