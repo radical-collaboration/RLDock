@@ -268,33 +268,7 @@ class Resnet3DBuilder(object):
         #         continue
         #     print(m.layers[i])
 
-        conv1_layer = m.layers[1]
-        print(conv1_layer)
-        print(conv1_layer.get_weights()[0].shape)
-        d = torch.load("models/resnet-34-kinetics-cpu.pth")['state_dict']
-        convs = (list(filter( lambda x : "conv" in x, d.keys())))
-        bis = (list(filter( lambda x : "bias" in x, d.keys())))
 
-        conv1_count = 1
-        for layer in m.layers:
-            if isinstance(layer, tensorflow.keras.layers.Conv3D):
-                try:
-                    py_weight = d[convs.pop(0)].permute((4, 3, 2, 1, 0)).numpy()
-                    if conv1_count == 1:
-                        print("editing weight will take a bit....")
-                        py_weight = torch.from_numpy(py_weight).repeat((1,1,1,3,1)).numpy()[:7, :7, :7, :8, :64]
-
-                    # py_bias = d['conv' + str(conv1_count) + ".weight"].numpy()
-                    print("torch", py_weight.shape)
-
-                    print(layer.get_weights()[0].shape, layer.get_weights()[1].shape)
-                    conv1_count += 1
-                    try:
-                        layer.set_weights([py_weight, layer.get_weights()[1]])
-                    except ValueError as e:
-                        print(e)
-                except IndexError:
-                    print("no torch", print(layer, layer.get_weights()[0].shape))
 
         return m
 
