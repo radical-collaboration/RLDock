@@ -41,15 +41,17 @@ if __name__ == '__main__':
     # # print(args)
     # #
     env = DummyVecEnv([lambda: LactamaseDocking(config)])
-    model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
+    envs = SubprocVecEnv([lambda: LactamaseDocking(config)] * 8)
+
+    model = PPO2(CustomPolicy, envs, verbose=2, tensorboard_log="tensorlogs/")
     # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
     # model.learn(total_timesteps=3000)
 
     for i in range(10):
-        model.learn(total_timesteps=2000)
+        model.learn(total_timesteps=1000)
 
         obs = env.reset()
-        for i in range(1, 10000):
+        for i in range(1, 200):
             action = model.predict(obs)
             obs, rewards, done, info = env.step(action)
             atom = env.render()

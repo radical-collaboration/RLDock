@@ -1,7 +1,8 @@
 import math
+discrete = 20.0
 config = {
-    'action_space_d' : (19.15 / 10.0, 19.51 / 10.0, 20.8 / 10.0),
-    'action_space_r' : (2 * math.pi, 2 * math.pi, 2 * math.pi),
+    'action_space_d' : (19.15 / discrete, 19.51 / discrete, 20.8 / discrete),
+    'action_space_r' : (2 * math.pi/ discrete, 2 * math.pi / discrete, 2 * math.pi / discrete),
     'protein_wo_ligand' : 'resources/lactamase_wo_lignad.pdb',
     'ligand' : 'resources/lactamase_ligand.pdb',
     'oe_box' : 'resources/lacatamase.oeb',
