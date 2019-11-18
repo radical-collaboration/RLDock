@@ -65,7 +65,7 @@ class MyKerasModel(TFModelV2):
             activation=None,
             kernel_initializer=normc_initializer(0.1))(layer_5v)
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
-        weights_list = self.get_weights()
+        weights_list = self.base_model.get_weights()
 
         for i, weights in enumerate(weights_list[0:9]):
             print(weights_list)
