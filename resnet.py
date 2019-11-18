@@ -277,7 +277,7 @@ class Resnet3DBuilder(object):
 
         conv1_count = 1
         for layer in m.layers:
-            if isinstance(layer, tensorflow.python.keras.layers.convolutional.Conv3D):
+            if isinstance(layer, tensorflow.keras.layers.Conv3D):
                 try:
                     py_weight = d[convs.pop(0)].permute((4, 3, 2, 1, 0)).numpy()
                     if conv1_count == 1:
