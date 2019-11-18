@@ -21,6 +21,7 @@ from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
 
 from rldock.environments.lactamase import  LactamaseDocking
+from ray.rllib.agents.a3c import a3c
 from resnet import resnet18
 # tf = try_import_tf()
 
@@ -130,7 +131,7 @@ ppo_conf = {"lambda": 0.95,
     "grad_clip": 10.0,
     "kl_target": 0.01}
 
-config.update(ppo_conf)
+# config.update(ppo_conf)
 
 config['sample_batch_size'] = 50
 config['train_batch_size'] = 200
@@ -142,8 +143,9 @@ config['num_envs_per_worker'] = 1
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'torch_model'}
 config['horizon'] = envconf['max_steps'] + 2
-#config["use_pytorch"] = True,
-trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+
+config["use_pytorch"] = True,
+trainer = a3c.A3CTrainer(config=config, env="lactamase_docking")
 
 # policy = trainer.get_policy()
 # print(policy.model.base_model.summary())
