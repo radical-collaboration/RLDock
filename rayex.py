@@ -146,8 +146,9 @@ config['num_envs_per_worker'] = 1
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
+config['opt_type']  = 'adam'
 trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-
+trainer.load('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
