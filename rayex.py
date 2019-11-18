@@ -21,79 +21,64 @@ from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
 
 from rldock.environments.lactamase import  LactamaseDocking
-from ray.rllib.agents.a3c import a3c
 from resnet import resnet18
-# tf = try_import_tf()
+tf = try_import_tf()
 
-import torch
-from torch import nn
 
-class MyTorchModel(TorchModelV2, nn.Module):
-    def __init__(self, *args, **kwargs):
-        TorchModelV2.__init__(self, *args, **kwargs)
-        nn.Module.__init__(self)
-        self._hidden_layers = resnet18(num_classes=400, sample_duration=26, sample_size=26)
-        self._hidden_layers.load_state_dict(torch.load("models/resnet-34-kinetics-cpu.pth")['state_dict'],  strict=False)
 
-        self._logits = nn.Sequential(nn.ReLU(), nn.Linear(400, 64), nn.ReLU(), nn.Linear(64, 6), nn.Sigmoid())
-        self._value_branch = nn.Sequential(nn.ReLU(), nn.Linear(400, 64), nn.ReLU(), nn.Linear(64, 1))
+
+
+class MyKerasModel(TFModelV2):
+    """Custom model for policy gradient algorithms."""
+
+    def __init__(self, obs_space, action_space, num_outputs, model_config,
+                 name):
+        super(MyKerasModel, self).__init__(obs_space, action_space,
+                                           num_outputs, model_config, name)
+        self.inputs = tf.keras.layers.Input(
+            shape=obs_space.shape, name="observations")
+
+        # layer_1 = kerasVoxelExtractor(self.inputs)
+        layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
+        layer_11 = tf.keras.layers.Conv3D(8, 6, strides=2)(layer_1)
+        layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(layer_11)
+        layer_13 = tf.keras.layers.Conv3D(4, 2, strides=2)(layer_12)
+        layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(layer_13)
+
+        layer_2 = tf.keras.layers.Flatten()(layer_14)
+        layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)
+        layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_3p)
+        layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
+
+        layer_3v = tf.keras.layers.Dense(256, activation='relu', name='ftv')(layer_2)
+        layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_3v)
+        layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
+        layer_out = tf.keras.layers.Dense(
+            num_outputs,
+            name="my_out",
+            activation='hard_sigmoid',
+            kernel_initializer=normc_initializer(0.1))(layer_5p)
+
+        value_out = tf.keras.layers.Dense(
+            1,
+            name="value_out",
+            activation=None,
+            kernel_initializer=normc_initializer(0.1))(layer_5v)
+        self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
+        weights_list = self.get_weights()
+
+        for i, weights in enumerate(weights_list[0:9]):
+            print(weights_list)
+            self.base_model.layers[i].set_weights(weights)
+
+        self.register_variables(self.base_model.variables)
 
     def forward(self, input_dict, state, seq_lens):
-        obs = input_dict["obs"][:,:26, :26, :26, :3].permute((0,4,1,2,3))
-        features = self._hidden_layers(input_dict["obs"])
-        self._value_out = self._value_branch(features)
-        return self._logits(features), state
+        model_out, self._value_out = self.base_model(input_dict["obs"])
+        return model_out, state
 
     def value_function(self):
-        return self._value_out
-
-
-#
-# class MyKerasModel(TFModelV2):
-#     """Custom model for policy gradient algorithms."""
-#
-#     def __init__(self, obs_space, action_space, num_outputs, model_config,
-#                  name):
-#         super(MyKerasModel, self).__init__(obs_space, action_space,
-#                                            num_outputs, model_config, name)
-#         self.inputs = tf.keras.layers.Input(
-#             shape=obs_space.shape, name="observations")
-#
-#         # layer_1 = kerasVoxelExtractor(self.inputs)
-#         layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
-#         layer_11 = tf.keras.layers.Conv3D(8, 6, strides=2)(layer_1)
-#         layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(layer_11)
-#         layer_13 = tf.keras.layers.Conv3D(4, 2, strides=2)(layer_12)
-#         layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(layer_13)
-#
-#         layer_2 = tf.keras.layers.Flatten()(layer_14)
-#         layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)
-#         layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_3p)
-#         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
-#
-#         layer_3v = tf.keras.layers.Dense(256, activation='relu', name='ftv')(layer_2)
-#         layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_3v)
-#         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-#         layer_out = tf.keras.layers.Dense(
-#             num_outputs,
-#             name="my_out",
-#             activation='hard_sigmoid',
-#             kernel_initializer=normc_initializer(0.1))(layer_5p)
-#
-#         value_out = tf.keras.layers.Dense(
-#             1,
-#             name="value_out",
-#             activation=None,
-#             kernel_initializer=normc_initializer(0.1))(layer_5v)
-#         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
-#         self.register_variables(self.base_model.variables)
-#
-#     def forward(self, input_dict, state, seq_lens):
-#         model_out, self._value_out = self.base_model(input_dict["obs"])
-#         return model_out, state
-#
-#     def value_function(self):
-#         return tf.reshape(self._value_out, [-1])
+        return tf.reshape(self._value_out, [-1])
 
 
 # memory_story = 200.00  * 1e+9
@@ -106,32 +91,32 @@ parser.add_argument('--ngpu', type=int, default=0)
 parser.add_argument('--ncpu', type=int, default=4)
 args = parser.parse_args()
 
-ModelCatalog.register_custom_model("torch_model", MyTorchModel)
+ModelCatalog.register_custom_model("keras_model", MyKerasModel)
 
 def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = a3c.DEFAULT_CONFIG.copy()
+config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
-# ppo_conf = {"lambda": 0.95,
-#     "kl_coeff": 0.2,
-#     "sgd_minibatch_size": 128,
-#     "shuffle_sequences": True,
-#     "num_sgd_iter": 5,
-#     "lr": 1e-4,
-#     "lr_schedule": None,
-#     "vf_share_layers": False,
-#     "vf_loss_coeff": 0.5,
-#     "entropy_coeff": 0.01,
-#     "entropy_coeff_schedule": None,
-#     "clip_param": 0.3,
-#     "vf_clip_param": 5.0,
-#     "grad_clip": 10.0,
-#     "kl_target": 0.01}
+ppo_conf = {"lambda": 0.95,
+    "kl_coeff": 0.2,
+    "sgd_minibatch_size": 128,
+    "shuffle_sequences": True,
+    "num_sgd_iter": 5,
+    "lr": 1e-4,
+    "lr_schedule": None,
+    "vf_share_layers": False,
+    "vf_loss_coeff": 0.5,
+    "entropy_coeff": 0.01,
+    "entropy_coeff_schedule": None,
+    "clip_param": 0.3,
+    "vf_clip_param": 5.0,
+    "grad_clip": 10.0,
+    "kl_target": 0.01}
 
-# config.update(ppo_conf)
+config.update(ppo_conf)
 
 config['sample_batch_size'] = 50
 config['train_batch_size'] = 200
@@ -141,14 +126,12 @@ config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 1
 
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'torch_model'}
+config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
+trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 
-config["use_pytorch"] = True,
-trainer = a3c.A3CTrainer(config=config, env="lactamase_docking")
-
-# policy = trainer.get_policy()
-# print(policy.model.base_model.summary())
+policy = trainer.get_policy()
+print(policy.model.base_model.summary())
 
 for i in range(1000):
     result = trainer.train()
