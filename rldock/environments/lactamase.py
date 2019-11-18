@@ -80,8 +80,8 @@ class LactamaseDocking(gym.Env):
             self.rot[i] = self.rot[i] % (2 * 3.14159265)
 
     def decay_action(self, action, just_trans=False):
-        for i in range(6):
-            action[i] *= math.pow(self.config['decay'], self.steps)
+        # for i in range(6):
+        #     action[i] *= math.pow(self.config['decay'], self.steps)
         return action
 
     def get_action(self, action):
