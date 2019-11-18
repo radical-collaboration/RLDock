@@ -60,35 +60,34 @@ class MyKerasModel(TFModelV2):
             activation=None,
             kernel_initializer=normc_initializer(0.1))(layer_5v)
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
-        model = self.base_model
 
 
+        #
+        # d = torch.load("models/resnet-34-kinetics-cpu.pth")['state_dict']
+        # convs = (list(filter( lambda x : "conv" in x, d.keys())))
+        #
+        # conv1_count = 1
+        # for layer in model.layers:
+        #     if isinstance(layer, tf.keras.layers.Conv3D):
+        #         try:
+        #             py_weight = d[convs.pop(0)].permute((4, 3, 2, 1, 0)).numpy()
+        #             if conv1_count == 1:
+        #                 print("editing weight will take a bit....")
+        #                 py_weight = torch.from_numpy(py_weight).repeat((1,1,1,3,1)).numpy()[:7, :7, :7, :8, :64]
+        #
+        #             # py_bias = d['conv' + str(conv1_count) + ".weight"].numpy()
+        #             print("torch", py_weight.shape)
+        #
+        #             print(layer.get_weights()[0].shape, layer.get_weights()[1].shape)
+        #             conv1_count += 1
+        #             try:
+        #                 layer.set_weights([py_weight, layer.get_weights()[1]])
+        #             except ValueError as e:
+        #                 print(e)
+        #         except IndexError:
+        #             print("no torch", print(layer, layer.get_weights()[0].shape))
 
-        d = torch.load("models/resnet-34-kinetics-cpu.pth")['state_dict']
-        convs = (list(filter( lambda x : "conv" in x, d.keys())))
-
-        conv1_count = 1
-        for layer in model.layers:
-            if isinstance(layer, tf.keras.layers.Conv3D):
-                try:
-                    py_weight = d[convs.pop(0)].permute((4, 3, 2, 1, 0)).numpy()
-                    if conv1_count == 1:
-                        print("editing weight will take a bit....")
-                        py_weight = torch.from_numpy(py_weight).repeat((1,1,1,3,1)).numpy()[:7, :7, :7, :8, :64]
-
-                    # py_bias = d['conv' + str(conv1_count) + ".weight"].numpy()
-                    print("torch", py_weight.shape)
-
-                    print(layer.get_weights()[0].shape, layer.get_weights()[1].shape)
-                    conv1_count += 1
-                    try:
-                        layer.set_weights([py_weight, layer.get_weights()[1]])
-                    except ValueError as e:
-                        print(e)
-                except IndexError:
-                    print("no torch", print(layer, layer.get_weights()[0].shape))
-
-        model.save_weights('my_model_weights.h5')
+        self.base_model.load_weights('my_model_weights.h5')
 
         self.register_variables(self.base_model.variables)
 
