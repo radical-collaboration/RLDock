@@ -112,24 +112,24 @@ def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = ppo.DEFAULT_CONFIG.copy()
+config = a3c.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
-ppo_conf = {"lambda": 0.95,
-    "kl_coeff": 0.2,
-    "sgd_minibatch_size": 128,
-    "shuffle_sequences": True,
-    "num_sgd_iter": 5,
-    "lr": 1e-4,
-    "lr_schedule": None,
-    "vf_share_layers": False,
-    "vf_loss_coeff": 0.5,
-    "entropy_coeff": 0.01,
-    "entropy_coeff_schedule": None,
-    "clip_param": 0.3,
-    "vf_clip_param": 5.0,
-    "grad_clip": 10.0,
-    "kl_target": 0.01}
+# ppo_conf = {"lambda": 0.95,
+#     "kl_coeff": 0.2,
+#     "sgd_minibatch_size": 128,
+#     "shuffle_sequences": True,
+#     "num_sgd_iter": 5,
+#     "lr": 1e-4,
+#     "lr_schedule": None,
+#     "vf_share_layers": False,
+#     "vf_loss_coeff": 0.5,
+#     "entropy_coeff": 0.01,
+#     "entropy_coeff_schedule": None,
+#     "clip_param": 0.3,
+#     "vf_clip_param": 5.0,
+#     "grad_clip": 10.0,
+#     "kl_target": 0.01}
 
 # config.update(ppo_conf)
 
