@@ -16,7 +16,7 @@ from ray.tune.registry import register_env
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
-from rldock.voxel_policy.utils import lrelu
+from rldock.voxel_policy.utils_tf2 import lrelu
 
 from rldock.environments.lactamase import  LactamaseDocking
 
@@ -36,22 +36,18 @@ class MyKerasModel(TFModelV2):
         # layer_1 = kerasVoxelExtractor(self.inputs)
         layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
         layer_11 = tf.keras.layers.Conv3D(8, 6, strides=2)(layer_1)
-        ll = tf.layers.batch_normalization(layer_11, training=input_dict["is_training"])
-        layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(ll)
+        layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(layer_11)
         layer_13 = tf.keras.layers.Conv3D(4, 2, strides=2)(layer_12)
-        ll = tf.layers.batch_normalization(layer_13, training=input_dict["is_training"])
-        layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(ll)
+        layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(layer_13)
 
         layer_2 = tf.keras.layers.Flatten()(layer_14)
         layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)
         layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_3p)
-        ll = tf.layers.batch_normalization(layer_4p, training=input_dict["is_training"])
-        layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(ll)
+        layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
 
         layer_3v = tf.keras.layers.Dense(256, activation='relu', name='ftv')(layer_2)
         layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_3v)
-        ll = tf.layers.batch_normalization(layer_4v, training=input_dict["is_training"])
-        layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(ll)
+        layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
