@@ -67,8 +67,8 @@ class MyKerasModel(TFModelV2):
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
         weights_list = self.base_model.get_weights()
 
-        for i, weights in enumerate(weights_list[0:9]):
-            print(weights_list)
+        for i, weights in enumerate(weights_list[1:9]):
+            print(weights.shape)
             self.base_model.layers[i].set_weights(weights)
 
         self.register_variables(self.base_model.variables)
