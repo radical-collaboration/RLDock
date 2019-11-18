@@ -16,14 +16,12 @@ from ray.tune.registry import register_env
 
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
-from ray.rllib.models.torch.torch_modelv2 import TorchModelV2
 from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
 
 from rldock.environments.lactamase import  LactamaseDocking
 from resnet import Resnet3DBuilder
 tf = try_import_tf()
-import torch
 
 
 
@@ -152,6 +150,19 @@ trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
+
+
+tune.run(
+    "PPO",
+    stop={"episode_reward_mean": 200},
+    config={
+        "env": "CartPole-v0",
+        "num_gpus": 0,
+        "num_workers": 1,
+        "lr": tune.grid_search([0.01, 0.001, 0.0001]),
+        "eager": False,
+    },
+)
 
 for i in range(1000):
     result = trainer.train()
