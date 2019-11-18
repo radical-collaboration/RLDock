@@ -85,6 +85,10 @@ class LactamaseDocking(gym.Env):
         return action
 
     def get_action(self, action):
+        # stable baselines compat:
+        if len(action) != self.action_space.shape[0]:
+            action = np.array(action).flatten()
+
         return action
 
     def get_reward_from_action(self, action):

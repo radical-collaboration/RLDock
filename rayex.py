@@ -4,6 +4,7 @@ import sys
 faulthandler.enable(file=sys.stderr, all_threads=True)
 import ray
 from ray.rllib.agents.impala import impala
+from ray.rllib.agents.ppo import ppo
 # from ray.rllib.agents.ppo import appo
 from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
@@ -35,21 +36,21 @@ class MyKerasModel(TFModelV2):
         # layer_1 = kerasVoxelExtractor(self.inputs)
         layer_1 = tf.keras.layers.Conv3D(8, 1)(self.inputs)
         layer_11 = tf.keras.layers.Conv3D(8, 6, strides=2)(layer_1)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.2')(layer_11)
+        ll = tf.layers.batch_normalization(layer_11, training=input_dict["is_training"])
         layer_12 = tf.keras.layers.Conv3D(4, 4, strides=1)(ll)
         layer_13 = tf.keras.layers.Conv3D(4, 2, strides=2)(layer_12)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.3')(layer_13)
+        ll = tf.layers.batch_normalization(layer_13, training=input_dict["is_training"])
         layer_14 = tf.keras.layers.Conv3D(3, 2, strides=1)(ll)
 
         layer_2 = tf.keras.layers.Flatten()(layer_14)
         layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)
         layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_3p)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.1')(layer_4p)
+        ll = tf.layers.batch_normalization(layer_4p, training=input_dict["is_training"])
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(ll)
 
         layer_3v = tf.keras.layers.Dense(256, activation='relu', name='ftv')(layer_2)
         layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_3v)
-        ll = tf.keras.layers.BatchNormalization(name='bbn0.7')(layer_4v)
+        ll = tf.layers.batch_normalization(layer_4v, training=input_dict["is_training"])
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(ll)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
@@ -89,7 +90,7 @@ def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = impala.DEFAULT_CONFIG.copy()
+config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
 config['sample_batch_size'] = 160
@@ -103,7 +104,7 @@ config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
 
-trainer = impala.ImpalaTrainer(config=config, env="lactamase_docking")
+trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())

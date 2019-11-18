@@ -5,7 +5,7 @@ import argparse
 import os
 
 import numpy as np
-# from stable_baselines import PPO2
+from stable_baselines import PPO2
 # from stable_baselines.bench import Monitor
 # from rldock.common.wrappers import DistributedPPO2
 from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv, VecFrameStack
@@ -14,7 +14,7 @@ from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, DummyVe
 
 from config import config
 from rldock.environments.lactamase import LactamaseDocking
-# from rldock.voxel_policy.actorcritic import CustomPolicy
+from rldock.voxel_policy.actorcritic import CustomPolicy
 
 best_mean_reward, n_steps = -np.inf, 0
 
@@ -40,19 +40,21 @@ if __name__ == '__main__':
     # args = getargs()
     # # print(args)
     # #
-    env = LactamaseDocking(config)
+    env = DummyVecEnv([lambda: LactamaseDocking(config)])
+    model = PPO2(CustomPolicy, env, verbose=2, tensorboard_log="tensorlogs/")
     # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
     # model.learn(total_timesteps=3000)
 
-    
-    obs = env.reset()
+    for i in range(10):
+        model.learn(total_timesteps=2000)
 
-    for i in range(1, 10000):
-        action = env.action_space.sample()
-        obs, rewards, done, info = env.step(action)
-        atom = env.render()
-        if done:
-            env.reset()
+        obs = env.reset()
+        for i in range(1, 10000):
+            action = model.predict(obs)
+            obs, rewards, done, info = env.step(action)
+            atom = env.render()
+            if done:
+                obs = env.reset()
 
 
     env.close()
