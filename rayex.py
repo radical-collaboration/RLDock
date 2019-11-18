@@ -122,7 +122,7 @@ ppo_conf = {"lambda": 0.95,
     "kl_coeff": 0.2,
     "sgd_minibatch_size": 128,
     "shuffle_sequences": True,
-    "num_sgd_iter": 5,
+    "num_sgd_iter": 15,
     "lr": 1e-4,
     "lr_schedule": None,
     "vf_share_layers": False,
@@ -137,7 +137,7 @@ ppo_conf = {"lambda": 0.95,
 config.update(ppo_conf)
 
 config['sample_batch_size'] = 50
-config['train_batch_size'] = 200
+config['train_batch_size'] = 400
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
@@ -146,7 +146,7 @@ config['num_envs_per_worker'] = 1
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
-config['opt_type']  = 'adam'
+
 trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 trainer.load('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/')
 policy = trainer.get_policy()
