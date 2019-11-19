@@ -81,10 +81,11 @@ def _shortcut3d(input, residual):
         == int(input.shape[CHANNEL_AXIS])
 
     shortcut = input
+    print(input)
     if stride_dim1 > 1 or stride_dim2 > 1 or stride_dim3 > 1 \
             or not equal_channels:
         shortcut = Conv3D(
-            filters=residual.shape[CHANNEL_AXIS],
+            filters=int(residual.shape[CHANNEL_AXIS]),
             kernel_size=(1, 1, 1),
             strides=(stride_dim1, stride_dim2, stride_dim3),
             kernel_initializer="he_normal", padding="valid",
