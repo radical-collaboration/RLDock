@@ -113,40 +113,40 @@ def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = ppo.DEFAULT_CONFIG.copy()
+config = impala.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
-ppo_conf = {"lambda": 0.95,
-    "kl_coeff": 0.2,
-    "sgd_minibatch_size": 512,
-    "shuffle_sequences": True,
-    "num_sgd_iter": 10,
-    "lr": 1e-4,
-    "lr_schedule": None,
-    "vf_share_layers": False,
-    "vf_loss_coeff": 0.5,
-    "entropy_coeff": 0.01,
-    "entropy_coeff_schedule": None,
-    "clip_param": 0.3,
-    "vf_clip_param": 5.0,
-    "grad_clip": 10.0,
-    "kl_target": 0.01}
-
-config.update(ppo_conf)
+# ppo_conf = {"lambda": 0.95,
+#     "kl_coeff": 0.2,
+#     "sgd_minibatch_size": 512,
+#     "shuffle_sequences": True,
+#     "num_sgd_iter": 10,
+#     "lr": 1e-4,
+#     "lr_schedule": None,
+#     "vf_share_layers": False,
+#     "vf_loss_coeff": 0.5,
+#     "entropy_coeff": 0.01,
+#     "entropy_coeff_schedule": None,
+#     "clip_param": 0.3,
+#     "vf_clip_param": 5.0,
+#     "grad_clip": 10.0,
+#     "kl_target": 0.01}
+#
+# config.update(ppo_conf)
 
 config['sample_batch_size'] = 128
-config['train_batch_size'] = 2096
+config['train_batch_size'] = 1024
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 1
+config['num_envs_per_worker'] = 2
 
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
 
-# trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
-trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
+# trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
