@@ -151,19 +151,6 @@ trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
-
-tune.run(
-    "PPO",
-    stop={"episode_reward_mean": 200},
-    config={
-        "env": "CartPole-v0",
-        "num_gpus": 0,
-        "num_workers": 1,
-        "lr": tune.grid_search([0.01, 0.001, 0.0001]),
-        "eager": False,
-    },
-)
-
 for i in range(1000):
     result = trainer.train()
 
