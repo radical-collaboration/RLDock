@@ -134,12 +134,12 @@ config['log_level'] = 'DEBUG'
 #
 # config.update(ppo_conf)
 
-config['sample_batch_size'] = 128
+config['sample_batch_size'] = 64
 config['train_batch_size'] = 1024
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 2
+config['num_envs_per_worker'] = 4
 
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
