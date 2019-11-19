@@ -12,7 +12,6 @@ from __future__ import (
 import tensorflow
 import six
 from math import ceil
-from tensorflow.keras.models import Model
 from tensorflow.keras.layers import (
     Input,
     Activation,
@@ -26,7 +25,6 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.layers import add
 from tensorflow.keras.layers import BatchNormalization
-import torch
 
 def _bn_relu(input):
     """Helper to build a BN -> relu block (by @raghakot)."""
