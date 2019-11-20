@@ -89,9 +89,6 @@ class LactamaseDocking(gym.Env):
         if len(action) != self.action_space.shape[0]:
             action = np.array(action).flatten()
 
-        action[3] = 0
-        action[4] = 0
-        action[5] = 0
         return action
 
     def l2_action(self, action):
@@ -100,8 +97,8 @@ class LactamaseDocking(gym.Env):
 
     def get_reward_from_overlap(self, obs):
         if np.max(obs[:,:,:,-1]) == 2:
-            return 1
-        return 0
+            return 1.0
+        return 0.0
 
     def step(self, action):
         if np.any(np.isnan(action)):
@@ -131,9 +128,9 @@ class LactamaseDocking(gym.Env):
 
         obs = self.get_obs()
 
-        w1 = 1,0
-        w2 = 0.001 * math.pow(self.steps, 1.5)
-        w3 = 0.1
+        w1 = float(1.0)
+        w2 = float(0.001 * math.pow(self.steps, 1.5))
+        w3 = float(0.1)
 
         reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * self.l2_action(action) - w3 * self.get_reward_from_overlap(obs)
 
@@ -161,7 +158,7 @@ class LactamaseDocking(gym.Env):
         elif score < 0:
             return 1
         else:
-            return score
+            return float(score)
 
 
     def reset(self, random=0.01, many_ligands = False):
@@ -178,7 +175,7 @@ class LactamaseDocking(gym.Env):
 
         if random is not None and float(random) != 0:
             x,y,z, = self.random_space_init.sample().flatten().ravel() * float(random)
-            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 0
+            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * float(random)
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
             random_pos = start_atom.translate(x,y,z)
