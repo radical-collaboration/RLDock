@@ -165,7 +165,7 @@ class LactamaseDocking(gym.Env):
 
     def get_state_vector(self):
         max_steps = self.steps / self.config['max_steps']
-        return [np.clip(self.last_score, -30, 30), max_steps] + np.clip(self.trans, -30, 30) + np.clip(self.rot, 0, 3 * math.pi)
+        return [float(np.clip(self.last_score, -30, 30)), max_steps] + list(np.clip(self.trans, -30, 30)) + list(np.clip(self.rot, 0, 3 * math.pi))
 
 
     def reset(self, random=0.008, many_ligands = False):

@@ -192,7 +192,7 @@ config['gamma'] = 0.998
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
-
+#config["monitor"] = True
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
