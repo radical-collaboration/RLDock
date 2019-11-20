@@ -40,7 +40,7 @@ class LactamaseDocking(gym.Env):
                                        dtype=np.float32)
 
         self.reward_range = (-10, 20)
-        self.observation_space = spaces.Box(low=0, high=1, shape=config['output_size'], #shape=(29, 24, 27, 16),
+        self.observation_space = spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
                                             dtype=np.float32)
 
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
