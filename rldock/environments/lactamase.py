@@ -94,14 +94,14 @@ class LactamaseDocking(gym.Env):
         action[5] = 0
         return action
 
-    def get_reward_from_action(self, action):
-        l2 = -1 * np.sum(np.power(np.array(action),2))
-        return l2 * (self.steps * 0.1)
+    def l2_action(self, action):
+        l2 = np.sum(np.power(np.array(action),2))
+        return float(l2)
 
     def get_reward_from_overlap(self, obs):
         if np.max(obs[:,:,:,-1]) == 2:
-            return -0.1
-        return 0.01
+            return 1
+        return 0
 
     def step(self, action):
         if np.any(np.isnan(action)):
@@ -131,7 +131,11 @@ class LactamaseDocking(gym.Env):
 
         obs = self.get_obs()
 
-        reward = self.get_reward_from_ChemGauss4(oe_score, reset) + self.get_reward_from_action(action) + self.get_reward_from_overlap(obs)
+        w1 = 1,0
+        w2 = 0.001 * math.pow(self.steps, 1.5)
+        w3 = 0.1
+
+        reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * self.l2_action(action) - w3 * self.get_reward_from_overlap(obs)
 
         self.last_reward = reward
         self.cur_reward_sum += reward
@@ -157,7 +161,7 @@ class LactamaseDocking(gym.Env):
         elif score < 0:
             return 1
         else:
-            return score * 10
+            return score
 
 
     def reset(self, random=0.01, many_ligands = False):
