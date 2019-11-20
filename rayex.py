@@ -199,12 +199,20 @@ trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
-for i in range(1000):
-    result = trainer.train()
 
-    if i % 1 == 0:
-        print(pretty_print(result))
-
-    if i % 50 == 0:
-        checkpoint = trainer.save()
-        print("checkpoint saved at", checkpoint)
+config['env'] = 'lactamase_docking'
+tune.run(
+    "PPO",
+    config=config,
+    checkpoint_freq=10,
+    checkpoint_at_end=True,
+)
+# for i in range(1000):
+#     result = trainer.train()
+#
+#     if i % 1 == 0:
+#         print(pretty_print(result))
+#
+#     if i % 50 == 0:
+#         checkpoint = trainer.save()
+#         print("checkpoint saved at", checkpoint)
