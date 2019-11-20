@@ -26,20 +26,24 @@ from rldock.environments.lactamase import  LactamaseDocking
 from resnet import Resnet3DBuilder
 tf = try_import_tf()
 
-class MyPreprocessorClass(Preprocessor):
-    def _init_shape(self, obs_space, options):
-
+class MyPreprocessorClass(TFModelV2):
+    def __init__(self, obs_space, action_space, num_outputs, model_config,
+                 name):
+        super(MyPreprocessorClass, self).__init__(obs_space, action_space,
+                                           num_outputs, model_config, name)
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
         layer_14 = Resnet3DBuilder.build_resnet_34(self.inputs, 400)
         self.model = tf.keras.models.Model(self.inputs, layer_14)
+        self.base_model.load_weights('my_model_weights.h5')
 
-        return (400)
+        self.register_variables(self.base_model.variables)
 
-    def transform(self, observation):
-        return self.model(observation)
+    def forward(self, input_dict, state, seq_lens):
+        model_out, self._value_out = self.base_model(input_dict["obs"])
+        return model_out, state
 
-ModelCatalog.register_custom_preprocessor("my_prep", MyPreprocessorClass)
+ModelCatalog.register_custom_model("my_prep", MyPreprocessorClass)
 
 
 class MyKerasModel(TFModelV2):
