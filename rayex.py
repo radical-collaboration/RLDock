@@ -154,7 +154,7 @@ config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
     "kl_coeff": 0.2,
-    "sgd_minibatch_size": 128,
+    "sgd_minibatch_size": 96,
     "shuffle_sequences": True,
     "num_sgd_iter": 10,
     "lr": 1e-4,
@@ -183,7 +183,7 @@ config.update(ppo_conf)
 # }
 
 config['sample_batch_size'] = 128
-config['train_batch_size'] = 2048
+config['train_batch_size'] = 1536
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
