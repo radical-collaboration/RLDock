@@ -160,31 +160,31 @@ ppo_conf = {"lambda": 0.95,
 
 
 
-# config.update(ppo_conf)
+config.update(ppo_conf)
 
-appo_conf = {
-    "use_kl_loss": True,
-    "kl_coeff": 0.2,
-    "kl_target": 0.01,
-    "clip_param": 0.3,
-    "lambda": 0.95,
-    "vf_loss_coeff": 0.5,
-    "entropy_coeff": 0.01,
-}
-config.update(appo_conf)
+# appo_conf = {
+#     "use_kl_loss": True,
+#     "kl_coeff": 0.2,
+#     "kl_target": 0.01,
+#     "clip_param": 0.3,
+#     "lambda": 0.95,
+#     "vf_loss_coeff": 0.5,
+#     "entropy_coeff": 0.01,
+# }
+
 config['sample_batch_size'] = 64
 config['train_batch_size'] = 512
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
-
+config['gamma'] = 0.998
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
-config['horizon'] = envconf['max_steps'] + 2
+config['horizon'] = envconf['max_steps']
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
-trainer = appo.APPOTrainer(config=config, env="lactamase_docking")
+trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
