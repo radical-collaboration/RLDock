@@ -31,9 +31,9 @@ class DeepDrug3D(TFModelV2):
         self.inputs = tf.keras.layers.Input(
             shape=obs_space.shape, name="observations")
 
-        h = tf.keras.layers.Conv3D(filters=64,  kernel_size=5,padding='valid')(self.inputs)
+        h = tf.keras.layers.Conv3D(filters=64,  kernel_size=5,padding='valid', name='notconv1')(self.inputs)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
-        h = tf.keras.layers.Conv3D(64, 3, padding='valid')(h)
+        h = tf.keras.layers.Conv3D(64, 3, padding='valid', name='conv3d_2')(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2),
             strides=None,
