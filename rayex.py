@@ -168,7 +168,7 @@ config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'deeodrug3d'}
+config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps'] + 2
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
