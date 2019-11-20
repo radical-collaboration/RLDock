@@ -6,7 +6,7 @@ from gym import spaces
 import random
 from random import randint
 from rldock.environments.LPDB import LigandPDB
-from rldock.environments.utils import Scorer, Voxelizer
+from rldock.environments.utils import Scorer, Voxelizer, l2_action
 import glob
 import math
 
@@ -18,9 +18,8 @@ class LactamaseDocking(gym.Env):
     def __init__(self, config ):
         super(LactamaseDocking, self).__init__()
         self.config = config
-
         self.viewer = None
-        #translations that do not move center outside box
+
         dims = np.array(config['bp_dimension']).flatten().astype(np.float32)
         self.random_space_init = spaces.Box(low=-0.5 * dims,
                                             high=0.5 * dims,
@@ -39,16 +38,19 @@ class LactamaseDocking(gym.Env):
                                        high=highs,
                                        dtype=np.float32)
 
-        self.reward_range = (-10, 20)
-        self.observation_space = spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
-                                            dtype=np.float32)
+
+        self.observation_space = spaces.Dict({"image" : spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
+                                                dtype=np.float32),
+                                              "state_vector" : spaces.Box(low=np.array([-30, 0,-30, -30, -3,0,0,0], dtype=np.float32),
+                                                                          high=np.array([30, 1, 30, 30, 30, 3 * math.pi, 3 * math.pi, 3 * math.pi], dtype=np.float32))
+                                            }
+                                        )
 
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
+        self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
 
-        self.last_score = 0
         self.reference_ligand = LigandPDB.parse(config['ligand'])
         self.reference_centers = self.reference_ligand.get_center()
-
         self.atom_center =  LigandPDB.parse(config['ligand'])
         self.names = []
 
@@ -61,41 +63,43 @@ class LactamaseDocking(gym.Env):
         self.trans = [0,0,0]
         self.rot   = [0,0,0]
         self.steps = 0
-        self.score_balance_weight = self.config['max_steps'] * float(np.sum([(x * x)/config['max_steps'] for x in range(1, self.config['max_steps'] + 1)]))
+        self.last_score = 0
         self.cur_reward_sum = 0
         self.name = ""
-        self.next_exit = False
-        self.decay_value = 1.0
-
-        self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
 
     def reset_ligand(self, newlig):
+        """
+        :param newlig: take a LPBD ligand and transform it to center reference
+        :return: new LPDB
+        """
         x,y,z  = newlig.get_center()
         return newlig.translate(self.reference_centers[0] - x , self.reference_centers[1] - y, self.reference_centers[2] - z)
 
     def align_rot(self):
+        """
+            Aligns interal rotations given angluar def in current version
+        """
         for i in range(3):
             if self.rot[i] < 0:
                 self.rot[i] = 2*3.14159265 + self.rot[i]
             self.rot[i] = self.rot[i] % (2 * 3.14159265)
 
-    def decay_action(self, action, just_trans=False):
-        # for i in range(6):
-        #     action[i] *= math.pow(self.config['decay'], self.steps)
-        return action
-
     def get_action(self, action):
-        # stable baselines compat:
+        """
+        Override this function if you want to modify the action in some deterministic sense...
+        :param action: action from step funtion
+        :return: action
+        """
         if len(action) != self.action_space.shape[0]:
             action = np.array(action).flatten()
-
         return action
 
-    def l2_action(self, action):
-        l2 = np.sum(np.power(np.array(action),2))
-        return float(l2)
-
-    def get_reward_from_overlap(self, obs):
+    def get_penalty_from_overlap(self, obs):
+        """
+        Evaluates from obs to create a reward value. Do not scale this value, save for weighting later in step function.
+        :param obs: obs from model, or hidden env state
+        :return: penalty for overlap, positive value
+        """
         if np.max(obs[:,:,:,-1]) == 2:
             return 1.0
         return 0.0
@@ -105,7 +109,6 @@ class LactamaseDocking(gym.Env):
             print(action)
             print("ERROR, nan action from get action")
             exit()
-
 
         action = self.get_action(action)
         action = self.decay_action(action)
@@ -125,18 +128,18 @@ class LactamaseDocking(gym.Env):
         reset = self.decide_reset(oe_score)
 
         self.last_score = oe_score
-
         obs = self.get_obs()
 
         w1 = float(1.0)
         w2 = float(0.001 * math.pow(self.steps, 1.5))
         w3 = float(0.1)
 
-        reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * self.l2_action(action) - w3 * self.get_reward_from_overlap(obs)
+        reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
 
         self.last_reward = reward
         self.cur_reward_sum += reward
 
+        obs = {'image' : obs, 'state_vector' : self.get_state_vector()}
 
         return obs,\
                reward,\
@@ -160,8 +163,12 @@ class LactamaseDocking(gym.Env):
         else:
             return float(score)
 
+    def get_state_vector(self):
+        max_steps = self.steps / self.config['max_steps']
+        return [np.clip(self.last_score, -30, 30), max_steps] + np.clip(self.trans, -30, 30) + np.clip(self.rot, 0, 3 * math.pi)
 
-    def reset(self, random=0.01, many_ligands = False):
+
+    def reset(self, random=0.008, many_ligands = False):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
@@ -185,6 +192,8 @@ class LactamaseDocking(gym.Env):
             self.rot   = [0,0,0]
             random_pos = start_atom
 
+        self.trans = [0, 0, 0]
+        self.rot = [0, 0, 0]
         self.cur_atom = random_pos
         self.last_score = self.oe_scorer(self.cur_atom.toPDB())
         self.steps = 0
@@ -192,7 +201,7 @@ class LactamaseDocking(gym.Env):
         self.last_reward = 0
         self.next_exit = False
         self.decay_v = 1.0
-        return self.get_obs()
+        return {'image' : self.get_obs(), 'state_vector' : self.get_state_vector()}
 
     def get_obs(self, quantity='all'):
         x= self.voxelizer(self.cur_atom.toPDB(), quantity=quantity).squeeze(0)

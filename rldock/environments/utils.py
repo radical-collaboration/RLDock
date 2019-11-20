@@ -63,6 +63,10 @@ class RigidLigand:
         self.ligand = LPDB.LigandPDB.parse(pdb_file)
 
 
+def l2_action(action):
+    l2 = np.sum(np.power(np.array(action),2))
+    return float(l2)
+
 from moleculekit.tools.voxeldescriptors import getVoxelDescriptors
 from moleculekit.smallmol.smallmol import SmallMol
 

@@ -28,10 +28,15 @@ class DeepDrug3D(TFModelV2):
                  name):
         super(DeepDrug3D, self).__init__(obs_space, action_space,
                                            num_outputs, model_config, name)
-        self.inputs = tf.keras.layers.Input(
-            shape=obs_space.shape, name="observations")
 
-        h = tf.keras.layers.Conv3D(filters=64,  kernel_size=5,padding='valid', name='notconv1')(self.inputs)
+        print(obs_space)
+        self.inputs = [tf.keras.layers.Input(
+            shape=(26, 27, 28, 8), name="observations"),
+
+
+        tf.keras.layers.Input(shape=(8,), name='state_vec_obs')]
+
+        h = tf.keras.layers.Conv3D(filters=64,  kernel_size=5,padding='valid', name='notconv1')(self.inputs[0])
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.Conv3D(64, 3, padding='valid', name='conv3d_2')(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
@@ -40,15 +45,20 @@ class DeepDrug3D(TFModelV2):
             padding='valid')(h)
         h = tf.keras.layers.Flatten()(h)
 
-
         layer_2 = tf.keras.layers.Flatten()(h)
-        layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_2)
+
+        stateve_i = tf.keras.layers.Dense(64, activation=lrelu)(self.inputs[1])
+        layer_2 = tf.keras.layers.Concatenate()([stateve_i, layer_2])
+
+        stateve_i = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
+        layer_2 = tf.keras.layers.Dense(256, activation=lrelu)(stateve_i)
+
+
+        layer_4p = tf.keras.layers.Dense(256, activation='relu', name='ftp2')(layer_2)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
 
-        layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_2)
+        layer_4v = tf.keras.layers.Dense(256, activation='relu', name='ftv2')(layer_2)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-
-
 
         layer_out = tf.keras.layers.Dense(
             num_outputs,
@@ -63,12 +73,11 @@ class DeepDrug3D(TFModelV2):
             kernel_initializer=normc_initializer(0.1))(layer_5v)
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
 
-        self.base_model.load_weights('deepdrug3d.h5', by_name=True)
-
         self.register_variables(self.base_model.variables)
 
     def forward(self, input_dict, state, seq_lens):
-        model_out, self._value_out = self.base_model(input_dict["obs"])
+
+        model_out, self._value_out = self.base_model([input_dict["obs"]['image'], input_dict['obs']['state_vector']])
         return model_out, state
 
     def value_function(self):
@@ -137,6 +146,7 @@ ModelCatalog.register_custom_model("deepdrug3d", DeepDrug3D)
 
 def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
+
 register_env("lactamase_docking", env_creator)
 
 config = ppo.DEFAULT_CONFIG.copy()
@@ -144,9 +154,9 @@ config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
     "kl_coeff": 0.2,
-    "sgd_minibatch_size": 256,
+    "sgd_minibatch_size": 128,
     "shuffle_sequences": True,
-    "num_sgd_iter": 5,
+    "num_sgd_iter": 10,
     "lr": 1e-4,
     "lr_schedule": None,
     "vf_share_layers": False,
@@ -172,8 +182,8 @@ config.update(ppo_conf)
 #     "entropy_coeff": 0.01,
 # }
 
-config['sample_batch_size'] = 64
-config['train_batch_size'] = 512
+config['sample_batch_size'] = 128
+config['train_batch_size'] = 2048
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
