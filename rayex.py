@@ -20,11 +20,71 @@ from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
+from ray.rllib.models.preprocessors import Preprocessor
 
 from rldock.environments.lactamase import  LactamaseDocking
 from resnet import Resnet3DBuilder
 tf = try_import_tf()
 
+class MyPreprocessorClass(Preprocessor):
+    def _init_shape(self, obs_space, options):
+
+        self.inputs = tf.keras.layers.Input(
+            shape=obs_space.shape, name="observations")
+        layer_14 = Resnet3DBuilder.build_resnet_34(self.inputs, 400)
+        self.model = tf.keras.models.Model(self.inputs, layer_14)
+
+        return (400)
+
+    def transform(self, observation):
+        return self.model(observation)
+
+ModelCatalog.register_custom_preprocessor("my_prep", MyPreprocessorClass)
+
+
+class MyKerasModel(TFModelV2):
+    """Custom model for policy gradient algorithms."""
+
+    def __init__(self, obs_space, action_space, num_outputs, model_config,
+                 name):
+        super(MyKerasModel, self).__init__(obs_space, action_space,
+                                           num_outputs, model_config, name)
+        self.inputs = tf.keras.layers.Input(
+            shape=obs_space.shape, name="observations")
+
+        layer_14 =  Resnet3DBuilder.build_resnet_34(self.inputs, 400)
+
+
+        layer_2 = tf.keras.layers.Flatten()(layer_14)
+        layer_3p = tf.keras.layers.Dense(256, activation='relu', name='ftp')(layer_2)
+        layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_3p)
+        layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
+
+        layer_3v = tf.keras.layers.Dense(256, activation='relu', name='ftv')(layer_2)
+        layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_3v)
+        layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
+        layer_out = tf.keras.layers.Dense(
+            num_outputs,
+            name="my_out",
+            activation='hard_sigmoid',
+            kernel_initializer=normc_initializer(0.1))(layer_5p)
+
+        value_out = tf.keras.layers.Dense(
+            1,
+            name="value_out",
+            activation=None,
+            kernel_initializer=normc_initializer(0.1))(layer_5v)
+        self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
+        self.base_model.load_weights('my_model_weights.h5')
+
+        self.register_variables(self.base_model.variables)
+
+    def forward(self, input_dict, state, seq_lens):
+        model_out, self._value_out = self.base_model(input_dict["obs"])
+        return model_out, state
+
+    def value_function(self):
+        return tf.reshape(self._value_out, [-1])
 
 
 class MyKerasModel(TFModelV2):
@@ -145,7 +205,7 @@ config['num_envs_per_worker'] = 4
 config['use_state_preprocessor'] = True
 
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'keras_model'}
+config['model'] = {"custom_model": 'my_prep'}
 config['horizon'] = envconf['max_steps'] + 2
 
 trainer = ddpg.DDPGTrainer(config=config, env='lactamase_docking')
