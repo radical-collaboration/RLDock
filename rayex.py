@@ -150,7 +150,7 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = ppo.DEFAULT_CONFIG.copy()
-config['log_level'] = 'DEBUG'
+config['log_level'] = 'INFO'
 
 ppo_conf = {"lambda": 0.95,
     "kl_coeff": 0.2,
@@ -201,18 +201,18 @@ print(policy.model.base_model.summary())
 
 
 config['env'] = 'lactamase_docking'
-tune.run(
-    "PPO",
-    config=config,
-    checkpoint_freq=10,
-    checkpoint_at_end=True,
-)
-# for i in range(1000):
-#     result = trainer.train()
-#
-#     if i % 1 == 0:
-#         print(pretty_print(result))
-#
-#     if i % 50 == 0:
-#         checkpoint = trainer.save()
-#         print("checkpoint saved at", checkpoint)
+# tune.run(
+#     "PPO",
+#     config=config,
+#     checkpoint_freq=10,
+#     checkpoint_at_end=True,
+# )
+for i in range(1000):
+    result = trainer.train()
+
+    if i % 1 == 0:
+        print(pretty_print(result))
+
+    if i % 50 == 0:
+        checkpoint = trainer.save()
+        print("checkpoint saved at", checkpoint)

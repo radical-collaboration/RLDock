@@ -41,8 +41,8 @@ class LactamaseDocking(gym.Env):
 
         self.observation_space = spaces.Dict({"image" : spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
                                                 dtype=np.float32),
-                                              "state_vector" : spaces.Box(low=np.array([-30, 0,-30, -30, -3,0,0,0], dtype=np.float32),
-                                                                          high=np.array([30, 1, 30, 30, 30, 3 * math.pi, 3 * math.pi, 3 * math.pi], dtype=np.float32))
+                                              "state_vector" : spaces.Box(low=np.array([-31, 0,  -30, -30, -30, 0,0,0], dtype=np.float32),
+                                                                          high=np.array([31, 1.1, 30, 30,  30 ,  3 * math.pi, 3 * math.pi, 3 * math.pi], dtype=np.float32))
                                             }
                                         )
 
