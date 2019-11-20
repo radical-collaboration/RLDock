@@ -63,7 +63,7 @@ class DeepDrug3D(TFModelV2):
             kernel_initializer=normc_initializer(0.1))(layer_5v)
         self.base_model = tf.keras.Model(self.inputs, [layer_out, value_out])
 
-        self.base_model.load_weights('my_model_weights.h5')
+        self.base_model.load_weights('deepdrug3d.h5', by_name=True)
 
         self.register_variables(self.base_model.variables)
 
@@ -133,6 +133,7 @@ parser.add_argument('--ncpu', type=int, default=4)
 args = parser.parse_args()
 
 ModelCatalog.register_custom_model("keras_model", MyKerasModel)
+ModelCatalog.register_custom_model("deepdrug3d", DeepDrug3D)
 
 def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
@@ -167,7 +168,7 @@ config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'keras_model'}
+config['model'] = {"custom_model": 'deeodrug3d'}
 config['horizon'] = envconf['max_steps'] + 2
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
