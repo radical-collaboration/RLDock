@@ -35,23 +35,28 @@ class DeepDrug3D(TFModelV2):
 
 
         tf.keras.layers.Input(shape=(8,), name='state_vec_obs')]
-
-        h = tf.keras.layers.Conv3D(filters=64,  kernel_size=5,padding='valid', name='notconv1')(self.inputs[0])
+        h = tf.keras.layers.Conv3D(filters=32,  kernel_size=5, padding='valid', name='notconv1')(self.inputs[0])
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
-        h = tf.keras.layers.Conv3D(64, 3, padding='valid', name='conv3d_2')(h)
+        h = tf.keras.layers.Conv3D(32, 3, padding='valid', name='conv3d_2')(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2),
             strides=None,
             padding='valid')(h)
+        h = tf.keras.layers.Conv3D(filters=32,  kernel_size=5, padding='valid', name='notconv1')(h)
+        h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
+        h = tf.keras.layers.Conv3D(32, 3, padding='valid', name='conv3d_2')(h)
+        h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
+        h = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2),
+            strides=None,
+            padding='valid')(h)
+
         h = tf.keras.layers.Flatten()(h)
 
-        layer_2 = tf.keras.layers.Flatten()(h)
+        layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(self.inputs[1])
+        layer_2 = tf.keras.layers.Concatenate()([layer_2, h])
 
-        stateve_i = tf.keras.layers.Dense(64, activation=lrelu)(self.inputs[1])
-        layer_2 = tf.keras.layers.Concatenate()([stateve_i, layer_2])
-
-        stateve_i = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
-        layer_2 = tf.keras.layers.Dense(256, activation=lrelu)(stateve_i)
+        layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
+        layer_2 = tf.keras.layers.Dense(256, activation=lrelu)(layer_2)
 
 
         layer_4p = tf.keras.layers.Dense(256, activation='relu', name='ftp2')(layer_2)
@@ -63,8 +68,8 @@ class DeepDrug3D(TFModelV2):
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation='hard_sigmoid',
-            kernel_initializer=normc_initializer(0.1))(layer_5p)
+            activation='sigmoid',
+            kernel_initializer=normc_initializer(0.2))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
             1,
