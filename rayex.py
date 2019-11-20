@@ -139,7 +139,7 @@ def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = appo.DEFAULT_CONFIG.copy()
+config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
