@@ -35,7 +35,7 @@ class DeepDrug3D(TFModelV2):
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.Conv3D(64, 3, padding='valid')(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
-        h = tf.keras.layers.MaxPooling3D(ool_size=(2, 2, 2),
+        h = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2),
             strides=None,
             padding='valid')(h)
         h = tf.keras.layers.Flatten()(h)
