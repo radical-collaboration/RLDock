@@ -5,7 +5,7 @@ faulthandler.enable(file=sys.stderr, all_threads=True)
 import ray
 from ray.rllib.agents.impala import impala
 from ray.rllib.agents.ppo import ppo
-# from ray.rllib.agents.ppo import appo
+from ray.rllib.agents.ppo import appo
 from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
@@ -139,14 +139,14 @@ def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = ppo.DEFAULT_CONFIG.copy()
+config = appo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
     "kl_coeff": 0.2,
     "sgd_minibatch_size": 512,
     "shuffle_sequences": True,
-    "num_sgd_iter": 10,
+    "num_sgd_iter": 5,
     "lr": 1e-4,
     "lr_schedule": None,
     "vf_share_layers": False,
@@ -158,10 +158,22 @@ ppo_conf = {"lambda": 0.95,
     "grad_clip": 10.0,
     "kl_target": 0.01}
 
-config.update(ppo_conf)
 
+
+# config.update(ppo_conf)
+
+appo_conf = {
+    "use_kl_loss": True,
+    "kl_coeff": 0.2,
+    "kl_target": 0.01,
+    "clip_param": 0.3,
+    "lambda": 0.95,
+    "vf_loss_coeff": 0.5,
+    "entropy_coeff": 0.01,
+}
+config.update(appo_conf)
 config['sample_batch_size'] = 64
-config['train_batch_size'] = 1024
+config['train_batch_size'] = 512
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
@@ -172,7 +184,7 @@ config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps'] + 2
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
-trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+trainer = appo.APPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
