@@ -8,6 +8,8 @@ from ray.rllib.agents.ppo import ppo
 # from ray.rllib.agents.ppo import appo
 from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
+from ray.rllib.agents.ddpg import ddpg
+
 from argparse import ArgumentParser
 from ray import tune
 
@@ -113,7 +115,7 @@ def env_creator(env_config):
     return LactamaseDocking(env_config)  # return an env instance
 register_env("lactamase_docking", env_creator)
 
-config = impala.DEFAULT_CONFIG.copy()
+config = ddpg.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
 # ppo_conf = {"lambda": 0.95,
@@ -134,8 +136,8 @@ config['log_level'] = 'DEBUG'
 #
 # config.update(ppo_conf)
 
-config['sample_batch_size'] = 64
-config['train_batch_size'] = 1024
+# config['sample_batch_size'] = 64
+# config['train_batch_size'] = 1024
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
@@ -145,7 +147,7 @@ config['env_config'] = envconf
 config['model'] = {"custom_model": 'keras_model'}
 config['horizon'] = envconf['max_steps'] + 2
 
-trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
+trainer = ddpg.ImpalaTrainer(config=config, env='lactamase_docking')
 # trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
 policy = trainer.get_policy()
