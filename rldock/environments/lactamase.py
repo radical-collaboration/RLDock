@@ -89,11 +89,19 @@ class LactamaseDocking(gym.Env):
         if len(action) != self.action_space.shape[0]:
             action = np.array(action).flatten()
 
+        action[3] = 0
+        action[4] = 0
+        action[5] = 0
         return action
 
     def get_reward_from_action(self, action):
         l2 = -1 * np.sum(np.power(np.array(action),2))
-        return l2 * (self.steps * 0.001)
+        return l2 * (self.steps * 0.1)
+
+    def get_reward_from_overlap(self, obs):
+        if np.max(obs[:,:,:,-1]) == 2:
+            return -0.1
+        return 0.01
 
     def step(self, action):
         if np.any(np.isnan(action)):
@@ -121,12 +129,13 @@ class LactamaseDocking(gym.Env):
 
         self.last_score = oe_score
 
-        reward = self.get_reward_from_ChemGauss4(oe_score, reset) + self.get_reward_from_action(action)
+        obs = self.get_obs()
+
+        reward = self.get_reward_from_ChemGauss4(oe_score, reset) + self.get_reward_from_action(action) + self.get_reward_from_overlap(obs)
 
         self.last_reward = reward
         self.cur_reward_sum += reward
 
-        obs = self.get_obs()
 
         return obs,\
                reward,\
@@ -148,7 +157,7 @@ class LactamaseDocking(gym.Env):
         elif score < 0:
             return 1
         else:
-            return score
+            return score * 10
 
 
     def reset(self, random=0.01, many_ligands = False):
@@ -165,7 +174,7 @@ class LactamaseDocking(gym.Env):
 
         if random is not None and float(random) != 0:
             x,y,z, = self.random_space_init.sample().flatten().ravel() * float(random)
-            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * float(random)
+            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * 0
             self.trans = [x,y,z]
             self.rot = [x_theta, y_theta, z_theta]
             random_pos = start_atom.translate(x,y,z)
@@ -196,9 +205,10 @@ class LactamaseDocking(gym.Env):
         from matplotlib import pyplot as plt
         from matplotlib.figure import Figure
 
-        obs = (self.get_obs(quantity='ligand')[:,:,:,0]).squeeze()
-        obs1 = (self.get_obs(quantity='protein')[:,:,:,0]).squeeze()
-
+        obs = (self.get_obs(quantity='ligand')[:,:,:,-1]).squeeze()
+        obs1 = (self.get_obs(quantity='protein')[:,:,:,-1]).squeeze()
+        # np.save("/Users/austin/obs.npy", obs)
+        # np.save("/Users/austin/pro.npy", obs1)
         print(obs.shape)
         fig = plt.figure(figsize=(10, 10), dpi=100)
         ax = fig.gca(projection='3d')
