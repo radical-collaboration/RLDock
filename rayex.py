@@ -192,8 +192,8 @@ config.update(ppo_conf)
 config['sample_batch_size'] = 128
 config['train_batch_size'] = 1536
 
-config["num_gpus"] = args.ngpu  # used for trainer process
-config["num_workers"] = args.ncpu
+# config["num_gpus"] = args.ngpu  # used for trainer process
+# config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
