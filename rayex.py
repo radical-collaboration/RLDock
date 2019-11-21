@@ -159,7 +159,7 @@ config['log_level'] = 'INFO'
 
 ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
         "kl_coeff": ray.tune.uniform(0.3, 1),
-        "sgd_minibatch_size": ray.tune.randint(32, 128),
+        "sgd_minibatch_size": ray.tune.randint(32, 96),
         "shuffle_sequences": tune.grid_search([True, False]),
     "num_sgd_iter": ray.tune.randint(2, 32),
     "lr": ray.tune.loguniform(5e-6, 0.003),
@@ -189,8 +189,8 @@ config.update(ppo_conf)
 #     "entropy_coeff": 0.01,
 # }
 
-config['sample_batch_size'] = 128
-config['train_batch_size'] = 1536
+config['sample_batch_size'] = 64
+config['train_batch_size'] = 1024
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
