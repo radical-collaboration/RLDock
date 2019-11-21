@@ -18,7 +18,7 @@ from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
-from ray.tune.schedulers import HyperBandScheduler
+from ray.tune.schedulers import HyperBandScheduler, AsyncHyperBandScheduler
 from rldock.environments.lactamase import  LactamaseDocking
 from resnet import Resnet3DBuilder
 tf = try_import_tf()
@@ -209,11 +209,11 @@ config['env'] = 'lactamase_docking'
 tune.run(
     "PPO",
     config=config,
-    # resources_per_trial={"cpu": 20, 'gpu' : 2},
-    checkpoint_freq=10,
+    name='phase1PPOSearch',
+    checkpoint_freq=5,
     checkpoint_at_end=True,
-    queue_trials=36,
-    scheduler=HyperBandScheduler('time_total_s', 'episode_reward_mean', max_t=600 * 3), # 30 minutes for each
+    num_samples=36,
+    scheduler=AsyncHyperBandScheduler(time_attr='time_total_s', metric='episode_reward_mean', mode='max', max_t=600 * 3), # 30 minutes for each
 #default    search_alg=
 )
 # for i in range(1000):
