@@ -192,8 +192,8 @@ config.update(ppo_conf)
 config['sample_batch_size'] = 128
 config['train_batch_size'] = 1536
 
-# config["num_gpus"] = args.ngpu  # used for trainer process
-# config["num_workers"] = args.ncpu
+config["num_gpus"] = args.ngpu  # used for trainer process
+config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
@@ -209,7 +209,7 @@ config['env'] = 'lactamase_docking'
 tune.run(
     "PPO",
     config=config,
-    resources_per_trial={"cpu": 20, 'gpu' : 2},
+    # resources_per_trial={"cpu": 20, 'gpu' : 2},
     checkpoint_freq=10,
     checkpoint_at_end=True,
     scheduler=HyperBandScheduler('time_total_s', 'episode_reward_mean', max_t=600 * 3), # 30 minutes for each
