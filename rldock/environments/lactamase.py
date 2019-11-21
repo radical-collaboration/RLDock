@@ -155,12 +155,12 @@ class LactamaseDocking(gym.Env):
     def get_reward_from_ChemGauss4(self, score, reset=False):
         # boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
         score = -1 * score
-        if score < -1e-10:
+        if score < -50:
             return -0.01
         elif score < 0:
-            return 1
+            return 1.0
         else:
-            return float(score)
+            return float(score) * 10
 
     def get_state_vector(self):
         max_steps = self.steps / self.config['max_steps']
