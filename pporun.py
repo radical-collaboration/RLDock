@@ -159,9 +159,9 @@ config['log_level'] = 'INFO'
 
 ppo_conf = {"lambda": 0.95,
             "kl_coeff": 0.5,
-            "sgd_minibatch_size": 64,
+            "sgd_minibatch_size": 96,
             "shuffle_sequences": True,
-            "num_sgd_iter": 10,
+            "num_sgd_iter": 5,
             "lr": 1e-4,
             "lr_schedule": None,
             "vf_share_layers": False,
@@ -176,8 +176,8 @@ ppo_conf = {"lambda": 0.95,
 
 config.update(ppo_conf)
 
-config['sample_batch_size'] = 32
-config['train_batch_size'] = 256
+config['sample_batch_size'] = 64
+config['train_batch_size'] = 512
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
