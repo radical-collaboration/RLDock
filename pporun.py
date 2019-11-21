@@ -158,18 +158,17 @@ config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'INFO'
 
 ppo_conf = {"lambda": 0.95,
-            "kl_coeff": 0.3,
+            "kl_coeff": 0,
             "sgd_minibatch_size": 96,
             "shuffle_sequences": True,
             "num_sgd_iter": 5,
-            "lr": 5e-5,
-            "lr_schedule": None,
+            "lr": 1e-4,
             "vf_share_layers": True,
             "vf_loss_coeff": 0.5,
             "entropy_coeff": 0.01,
             "entropy_coeff_schedule": None,
             "clip_param": 0.2,
-            "kl_target": 0.01,
+            "kl_target": 0,
             "gamma" : 0.99
         }
 
