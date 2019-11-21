@@ -200,10 +200,10 @@ config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
-trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+# trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
-policy = trainer.get_policy()
-print(policy.model.base_model.summary())
+# policy = trainer.get_policy()
+# print(policy.model.base_model.summary())
 
 config['env'] = 'lactamase_docking'
 tune.run(
