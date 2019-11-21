@@ -18,7 +18,7 @@ from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
 from rldock.voxel_policy.utils_tf2 import lrelu
-
+from ray.tune.schedulers import HyperBandScheduler
 from rldock.environments.lactamase import  LactamaseDocking
 from resnet import Resnet3DBuilder
 tf = try_import_tf()
@@ -157,21 +157,23 @@ register_env("lactamase_docking", env_creator)
 config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'INFO'
 
-ppo_conf = {"lambda": 0.95,
-    "kl_coeff": 0.2,
-    "sgd_minibatch_size": 96,
-    "shuffle_sequences": True,
-    "num_sgd_iter": 10,
-    "lr": 1e-4,
+ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
+        "kl_coeff": ray.tune.uniform(0.3, 1),
+        "sgd_minibatch_size": ray.tune.randint(32, 128),
+        "shuffle_sequences": tune.grid_search([True, False]),
+    "num_sgd_iter": ray.tune.randint(2, 32),
+    "lr": ray.tune.loguniform(5e-6, 0.003),
     "lr_schedule": None,
     "vf_share_layers": False,
-    "vf_loss_coeff": 0.5,
-    "entropy_coeff": 0.01,
+    "vf_loss_coeff": ray.tune.uniform(0.5, 1.0),
+    "entropy_coeff": ray.tune.uniform(0, 0.01),
     "entropy_coeff_schedule": None,
-    "clip_param": 0.3,
-    "vf_clip_param": 5.0,
-    "grad_clip": 10.0,
-    "kl_target": 0.01}
+    "clip_param": tune.grid_search([0.1, 0.2, 0.3]),
+    "vf_clip_param": ray.tune.uniform(1, 15),
+    "grad_clip": ray.tune.uniform(5, 15),
+    "kl_target": ray.tune.uniform(0.003, 0.03),
+    "gamma" : ray.tune.uniform(0.8, 0.9997)
+            }
 
 
 
@@ -193,7 +195,6 @@ config['train_batch_size'] = 1536
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
-config['gamma'] = 0.998
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
@@ -204,20 +205,22 @@ trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
-
 config['env'] = 'lactamase_docking'
-# tune.run(
-#     "PPO",
-#     config=config,
-#     checkpoint_freq=10,
-#     checkpoint_at_end=True,
-# )
-for i in range(1000):
-    result = trainer.train()
-
-    if i % 1 == 0:
-        print(pretty_print(result))
-
-    if i % 50 == 0:
-        checkpoint = trainer.save()
-        print("checkpoint saved at", checkpoint)
+tune.run(
+    "PPO",
+    config=config,
+    resources_per_trial={"cpu": 20, 'gpu' : 2},
+    checkpoint_freq=10,
+    checkpoint_at_end=True,
+    scheduler=HyperBandScheduler('time_total_s', 'episode_reward_mean', max_t=600 * 3), # 30 minutes for each
+#default    search_alg=
+)
+# for i in range(1000):
+#     result = trainer.train()
+#
+#     if i % 1 == 0:
+#         print(pretty_print(result))
+#
+#     if i % 50 == 0:
+#         checkpoint = trainer.save()
+#         print("checkpoint saved at", checkpoint)

@@ -130,7 +130,7 @@ class LactamaseDocking(gym.Env):
         obs = self.get_obs()
 
         w1 = float(1.0)
-        w2 = float(0.001 * math.pow(self.steps, 1.5))
+        w2 = float(0.001 * math.pow(self.steps, 2))
         w3 = float(0.1)
 
         reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
