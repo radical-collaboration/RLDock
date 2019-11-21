@@ -3,6 +3,7 @@ COMM =  MPI.COMM_WORLD
 
 import argparse
 import os
+import time
 
 import numpy as np
 from stable_baselines import PPO2
@@ -47,17 +48,16 @@ if __name__ == '__main__':
     # model = PPO2(CustomPolicy, envs, verbose=2, tensorboard_log="tensorlogs/")
     # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
     # model.learn(total_timesteps=3000)
-
-    for i in range(10):
-        # model.learn(total_timesteps=1000)
-
-        obs = env.reset()
-        for i in range(1, 200):
-            action = [env.action_space.sample()]
-            obs, rewards, done, info = env.step(action)
-            atom = env.render()
-            if done:
-                obs = env.reset()
+    iters = 1000
+    start = time.time()
+    obs = env.reset()
+    for i in range(iters):
+        action = [env.action_space.sample()]
+        obs, rewards, done, info = env.step(action)
+        if done:
+            obs = env.reset()
+    end = time.time()
+    print("iters", iters / (end - start))
 
 
     env.close()
