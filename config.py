@@ -1,7 +1,7 @@
 import os
 import math
 
-discrete_trans = 75.0
+discrete_trans = 50.0
 discrete_theta = 25.0
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
