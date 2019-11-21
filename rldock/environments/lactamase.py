@@ -90,9 +90,9 @@ class LactamaseDocking(gym.Env):
         :param action: action from step funtion
         :return: action
         """
-        if len(action) != self.action_space.shape[0]:
-            action = np.array(action).flatten()
+        action = np.array(action).flatten()
         return action
+
 
     def get_penalty_from_overlap(self, obs):
         """
@@ -111,6 +111,7 @@ class LactamaseDocking(gym.Env):
             exit()
 
         action = self.get_action(action)
+        print(action)
         self.trans[0] += action[0]
         self.trans[1] += action[1]
         self.trans[2] += action[2]
@@ -130,8 +131,8 @@ class LactamaseDocking(gym.Env):
         obs = self.get_obs()
 
         w1 = float(1.0)
-        w2 = float(0.001 * math.pow(self.steps, 2))
-        w3 = float(0.1)
+        w2 = float(0.001 * math.pow(self.steps, 1.75))
+        w3 = float(0.01)
 
         reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
 
