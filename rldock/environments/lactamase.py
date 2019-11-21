@@ -111,7 +111,6 @@ class LactamaseDocking(gym.Env):
             exit()
 
         action = self.get_action(action)
-        print(action)
         self.trans[0] += action[0]
         self.trans[1] += action[1]
         self.trans[2] += action[2]
