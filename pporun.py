@@ -176,8 +176,8 @@ ppo_conf = {"lambda": 0.95,
 
 config.update(ppo_conf)
 
-config['sample_batch_size'] = 128
-config['train_batch_size'] = 128
+config['sample_batch_size'] = 32
+config['train_batch_size'] = 256
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
