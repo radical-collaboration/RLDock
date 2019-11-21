@@ -190,7 +190,7 @@ config.update(ppo_conf)
 # }
 
 config['sample_batch_size'] = 64
-config['train_batch_size'] = 1024
+config['train_batch_size'] = 2096
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
@@ -212,6 +212,7 @@ tune.run(
     # resources_per_trial={"cpu": 20, 'gpu' : 2},
     checkpoint_freq=10,
     checkpoint_at_end=True,
+    queue_trials=36,
     scheduler=HyperBandScheduler('time_total_s', 'episode_reward_mean', max_t=600 * 3), # 30 minutes for each
 #default    search_alg=
 )
