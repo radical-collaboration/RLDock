@@ -10,7 +10,7 @@ from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 from ray import tune
-
+import copy
 from config import config as envconf
 from ray.tune.registry import register_env
 
@@ -136,10 +136,10 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 
 
-memory_story = 256.00  * 1e+9
-obj_store = 128.00 * 1e+9
-ray.init(memory=memory_story, object_store_memory=obj_store)
-# ray.init()
+# memory_story = 256.00  * 1e+9
+# obj_store = 128.00 * 1e+9
+# ray.init(memory=memory_story, object_store_memory=obj_store)
+ray.init()
 
 parser = ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=0)
@@ -161,11 +161,11 @@ ppo_conf = {"lambda": 0.95,
             "kl_coeff": 0,
             "sgd_minibatch_size": 96,
             "shuffle_sequences": True,
-            "num_sgd_iter": 10,
-            "lr": 7e-5,
+            "num_sgd_iter": 5,
+            "lr": 1e-4,
             "vf_share_layers": True,
             "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.005,
+            "entropy_coeff": 0.01,
             "entropy_coeff_schedule": None,
             "clip_param": 0.2,
             "kl_target": 0,
@@ -178,27 +178,57 @@ config.update(ppo_conf)
 config['sample_batch_size'] = 64
 config['train_batch_size'] = 512
 
-config["num_gpus"] = args.ngpu  # used for trainer process
-config["num_workers"] = args.ncpu
+config["num_gpus"] = 0  # used for trainer process
+config["num_workers"] = 1
 config['num_envs_per_worker'] = 1
 config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
-
+from ray.rllib.agents.registry import get_agent_class
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
-trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-trainer.restore('../ray_results/PPO_lactamase_docking_2019-11-21_11-53-55tu9ixazs/checkpoint_951/checkpoint-951')
-policy = trainer.get_policy()
-print(policy.model.base_model.summary())
+#trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+checkpoint = '/Users/austin/checkpoint_951/checkpoint-951'
+#policy = trainer.get_policy()
+#print(policy.model.base_model.summary())
 
 config['env'] = 'lactamase_docking'
+agent = get_agent_class('PPO')(env='lactamase_docking', config=config)
+agent.restore(checkpoint)
 
-for i in range(250):
-    result = trainer.train()
+env = LactamaseDocking(envconf)
+# env.eval_ligands()
 
-    if i % 1 == 0:
-        print(pretty_print(result))
+header = None
 
-    if i % 25 == 0:
-        checkpoint = trainer.save()
-        print("checkpoint saved at", checkpoint)
+obs = env.reset()
+ligand_counter = 0
+lignad_name = 0
+fp_path = '/Users/austin/PycharmProjects/RLDock/'
+
+with open('run.pml', 'w') as fp:
+    i = 0
+    with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+        cur_m = copy.deepcopy(env.cur_atom)
+        f.write(cur_m.toPDB())
+    fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+    fp.write(", ligand" + str(ligand_counter )+ ", " + str(i + 1) + "\n")
+    i_adjust = 0
+    for i in range(1, 1000):
+        action = agent.compute_action(obs)
+        obs, rewards, done, info = env.step(action)
+
+        print(action, rewards, done)
+        atom = copy.deepcopy(env.cur_atom)
+
+        if done:
+            obs = env.reset()
+            atom = copy.deepcopy(env.cur_atom)
+            ligand_counter += 1
+            i_adjust = 0
+
+        with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+            f.write(atom.toPDB())
+        fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+        fp.write(", ligand" + str(ligand_counter) + ", " + str(i + 1 - i_adjust) + "\n")
+
+env.close()
