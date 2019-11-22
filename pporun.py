@@ -161,11 +161,11 @@ ppo_conf = {"lambda": 0.95,
             "kl_coeff": 0,
             "sgd_minibatch_size": 96,
             "shuffle_sequences": True,
-            "num_sgd_iter": 10,
-            "lr": 7e-5,
+            "num_sgd_iter": 15,
+            "lr": 4e-4,
             "vf_share_layers": True,
             "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.005,
+            "entropy_coeff": 0.001,
             "entropy_coeff_schedule": None,
             "clip_param": 0.2,
             "kl_target": 0,
@@ -187,7 +187,7 @@ config['horizon'] = envconf['max_steps']
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-trainer.restore('../ray_results/PPO_lactamase_docking_2019-11-21_11-53-55tu9ixazs/checkpoint_951/checkpoint-951')
+trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
