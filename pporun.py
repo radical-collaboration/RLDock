@@ -44,12 +44,13 @@ class MyActionDist(TFActionDistribution):
     @override(ActionDistribution)
     def kl(self, other):
         assert isinstance(other, MyActionDist)
-        # t = tf.reduce_sum(self.dist.kl_divergence(other.dist), reduction_indices=[1])
-        return self.dist.kl_divergence(other.dist)
+        t = tf.reduce_sum(self.dist.kl_divergence(other.dist), reduction_indices=[1])
+        return t
 
     @override(ActionDistribution)
     def entropy(self):
-        return self.dist.entropy()
+        t = tf.reduce_sum(self.dist.entropy(), reduction_indices=[1])
+        return t
 
     @override(TFActionDistribution)
     def _build_sample_op(self):
@@ -109,7 +110,7 @@ class DeepDrug3D(TFModelV2):
             num_outputs,
             name="my_out",
             activation=clipped_relu,
-            kernel_initializer=normc_initializer(0.5))(layer_5p)
+            kernel_initializer=normc_initializer(20))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
             1,
