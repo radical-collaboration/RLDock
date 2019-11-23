@@ -33,6 +33,9 @@ class LactamaseDocking(gym.Env):
 
         lows = -1 * np.array(list(config['action_space_d']) + list(config['action_space_r']), dtype=np.float32)
         highs = np.array(list(config['action_space_d']) + list(config['action_space_r']), dtype=np.float32)
+
+
+
         self.use_random = True
         self.action_space = spaces.Box(low=lows,
                                        high=highs,
@@ -41,8 +44,8 @@ class LactamaseDocking(gym.Env):
 
         self.observation_space = spaces.Dict({"image" : spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
                                                 dtype=np.float32),
-                                              "state_vector" : spaces.Box(low=np.array([-31, 0,  -30, -30, -30, 0,0,0], dtype=np.float32),
-                                                                          high=np.array([31, 1.1, 30, 30,  30 ,  3 * math.pi, 3 * math.pi, 3 * math.pi], dtype=np.float32))
+                                              "state_vector" : spaces.Box(low=np.array([-31, 0], dtype=np.float32),
+                                                                          high=np.array([31, 1.1], dtype=np.float32))
                                             }
                                         )
 
@@ -104,6 +107,35 @@ class LactamaseDocking(gym.Env):
             return 1.0
         return 0.0
 
+    @staticmethod
+    def Nq(q):
+        return q / np.linalg.norm(q)
+
+    @staticmethod
+    def isRotationMatrix(M, eps = 1e-7):
+        tag = False
+        I = np.identity(M.shape[0])
+        if np.all( np.abs(np.matmul(M, M.T) - I) <= eps) and (np.abs(np.linalg.det(M) - 1) <= eps): tag = True
+        return tag
+
+        #https: // arxiv.org / pdf / 1812.07035.pdf
+    def get_rotation(self, rot):
+
+
+        a_1 = np.array(rot[:3], dtype=np.float64)
+        a_2 = np.array(rot[3:], dtype=np.float64)
+
+        b_1 = self.Nq(a_1)
+        b_2 = self.Nq( a_2 - np.dot(np.dot(b_1, a_2) , b_1))
+        b_3 = np.cross(b_1, b_2)
+
+        M = np.stack([b_1, b_2, b_3]).T
+        print(b_1, b_2, b_3, a_1, a_2)
+        print(M)
+        print(np.matmul(M , M.T))
+        assert(self.isRotationMatrix(M))
+        return M.astype(np.float32)
+
     def step(self, action):
         if np.any(np.isnan(action)):
             print(action)
@@ -114,16 +146,11 @@ class LactamaseDocking(gym.Env):
         self.trans[0] += action[0]
         self.trans[1] += action[1]
         self.trans[2] += action[2]
-        self.rot[0] += action[3]
-        self.rot[1] += action[4]
-        self.rot[2] += action[5]
+        self.rot = self.get_rotation(action[3:])
 
         self.cur_atom = self.cur_atom.translate(action[0], action[1], action[2])
-        self.cur_atom = self.cur_atom.rotate(action[3], action[4], action[5])
-        self.align_rot()
+        self.cur_atom = self.cur_atom.rotateM(self.rot)
         self.steps += 1
-
-
 
         oe_score = self.oe_scorer(self.cur_atom.toPDB())
         reset = self.decide_reset(oe_score)
@@ -132,8 +159,8 @@ class LactamaseDocking(gym.Env):
         obs = self.get_obs()
 
         w1 = float(1.0)
-        w2 = 0
-        w3 = float(0.001)
+        w2 = 0.01
+        w3 = float(0.01)
 
         reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
 
@@ -150,23 +177,19 @@ class LactamaseDocking(gym.Env):
     def decide_reset(self, score):
          return (self.steps > self.config['max_steps']) or (not self.check_atom_in_box())
 
-    def get_score_weight(self):
-        r = (float(self.steps) * float(self.steps))  / self.score_balance_weight
-        return r
-
     def get_reward_from_ChemGauss4(self, score, reset=False):
         # boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
         score = -1 * score
         if score < -25:
-            return 0.1
+            return 0
         elif score < 0:
-            return 0.1
+            return 0.01
         else:
             return float(score) * 1
 
     def get_state_vector(self):
         max_steps = self.steps / self.config['max_steps']
-        return [float(np.clip(self.last_score, -30, 30)), max_steps] + list(np.clip(self.trans, -30, 30)) + list(np.clip(self.rot, 0, 3 * math.pi))
+        return [float(np.clip(self.last_score, -30, 30)), max_steps]
 
 
     def reset(self, random=0.2, many_ligands = False):
@@ -185,20 +208,17 @@ class LactamaseDocking(gym.Env):
             x,y,z, = self.random_space_init.sample().flatten().ravel() * float(random)
             x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * float(random)
             self.trans = [x,y,z]
-            self.rot = [x_theta, y_theta, z_theta]
             self.trans_ = [x, y, z]
             self.rot_ = [x_theta, y_theta, z_theta]
             random_pos = start_atom.translate(x,y,z)
             random_pos = random_pos.rotate(theta_x=x_theta, theta_y=y_theta, theta_z=z_theta)
         else:
             self.trans = [0,0,0]
-            self.rot   = [0,0,0]
             self.trans_ = [0,0,0]
             self.rot_ = [0, 0, 0]
             random_pos = start_atom
 
         self.trans = [0, 0, 0]
-        self.rot   = [0, 0, 0]
         self.cur_atom = random_pos
         self.last_score = self.oe_scorer(self.cur_atom.toPDB())
         self.steps = 0
@@ -251,7 +271,7 @@ class LactamaseDocking(gym.Env):
                         coords_y1.append(j)
                         coords_z1.append(z)
 
-        ax.set_title("Current step:" + str(self.steps) + ", Curr Reward" + str(self.last_reward) + ', Curr RSUm' + str(self.cur_reward_sum))
+        ax.set_title("Current step:" + str(self.steps) + ", Curr Reward" + str(self.last_reward) + ', Curr RSUm' + str(self.cur_reward_sum)+ 'score'+ str(self.last_score))
         try:
             ax.plot_trisurf(coords_x, coords_y, coords_z, linewidth=0.2, antialiased=True)
             ax.plot_trisurf(coords_x1, coords_y1, coords_z1, linewidth=0.2, antialiased=True, alpha=0.5)

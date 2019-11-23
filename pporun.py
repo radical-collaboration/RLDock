@@ -188,7 +188,7 @@ impala_conf =  {
     "sample_batch_size": 64,
     "train_batch_size": 1024,
     "min_iter_time_s": 10,
-
+    "entropy_coeff": 0.001
 }
 config.update(impala_conf)
 

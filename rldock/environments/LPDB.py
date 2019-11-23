@@ -275,6 +275,18 @@ class LigandPDB:
             atom.set_coords(vec)
         return pdb_c
 
+
+    def rotateM(self, rot_mat):
+        pdb_c = copy.deepcopy(self)
+        c = np.array(pdb_c.get_center()).flatten()
+        for atom in pdb_c.hetatoms:
+            vec = atom.get_coords()
+            vec -= c
+            vec = np.dot(rot_mat, vec)
+            vec += c
+            atom.set_coords(vec)
+        return pdb_c
+
     @classmethod
     def parse(cls, fname):
         pdb = LigandPDB()

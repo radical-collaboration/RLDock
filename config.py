@@ -6,7 +6,7 @@ discrete_theta = 50.0
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
     'action_space_d' : (19.15 / discrete_trans, 19.51 / discrete_trans, 20.8 / discrete_trans),
-    'action_space_r' : (2 * math.pi/ discrete_theta, 2 * math.pi / discrete_theta, 2 * math.pi / discrete_theta),
+    'action_space_r' : (1, 1, 1, 1, 1, 1),
     'protein_wo_ligand' : path + 'resources/lactamase_wo_lignad.pdb',
     'ligand' : path + 'resources/lactamase_ligand.pdb',
     'oe_box' : path +'resources/lacatamase.oeb',

@@ -1,21 +1,12 @@
-from mpi4py import MPI
-COMM =  MPI.COMM_WORLD
 
 import argparse
 import os
 import time
 
 import numpy as np
-from stable_baselines import PPO2
-# from stable_baselines.bench import Monitor
-# from rldock.common.wrappers import DistributedPPO2
-from stable_baselines.common.vec_env import VecNormalize, SubprocVecEnv, DummyVecEnv, VecFrameStack
-# from stable_baselines.results_plotter import load_results, ts2xy
-# from stable_baselines.common.policies import register_policy
 
 from config import config
 from rldock.environments.lactamase import LactamaseDocking
-from rldock.voxel_policy.actorcritic import CustomPolicy
 
 best_mean_reward, n_steps = -np.inf, 0
 
@@ -32,7 +23,6 @@ def getargs():
     parser.add_argument('-e', type=int, default=10)
     return parser.parse_args()
 
-from resnet import Resnet3DBuilder
 
 if __name__ == '__main__':
     # rn = Resnet3DBuilder.build_resnet_34((26,26,26,8), 400)
@@ -42,7 +32,7 @@ if __name__ == '__main__':
     # args = getargs()
     # # print(args)
     # #
-    env = DummyVecEnv([lambda: LactamaseDocking(config)])
+    env = LactamaseDocking(config)
     # envs = SubprocVecEnv([lambda: LactamaseDocking(config)] * 1)
 
     # model = PPO2(CustomPolicy, envs, verbose=2, tensorboard_log="tensorlogs/")
