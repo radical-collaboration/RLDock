@@ -13,7 +13,7 @@ from ray import tune
 
 from config import config as envconf
 from ray.tune.registry import register_env
-
+from ray.rllib.models.tf.tf_action_dist import Deterministic
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
@@ -257,8 +257,11 @@ config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 4
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'deepdrug3d', "custom_action_dist": 'Deterministic'}
+config['model'] = {"custom_model": 'deepdrug3d', "custom_action_dist": 'my_dist'}
 config['horizon'] = envconf['max_steps']
+
+
+ModelCatalog.register_custom_action_dist("my_dist", Deterministic)
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 # trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
