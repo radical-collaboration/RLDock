@@ -115,7 +115,7 @@ class LactamaseDocking(gym.Env):
         return q / t
 
     @staticmethod
-    def isRotationMatrix(M, eps = 1e-7):
+    def isRotationMatrix(M, eps = 1e-5):
         tag = False
         I = np.identity(M.shape[0])
         if np.all( np.abs(np.matmul(M, M.T) - I) <= eps) and (np.abs(np.linalg.det(M) - 1) <= eps): tag = True
@@ -125,7 +125,6 @@ class LactamaseDocking(gym.Env):
 
         #https: // arxiv.org / pdf / 1812.07035.pdf
     def get_rotation(self, rot):
-        print(rot)
         a_1 = np.array(rot[:3], dtype=np.float64)
         a_2 = np.array(rot[3:], dtype=np.float64)
 
