@@ -203,21 +203,21 @@ config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
-            "kl_coeff": 0,
-             "sgd_minibatch_size": 96,
+            "kl_coeff": 0.3,
+             "sgd_minibatch_size": 128,
             "shuffle_sequences": True,
             "num_sgd_iter": 15,
-            "lr": 1e-4,
+            "lr": 5e-5,
             "vf_share_layers": True,
             "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.01,
+            "entropy_coeff": 0.001,
             "entropy_coeff_schedule": None,
             "clip_param": 0.2,
-            "kl_target": 0,
+            "kl_target": 0.01,
             "grad_clip": 5.0,
             "gamma": 0.999,
-            "sample_batch_size": 64,
-            "train_batch_size": 1024
+            "sample_batch_size": 128,
+            "train_batch_size": 1024 *  10
             }
 
 config.update(ppo_conf)
