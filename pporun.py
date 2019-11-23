@@ -35,10 +35,10 @@ class DeepDrug3D(TFModelV2):
 
 
         tf.keras.layers.Input(shape=(8,), name='state_vec_obs')]
-        h = tf.keras.layers.Conv3D(filters=32,  kernel_size=5, padding='valid', name='notconv1')(self.inputs[0])
+        h = tf.keras.layers.Conv3D(filters=32,  kernel_size=5, stride=2, padding='valid', name='notconv1')(self.inputs[0])
         h = tf.keras.layers.BatchNormalization()(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
-        h = tf.keras.layers.Conv3D(32, 3, padding='valid', name='conv3d_2')(h)
+        h = tf.keras.layers.Conv3D(64, 3, padding='valid', name='conv3d_2')(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2),
             strides=None,
@@ -58,18 +58,18 @@ class DeepDrug3D(TFModelV2):
 
         layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
         layer_2 = tf.keras.layers.BatchNormalization()(layer_2)
-        layer_2 = tf.keras.layers.Dense(256, activation=lrelu)(layer_2)
+        layer_2 = tf.keras.layers.Dense(128, activation=lrelu)(layer_2)
         layer_2 = tf.keras.layers.BatchNormalization()(layer_2)
 
 
-        layer_4p = tf.keras.layers.Dense(256, activation='relu', name='ftp2')(layer_2)
+        layer_4p = tf.keras.layers.Dense(128, activation='relu', name='ftp2')(layer_2)
         layer_4p = tf.keras.layers.BatchNormalization()(layer_4p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
 
-        layer_4v = tf.keras.layers.Dense(256, activation='relu', name='ftv2')(layer_2)
+        layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_2)
         layer_4v = tf.keras.layers.BatchNormalization()(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-        clipped_relu = lambda x: tf.nn.relu(x, max_value=2.0) - 1.0
+        clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=-1, clip_value_max=1)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
