@@ -69,7 +69,7 @@ class DeepDrug3D(TFModelV2):
         layer_4v = tf.keras.layers.Dense(256, activation='relu', name='ftv2')(layer_2)
         layer_4v = tf.keras.layers.BatchNormalization()(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-        clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=-1, clip_value_max=1)
+        clipped_relu = lambda x: tf.nn.relu(x, max_value=2.0) - 1.0
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
@@ -141,8 +141,8 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 
 
-memory_story = 200.00  * 1e+9
-obj_store = 256.00 * 1e+9
+memory_story = 256.00  * 1e+9
+obj_store = 128.00 * 1e+9
 ray.init(memory=memory_story, object_store_memory=obj_store)
 # ray.init()
 
@@ -180,6 +180,7 @@ config['log_level'] = 'INFO'
 
 
 impala_conf =  {
+    "num_aggregation_workers": 2,
     "broadcast_interval": 4,
     "learner_queue_timeout": 600,
     "replay_proportion": 0.1,
