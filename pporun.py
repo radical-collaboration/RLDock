@@ -51,7 +51,7 @@ class DeepDrug3D(TFModelV2):
         h = tf.keras.layers.Flatten()(h)
 
         layer_2 = tf.keras.layers.Concatenate()([self.inputs[1], h])
-        layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer2)
+        layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
 
 
         layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
