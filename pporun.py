@@ -1,6 +1,8 @@
 import faulthandler
 import sys
 
+from ray.rllib.utils.annotations import override
+import tensorflow_probability as tfp
 faulthandler.enable(file=sys.stderr, all_threads=True)
 import ray
 from ray.rllib.agents.impala import impala
@@ -10,10 +12,10 @@ from ray.tune.logger import pretty_print
 from ray.rllib.models import ModelCatalog
 from argparse import ArgumentParser
 from ray import tune
-
+import numpy as np
 from config import config as envconf
 from ray.tune.registry import register_env
-from ray.rllib.models.tf.tf_action_dist import Deterministic
+from ray.rllib.models.tf.tf_action_dist import Deterministic, TFActionDistribution, ActionDistribution
 from ray.rllib.models.tf.misc import normc_initializer
 from ray.rllib.models.tf.tf_modelv2 import TFModelV2
 from ray.rllib.utils import try_import_tf
@@ -22,6 +24,39 @@ from ray.tune.schedulers import HyperBandScheduler, AsyncHyperBandScheduler
 from rldock.environments.lactamase import  LactamaseDocking
 from resnet import Resnet3DBuilder
 tf = try_import_tf()
+
+class MyActionDist(TFActionDistribution):
+    def __init__(self, inputs, model):
+        mean, log_std = tf.split(inputs, 2, axis=1)
+        self.mean = mean
+        self.std = log_std
+        self.dist = tfp.distributions.Beta(self.mean, self.std, validate_args=True, allow_nan_stats=False)
+        TFActionDistribution.__init__(self, inputs, model)
+
+    @override(ActionDistribution)
+    def logp(self, x):
+        return self.dist.log_prob(x)
+
+    @override(ActionDistribution)
+    def kl(self, other):
+        assert isinstance(other, MyActionDist)
+        return tf.reduce_sum(self.dist.kl_divergence(other),
+            reduction_indices=[1])
+
+    @override(ActionDistribution)
+    def entropy(self):
+        return self.dist.entropy()
+
+    @override(TFActionDistribution)
+    def _build_sample_op(self):
+        return self.dist.sample()
+
+    @staticmethod
+    @override(ActionDistribution)
+    def required_model_output_shape(action_space, model_config):
+        return np.prod(action_space.shape) * 2
+
+
 
 class DeepDrug3D(TFModelV2):
     def __init__(self, obs_space, action_space, num_outputs, model_config,
@@ -67,7 +102,7 @@ class DeepDrug3D(TFModelV2):
         layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_2)
         layer_4v = tf.keras.layers.BatchNormalization()(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-        clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=-1, clip_value_max=1)
+        clipped_relu = lambda x: tf.clip_by_value(x + 1, clip_value_min=0, clip_value_max=None)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
@@ -261,7 +296,7 @@ config['model'] = {"custom_model": 'deepdrug3d', "custom_action_dist": 'my_dist'
 config['horizon'] = envconf['max_steps']
 
 
-ModelCatalog.register_custom_action_dist("my_dist", Deterministic)
+ModelCatalog.register_custom_action_dist("my_dist", MyActionDist)
 
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 # trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
