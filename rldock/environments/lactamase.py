@@ -130,10 +130,8 @@ class LactamaseDocking(gym.Env):
         b_3 = np.cross(b_1, b_2)
 
         M = np.stack([b_1, b_2, b_3]).T
-        print(b_1, b_2, b_3, a_1, a_2)
-        print(M)
-        print(np.matmul(M , M.T))
-        assert(self.isRotationMatrix(M))
+
+        # assert(self.isRotationMatrix(M))
         return M.astype(np.float32)
 
     def step(self, action):
