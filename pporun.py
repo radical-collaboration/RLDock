@@ -169,6 +169,7 @@ ppo_conf = {"lambda": 0.95,
             "entropy_coeff_schedule": None,
             "clip_param": 0.2,
             "kl_target": 0,
+            "grad_clip" : 0.01,
             "gamma" : 0.99
         }
 
