@@ -204,7 +204,7 @@ config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
             "kl_coeff": 0.3,
-             "sgd_minibatch_size": 96,
+             "sgd_minibatch_size": 48,
             "shuffle_sequences": True,
             "num_sgd_iter": 15,
             "lr": 5e-5,
