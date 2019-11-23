@@ -86,6 +86,7 @@ class Voxelizer:
 
 
     def __call__(self, lig_pdb, quantity='all'):
+
         slig = SmallMol(AllChem.MolFromPDBBlock(lig_pdb, sanitize=True, removeHs=False))
         lig_vox, lig_centers, lig_N = getVoxelDescriptors(slig, buffer=0, voxelsize=self.config['voxelsize'], boxsize=self.config['bp_dimension'],
                                                      center=self.config['bp_centers'], validitychecks=False, method=self.config['voxel_method'])

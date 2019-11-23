@@ -139,10 +139,10 @@ class MyKerasModel(TFModelV2):
         return tf.reshape(self._value_out, [-1])
 
 
-memory_story = 256.00  * 1e+9
-obj_store = 128.00 * 1e+9
-ray.init(memory=memory_story, object_store_memory=obj_store)
-# ray.init()
+# memory_story = 256.00  * 1e+9
+# obj_store = 128.00 * 1e+9
+# ray.init(memory=memory_story, object_store_memory=obj_store)
+ray.init()
 
 parser = ArgumentParser()
 parser.add_argument('--ngpu', type=int, default=0)
@@ -157,38 +157,40 @@ def env_creator(env_config):
 
 register_env("lactamase_docking", env_creator)
 
-config = impala.DEFAULT_CONFIG.copy()
+config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'INFO'
 
-# ppo_conf = {"lambda": 0.95,
-#             "kl_coeff": 0,
-#             "sgd_minibatch_size": 96,
-#             "shuffle_sequences": True,
-#             "num_sgd_iter": 15,
-#             "lr": 1e-4,
-#             "vf_share_layers": True,
-#             "vf_loss_coeff": 0.5,
-#             "entropy_coeff": 0.01,
-#             "entropy_coeff_schedule": None,
-#             "clip_param": 0.2,
-#             "kl_target": 0,
-#             "grad_clip" : 5.0,
-#             "gamma" : 0.999
-#         }
-
-
-impala_conf =  {
-    "num_aggregation_workers": 2,
-    "broadcast_interval": 4,
-    "learner_queue_timeout": 600,
-    "replay_proportion": 0.1,
-    "replay_buffer_num_slots": 128,
+ppo_conf = {"lambda": 0.95,
+            "kl_coeff": 0,
+            "sgd_minibatch_size": 96,
+            "shuffle_sequences": True,
+            "num_sgd_iter": 15,
+            "lr": 1e-4,
+            "vf_share_layers": True,
+            "vf_loss_coeff": 0.5,
+            "entropy_coeff": 0.01,
+            "entropy_coeff_schedule": None,
+            "clip_param": 0.2,
+            "kl_target": 0,
+            "grad_clip" : 5.0,
+            "gamma" : 0.999,
     "sample_batch_size": 64,
-    "train_batch_size": 1024,
-    "min_iter_time_s": 10,
-    "entropy_coeff": 0.001
-}
-config.update(impala_conf)
+    "train_batch_size": 1024
+        }
+
+
+# impala_conf =  {
+#     "num_aggregation_workers": 2,
+#     "broadcast_interval": 4,
+#     "learner_queue_timeout": 600,
+#     "replay_proportion": 0.1,
+#     "replay_buffer_num_slots": 128,
+#     "sample_batch_size": 64,
+#     "train_batch_size": 1024,
+#     "min_iter_time_s": 10,
+#     "entropy_coeff": 0.001
+# }
+config.update(ppo_conf)
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
@@ -197,7 +199,7 @@ config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
 
-trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
+trainer = ppo.PPOTrainer(config=config, env='lactamase_docking')
 # trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
 policy = trainer.get_policy()
