@@ -123,6 +123,8 @@ class LactamaseDocking(gym.Env):
         self.align_rot()
         self.steps += 1
 
+
+
         oe_score = self.oe_scorer(self.cur_atom.toPDB())
         reset = self.decide_reset(oe_score)
 
@@ -130,7 +132,7 @@ class LactamaseDocking(gym.Env):
         obs = self.get_obs()
 
         w1 = float(1.0)
-        w2 = float(0.01) * math.pow(max(0, self.steps - 25), 1.5)
+        w2 = float(0.01) * math.pow(max(0, self.steps - 50), 1.5)
         w3 = float(0.01) * 5
 
         reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
@@ -156,7 +158,7 @@ class LactamaseDocking(gym.Env):
         # boost = 5 if self.steps > self.config['max_steps'] - 3 else 1
         score = -1 * score
         if score < -25:
-            return 0
+            return 0.1
         elif score < 0:
             return 0.1
         else:
