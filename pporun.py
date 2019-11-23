@@ -31,10 +31,7 @@ class DeepDrug3D(TFModelV2):
 
         print(obs_space)
         self.inputs = [tf.keras.layers.Input(
-            shape=(26, 27, 28, 8), name="observations"),
-
-
-        tf.keras.layers.Input(shape=(8,), name='state_vec_obs')]
+            shape=(26, 27, 28, 8), name="observations"),tf.keras.layers.Input(shape=(2,), name='state_vec_obs')]
         h = tf.keras.layers.Conv3D(filters=32,  kernel_size=5, padding='valid', name='notconv1')(self.inputs[0])
         h = tf.keras.layers.BatchNormalization()(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
@@ -53,8 +50,9 @@ class DeepDrug3D(TFModelV2):
 
         h = tf.keras.layers.Flatten()(h)
 
-        layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(self.inputs[1])
-        layer_2 = tf.keras.layers.Concatenate()([layer_2, h])
+        layer_2 = tf.keras.layers.Concatenate()([self.inputs[1], h])
+        layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer2)
+
 
         layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
         layer_2 = tf.keras.layers.BatchNormalization()(layer_2)
