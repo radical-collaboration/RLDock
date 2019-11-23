@@ -2,7 +2,7 @@ import os
 import math
 
 discrete_trans = 50.0
-discrete_theta = 25.0
+discrete_theta = 50.0
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
     'action_space_d' : (19.15 / discrete_trans, 19.51 / discrete_trans, 20.8 / discrete_trans),

@@ -36,6 +36,7 @@ class DeepDrug3D(TFModelV2):
 
         tf.keras.layers.Input(shape=(8,), name='state_vec_obs')]
         h = tf.keras.layers.Conv3D(filters=32,  kernel_size=5, padding='valid', name='notconv1')(self.inputs[0])
+        h = tf.keras.layers.BatchNormalization()(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.Conv3D(32, 3, padding='valid', name='conv3d_2')(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
@@ -56,20 +57,24 @@ class DeepDrug3D(TFModelV2):
         layer_2 = tf.keras.layers.Concatenate()([layer_2, h])
 
         layer_2 = tf.keras.layers.Dense(64, activation=lrelu)(layer_2)
+        layer_2 = tf.keras.layers.BatchNormalization()(layer_2)
         layer_2 = tf.keras.layers.Dense(256, activation=lrelu)(layer_2)
+        layer_2 = tf.keras.layers.BatchNormalization()(layer_2)
 
 
         layer_4p = tf.keras.layers.Dense(256, activation='relu', name='ftp2')(layer_2)
+        layer_4p = tf.keras.layers.BatchNormalization()(layer_4p)
         layer_5p = tf.keras.layers.Dense(64, activation=lrelu, name='ftp3')(layer_4p)
 
         layer_4v = tf.keras.layers.Dense(256, activation='relu', name='ftv2')(layer_2)
+        layer_4v = tf.keras.layers.BatchNormalization()(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-
+        clipped_relu = lambda x: tf.nn.relu(x, max_value=2.0) - 1.0
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation='tanh',
-            kernel_initializer=normc_initializer(0.2))(layer_5p)
+            activation=clipped_relu,
+            kernel_initializer=normc_initializer(0.5))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
             1,
@@ -154,30 +159,38 @@ def env_creator(env_config):
 
 register_env("lactamase_docking", env_creator)
 
-config = ppo.DEFAULT_CONFIG.copy()
-config['log_level'] = 'DEBUG'
+config = impala.DEFAULT_CONFIG.copy()
+config['log_level'] = 'INFO'
 
-ppo_conf = {"lambda": 0.95,
-            "kl_coeff": 0,
-            "sgd_minibatch_size": 96,
-            "shuffle_sequences": True,
-            "num_sgd_iter": 15,
-            "lr": 1e-4,
-            "vf_share_layers": True,
-            "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.03,
-            "entropy_coeff_schedule": None,
-            "clip_param": 0.2,
-            "kl_target": 0,
-            "grad_clip" : 5.0,
-            "gamma" : 0.999
-        }
+# ppo_conf = {"lambda": 0.95,
+#             "kl_coeff": 0,
+#             "sgd_minibatch_size": 96,
+#             "shuffle_sequences": True,
+#             "num_sgd_iter": 15,
+#             "lr": 1e-4,
+#             "vf_share_layers": True,
+#             "vf_loss_coeff": 0.5,
+#             "entropy_coeff": 0.01,
+#             "entropy_coeff_schedule": None,
+#             "clip_param": 0.2,
+#             "kl_target": 0,
+#             "grad_clip" : 5.0,
+#             "gamma" : 0.999
+#         }
 
 
-config.update(ppo_conf)
+impala_conf =  {
+    "num_aggregation_workers": 2,
+    "broadcast_interval": 4,
+    "learner_queue_timeout": 600,
+    "replay_proportion": 0.1,
+    "replay_buffer_num_slots": 128,
+    "sample_batch_size": 64,
+    "train_batch_size": 1024,
+    "min_iter_time_s": 10,
 
-config['sample_batch_size'] = 64
-config['train_batch_size'] = 512
+}
+config.update(impala_conf)
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
@@ -186,9 +199,9 @@ config['env_config'] = envconf
 config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
 
-# trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
-trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
+trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
+# trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+# trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
 policy = trainer.get_policy()
 print(policy.model.base_model.summary())
 
