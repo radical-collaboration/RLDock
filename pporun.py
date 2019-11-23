@@ -160,59 +160,118 @@ register_env("lactamase_docking", env_creator)
 config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'INFO'
 
-ppo_conf = {"lambda": 0.95,
-            "kl_coeff": 0,
-            "sgd_minibatch_size": 96,
-            "shuffle_sequences": True,
-            "num_sgd_iter": 15,
-            "lr": 1e-4,
-            "vf_share_layers": True,
-            "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.01,
-            "entropy_coeff_schedule": None,
-            "clip_param": 0.2,
-            "kl_target": 0,
-            "grad_clip" : 5.0,
-            "gamma" : 0.999,
-    "sample_batch_size": 64,
-    "train_batch_size": 1024
-        }
-
-
-# impala_conf =  {
-#     "num_aggregation_workers": 2,
-#     "broadcast_interval": 4,
-#     "learner_queue_timeout": 600,
-#     "replay_proportion": 0.1,
-#     "replay_buffer_num_slots": 128,
+# ppo_conf = {"lambda": 0.95,
+#             "kl_coeff": 0,
+#             "sgd_minibatch_size": 96,
+#             "shuffle_sequences": True,
+#             "num_sgd_iter": 15,
+#             "lr": 1e-4,
+#             "vf_share_layers": True,
+#             "vf_loss_coeff": 0.5,
+#             "entropy_coeff": 0.01,
+#             "entropy_coeff_schedule": None,
+#             "clip_param": 0.2,
+#             "kl_target": 0,
+#             "grad_clip" : 5.0,
+#             "gamma" : 0.999,
 #     "sample_batch_size": 64,
-#     "train_batch_size": 1024,
-#     "min_iter_time_s": 10,
-#     "entropy_coeff": 0.001
-# }
+#     "train_batch_size": 1024
+#         }
+#
+#
+# # impala_conf =  {
+# #     "num_aggregation_workers": 2,
+# #     "broadcast_interval": 4,
+# #     "learner_queue_timeout": 600,
+# #     "replay_proportion": 0.1,
+# #     "replay_buffer_num_slots": 128,
+# #     "sample_batch_size": 64,
+# #     "train_batch_size": 1024,
+# #     "min_iter_time_s": 10,
+# #     "entropy_coeff": 0.001
+# # }
+# config.update(ppo_conf)
+#
+# config["num_gpus"] = args.ngpu  # used for trainer process
+# config["num_workers"] = args.ncpu
+# config['num_envs_per_worker'] = 1
+# config['env_config'] = envconf
+# config['model'] = {"custom_model": 'deepdrug3d'}
+# config['horizon'] = envconf['max_steps']
+#
+# trainer = ppo.PPOTrainer(config=config, env='lactamase_docking')
+# # trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
+# # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
+# policy = trainer.get_policy()
+# print(policy.model.base_model.summary())
+#
+# config['env'] = 'lactamase_docking'
+#
+# for i in range(250):
+#     result = trainer.train()
+#
+#     if i % 1 == 0:
+#         print(pretty_print(result))
+#
+#     if i % 25 == 0:
+#         checkpoint = trainer.save()
+#         print("checkpoint saved at", checkpoint)
+
+
+ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
+        "kl_coeff": ray.tune.uniform(0.3, 1),
+        "sgd_minibatch_size": ray.tune.randint(32, 96),
+        "shuffle_sequences": tune.grid_search([True, False]),
+    "num_sgd_iter": ray.tune.randint(2, 32),
+    "lr": ray.tune.loguniform(5e-6, 0.003),
+    "lr_schedule": None,
+    "vf_share_layers": False,
+    "vf_loss_coeff": ray.tune.uniform(0.5, 1.0),
+    "entropy_coeff": ray.tune.uniform(0, 0.01),
+    "entropy_coeff_schedule": None,
+    "clip_param": tune.grid_search([0.1, 0.2, 0.3]),
+    "vf_clip_param": ray.tune.uniform(1, 15),
+    "grad_clip": ray.tune.uniform(5, 15),
+    "kl_target": ray.tune.uniform(0.003, 0.03),
+    "gamma" : ray.tune.uniform(0.8, 0.9997)
+            }
+
+
+
 config.update(ppo_conf)
+
+# appo_conf = {
+#     "use_kl_loss": True,
+#     "kl_coeff": 0.2,
+#     "kl_target": 0.01,
+#     "clip_param": 0.3,
+#     "lambda": 0.95,
+#     "vf_loss_coeff": 0.5,
+#     "entropy_coeff": 0.01,
+# }
+
+config['sample_batch_size'] = 64
+config['train_batch_size'] = 2096
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
-config['num_envs_per_worker'] = 1
+config['num_envs_per_worker'] = 4
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'deepdrug3d'}
+config['model'] = {"custom_model": 'deepdrug3d', "custom_action_dist": 'Deterministic'}
 config['horizon'] = envconf['max_steps']
 
-trainer = ppo.PPOTrainer(config=config, env='lactamase_docking')
+# trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 # trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-# trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
-policy = trainer.get_policy()
-print(policy.model.base_model.summary())
+# trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-18_13-40-14ihwtk2lw/checkpoint_51/checkpoint-51')
+# policy = trainer.get_policy()
+# print(policy.model.base_model.summary())
 
 config['env'] = 'lactamase_docking'
-
-for i in range(250):
-    result = trainer.train()
-
-    if i % 1 == 0:
-        print(pretty_print(result))
-
-    if i % 25 == 0:
-        checkpoint = trainer.save()
-        print("checkpoint saved at", checkpoint)
+tune.run(
+    "PPO",
+    config=config,
+    name='phase2PPOSearch',
+    checkpoint_freq=5,
+    checkpoint_at_end=True,
+    num_samples=192,
+    scheduler=AsyncHyperBandScheduler(time_attr='time_total_s', metric='episode_reward_mean', mode='max', max_t=3000)) # 30 minutes for each
