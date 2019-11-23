@@ -155,7 +155,7 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = ppo.DEFAULT_CONFIG.copy()
-config['log_level'] = 'INFO'
+config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
             "kl_coeff": 0,
@@ -165,12 +165,12 @@ ppo_conf = {"lambda": 0.95,
             "lr": 1e-4,
             "vf_share_layers": True,
             "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.01,
+            "entropy_coeff": 0.03,
             "entropy_coeff_schedule": None,
             "clip_param": 0.2,
             "kl_target": 0,
-            "grad_clip" : 0.01,
-            "gamma" : 0.99
+            "grad_clip" : 5.0,
+            "gamma" : 0.999
         }
 
 
