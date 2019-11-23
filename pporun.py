@@ -68,7 +68,7 @@ class DeepDrug3D(TFModelV2):
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation=None,
+            activation='tanh',
             kernel_initializer=normc_initializer(0.2))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
