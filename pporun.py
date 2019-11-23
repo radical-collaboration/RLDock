@@ -180,7 +180,6 @@ config['log_level'] = 'INFO'
 
 
 impala_conf =  {
-    "num_aggregation_workers": 2,
     "broadcast_interval": 4,
     "learner_queue_timeout": 600,
     "replay_proportion": 0.1,
