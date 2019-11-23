@@ -193,7 +193,7 @@ class LactamaseDocking(gym.Env):
 
     def get_state_vector(self):
         max_steps = self.steps / self.config['max_steps']
-        return [float(np.clip(self.last_score, -30, 30)), max_steps]
+        return np.array([float(np.clip(self.last_score, -30, 30)), max_steps]).astype(np.float32)
 
 
     def reset(self, random=0.2, many_ligands = False):
@@ -233,7 +233,7 @@ class LactamaseDocking(gym.Env):
         return {'image' : self.get_obs(), 'state_vector' : self.get_state_vector()}
 
     def get_obs(self, quantity='all'):
-        x= self.voxelizer(self.cur_atom.toPDB(), quantity=quantity).squeeze(0)
+        x= self.voxelizer(self.cur_atom.toPDB(), quantity=quantity).squeeze(0).astype(np.float32)
         if self.config['debug']:
             print("SHAPE", x.shape)
         return x
