@@ -44,13 +44,12 @@ class MyActionDist(TFActionDistribution):
     @override(ActionDistribution)
     def kl(self, other):
         assert isinstance(other, MyActionDist)
-        t = tf.reduce_sum(self.dist.kl_divergence(other.dist), reduction_indices=[1])
-        return t
+        # t = tf.reduce_sum(self.dist.kl_divergence(other.dist), reduction_indices=[1])
+        return self.dist.kl_divergence(other.dist)
 
     @override(ActionDistribution)
     def entropy(self):
-        t = tf.reduce_sum(self.dist.entropy(), reduction_indices=[1])
-        return t
+        return self.dist.entropy()
 
     @override(TFActionDistribution)
     def _build_sample_op(self):
