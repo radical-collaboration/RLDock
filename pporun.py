@@ -50,7 +50,7 @@ class MyActionDist(TFActionDistribution):
     @override(ActionDistribution)
     def entropy(self):
         t = tf.reduce_sum(self.dist.entropy(), reduction_indices=[1])
-        return t
+        return -1.0 * t
 
     @override(TFActionDistribution)
     def _build_sample_op(self):
