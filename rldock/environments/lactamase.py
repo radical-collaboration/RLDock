@@ -6,7 +6,7 @@ from gym import spaces
 import random
 from random import randint
 from rldock.environments.LPDB import LigandPDB
-from rldock.environments.utils import Scorer, Voxelizer, l2_action
+from rldock.environments.utils import MultiScorer, Voxelizer, l2_action, MinMax
 import glob
 import math
 
@@ -50,7 +50,9 @@ class LactamaseDocking(gym.Env):
                                         )
 
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
-        self.oe_scorer = Scorer(config['oe_box']) # takes input as pdb string of just ligand
+        self.oe_scorer = MultiScorer(config['oe_box']) # takes input as pdb string of just ligand
+        self.minmaxs = [MinMax(-278, -8.45), MinMax(-1.3, 306.15), MinMax(-17.52, 161.49), MinMax(-2, 25.3)]
+
 
         self.reference_ligand = LigandPDB.parse(config['ligand'])
         self.reference_centers = self.reference_ligand.get_center()
@@ -64,6 +66,7 @@ class LactamaseDocking(gym.Env):
 
         self.cur_atom = copy.deepcopy(self.atom_center)
         self.trans = [0,0,0]
+        self.rot   = [0,0,0]
         self.rot   = [0,0,0]
         self.steps = 0
         self.last_score = 0
@@ -106,6 +109,21 @@ class LactamaseDocking(gym.Env):
         if np.max(obs[:,:,:,-1]) == 2:
             return 1.0
         return 0.0
+
+    def oe_score_combine(self, oescores, average=False):
+        r = 0
+        for i in range(len(oescores)):
+            self.minmaxs[i].update(oescores[i])
+            mins,maxs = self.minmaxs[i]()
+            if oescores[i] > self.minmaxs[i].eps:
+                norm_score = 0
+            else:
+                norm_score = (oescores[i] - maxs) / (maxs - mins)
+            r += norm_score
+
+        if average:
+            r = r / len(oescores)
+        return r
 
     @staticmethod
     def Nq(q):
@@ -157,6 +175,7 @@ class LactamaseDocking(gym.Env):
         self.steps += 1
 
         oe_score = self.oe_scorer(self.cur_atom.toPDB())
+        oe_score =  self.oe_score_combine(oe_score)
         reset = self.decide_reset(oe_score)
 
         self.last_score = oe_score
@@ -166,7 +185,7 @@ class LactamaseDocking(gym.Env):
         w2 = 0
         w3 = 0
 
-        reward = w1 * self.get_reward_from_ChemGauss4(oe_score, reset) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
+        reward = w1 * (-1.0 * oe_score) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
 
         self.last_reward = reward
         self.cur_reward_sum += reward
@@ -191,12 +210,14 @@ class LactamaseDocking(gym.Env):
         else:
             return float(score) * 1
 
+
+
     def get_state_vector(self):
         max_steps = self.steps / self.config['max_steps']
         return np.array([float(np.clip(self.last_score, -30, 30)), max_steps]).astype(np.float32)
 
 
-    def reset(self, random=0.2, many_ligands = False):
+    def reset(self, random=0, many_ligands = True):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
@@ -224,7 +245,7 @@ class LactamaseDocking(gym.Env):
 
         self.trans = [0, 0, 0]
         self.cur_atom = random_pos
-        self.last_score = self.oe_scorer(self.cur_atom.toPDB())
+        self.last_score = self.oe_score_combine(self.oe_scorer(self.cur_atom.toPDB()))
         self.steps = 0
         self.cur_reward_sum=0
         self.last_reward = 0

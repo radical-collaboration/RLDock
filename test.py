@@ -44,7 +44,7 @@ if __name__ == '__main__':
     for i in range(iters):
         action = [env.action_space.sample()]
         obs, rewards, done, info = env.step(action)
-        env.render()
+        print(rewards)
         if done:
             obs = env.reset()
     end = time.time()

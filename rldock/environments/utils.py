@@ -39,6 +39,28 @@ class RosettaScorer:
         return self.score(self.pose)
 
 ## Basic scorer, loads pdb from file
+
+class MultiScorer:
+    def __init__(self, pdb_file):
+        self.receptor = oechem.OEGraphMol()
+        self.scorers = [oedocking.OEScore(oedocking.OEScoreType_Shapegauss),
+                        oedocking.OEScore(oedocking.OEScoreType_Chemscore),
+                        oedocking.OEScore(oedocking.OEScoreType_Chemgauss3),
+                        oedocking.OEScore(oedocking.OEScoreType_Chemgauss4),
+                        ]
+        self.score = oedocking.OEScore(oedocking.OEScoreType_Chemgauss4)
+        oedocking.OEReadReceptorFile(self.receptor, pdb_file)
+        for score in self.scorers:
+            score.Initialize(self.receptor)
+
+    def __call__(self, item : str):
+        ligand = oechem.OEGraphMol()
+        ligand_name = oechem.oemolistream()
+        ligand_name.openstring(item)
+        oechem.OEReadPDBFile(ligand_name, ligand)
+
+        return [scorer.ScoreLigand(ligand) for scorer in self.scorers]
+
 class Scorer:
 
     def __init__(self, pdb_file):
@@ -62,6 +84,25 @@ class RigidLigand:
     def __init__(self, pdb_file):
         self.ligand = LPDB.LigandPDB.parse(pdb_file)
 
+class MinMax:
+    def __init__(self, min=None, max=None):
+        self.min = min
+        self.max = max
+        self.eps = 1e10
+
+    def __call__(self):
+        return self.min, self.max
+
+    def update(self, x):
+        if self.min is None:
+            self.min = x
+        else:
+            self.min = min(self.min, x)
+
+        if self.max is None and (x <= self.eps):
+            self.max = x
+        elif (x <= self.eps):
+            self.max = max(self.max, x)
 
 def l2_action(action):
     l2 = np.sum(np.power(np.array(action),2))

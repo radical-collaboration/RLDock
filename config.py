@@ -8,7 +8,7 @@ config = {
     'action_space_d' : (19.15 / discrete_trans, 19.51 / discrete_trans, 20.8 / discrete_trans),
     'action_space_r' : (1, 1, 1, 1, 1, 1),
     'protein_wo_ligand' : path + 'resources/lactamase_wo_lignad.pdb',
-    'ligand' : path + 'resources/lactamase_ligand.pdb',
+    'ligand' : path + 'resources/lactamase_ligand_h.pdb',
     'oe_box' : path +'resources/lacatamase.oeb',
     'bp_dimension': [19.15299892,  19.51399946,  20.80000114],
     'bp_centers' : [ 20.39349937,   7.33399963, -26.39400101],
