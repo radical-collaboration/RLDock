@@ -105,12 +105,12 @@ class DeepDrug3D(TFModelV2):
         layer_4v = tf.keras.layers.Dense(128, activation='relu', name='ftv2')(layer_2)
         layer_4v = tf.keras.layers.BatchNormalization()(layer_4v)
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
-        clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=1, clip_value_max=1000)
+        clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=1, clip_value_max=100)
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
             activation=clipped_relu,
-            kernel_initializer=normc_initializer(20))(layer_5p)
+            kernel_initializer=normc_initializer(50))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
             1,
@@ -202,25 +202,25 @@ register_env("lactamase_docking", env_creator)
 config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'INFO'
 
-ppo_conf = {"lambda": 0.95,
-            "kl_coeff": 0.3,
-             "sgd_minibatch_size": 48,
-            "shuffle_sequences": True,
-            "num_sgd_iter": 15,
-            "lr": 5e-5,
-            "vf_share_layers": True,
-            "vf_loss_coeff": 0.5,
-            "entropy_coeff": 0.001,
-            "entropy_coeff_schedule": None,
-            "clip_param": 0.2,
-            "kl_target": 0.01,
-            "grad_clip": 5.0,
-            "gamma": 0.999,
-            "sample_batch_size": 128,
-            "train_batch_size": 1024 *  10
-            }
+# ppo_conf = {"lambda": 0.95,
+#             "kl_coeff": 0.3,
+#              "sgd_minibatch_size": 48,
+#             "shuffle_sequences": True,
+#             "num_sgd_iter": 15,
+#             "lr": 5e-5,
+#             "vf_share_layers": True,
+#             "vf_loss_coeff": 0.5,
+#             "entropy_coeff": 0.001,
+#             "entropy_coeff_schedule": None,
+#             "clip_param": 0.2,
+#             "kl_target": 0.01,
+#             "grad_clip": 5.0,
+#             "gamma": 0.999,
+#             "sample_batch_size": 128,
+#             "train_batch_size": 1024 *  10
+#             }
 
-config.update(ppo_conf)
+#
 ModelCatalog.register_custom_action_dist("my_dist", MyActionDist)
 
 config["num_gpus"] = args.ngpu  # used for trainer process
@@ -250,7 +250,7 @@ config['env'] = 'lactamase_docking'
 
 ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
         "kl_coeff": ray.tune.uniform(0.3, 1),
-        "sgd_minibatch_size": ray.tune.randint(32, 96),
+        "sgd_minibatch_size": ray.tune.randint(32, 48),
         "shuffle_sequences": tune.grid_search([True, False]),
     "num_sgd_iter": ray.tune.randint(2, 32),
     "lr": ray.tune.loguniform(5e-6, 0.003),
@@ -265,6 +265,7 @@ ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
     "kl_target": ray.tune.uniform(0.003, 0.03),
     "gamma" : ray.tune.uniform(0.8, 0.9997)
             }
+config.update(ppo_conf)
 #
 #
 #
