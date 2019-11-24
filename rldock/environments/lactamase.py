@@ -139,7 +139,7 @@ class LactamaseDocking(gym.Env):
     def Nq(q):
         t = np.linalg.norm(q)
         if t == 0:
-            return 0
+            return np.zeros(q.shape)
         return q / t
 
     @staticmethod
@@ -175,6 +175,9 @@ class LactamaseDocking(gym.Env):
             exit()
 
         action = self.get_action(action)
+        assert(action.shape[0] == 9)
+
+
         self.trans[0] += action[0]
         self.trans[1] += action[1]
         self.trans[2] += action[2]
