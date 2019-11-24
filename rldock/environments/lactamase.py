@@ -37,9 +37,17 @@ class LactamaseDocking(gym.Env):
 
 
         self.use_random = True
-        self.action_space = spaces.Box(low=lows,
-                                       high=highs,
-                                       dtype=np.float32)
+
+        if config['discrete']:
+            self.actions_multiplier = np.array([config['action_space_d'][i] / (config['K_trans'] - 1) for i in range(3)]
+                                               + [config['action_space_r'][i] for i in range(6)], dtype=np.float32)
+            self.action_space = spaces.MultiDiscrete([config['K_trans']] * 3 + [config['K_theta']] * 6)
+
+
+        else:
+            self.action_space = spaces.Box(low=lows,
+                                           high=highs,
+                                           dtype=np.float32)
 
 
         self.observation_space = spaces.Dict({"image" : spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
@@ -96,6 +104,8 @@ class LactamaseDocking(gym.Env):
         :param action: action from step funtion
         :return: action
         """
+        if self.config['discrete']:
+            action = np.array(action) * self.actions_multiplier
         action = np.array(action).flatten()
         return action
 

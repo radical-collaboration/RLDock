@@ -109,8 +109,8 @@ class DeepDrug3D(TFModelV2):
         layer_out = tf.keras.layers.Dense(
             num_outputs,
             name="my_out",
-            activation=clipped_relu,
-            kernel_initializer=normc_initializer(50))(layer_5p)
+            activation=None,
+            kernel_initializer=normc_initializer(0.25))(layer_5p)
 
         value_out = tf.keras.layers.Dense(
             1,
@@ -200,72 +200,70 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = ppo.DEFAULT_CONFIG.copy()
-config['log_level'] = 'INFO'
+config['log_level'] = 'DEBUG'
 
-# ppo_conf = {"lambda": 0.95,
-#             "kl_coeff": 0.3,
-#              "sgd_minibatch_size": 48,
-#             "shuffle_sequences": True,
-#             "num_sgd_iter": 15,
-#             "lr": 5e-5,
-#             "vf_share_layers": True,
-#             "vf_loss_coeff": 0.5,
-#             "entropy_coeff": 0.001,
-#             "entropy_coeff_schedule": None,
-#             "clip_param": 0.2,
-#             "kl_target": 0.01,
-#             "grad_clip": 5.0,
-#             "gamma": 0.999,
-#             "sample_batch_size": 128,
-#             "train_batch_size": 1024 *  10
-#             }
-
-#
+ppo_conf = {"lambda": 0.95,
+            "kl_coeff": 0.3,
+             "sgd_minibatch_size": 48,
+            "shuffle_sequences": True,
+            "num_sgd_iter": 15,
+            "lr": 5e-5,
+            "vf_share_layers": True,
+            "vf_loss_coeff": 0.5,
+            "entropy_coeff": 0.001,
+            "entropy_coeff_schedule": None,
+            "clip_param": 0.2,
+            "kl_target": 0.01,
+            "grad_clip": 5.0,
+            "gamma": 0.999,
+            "sample_batch_size": 128,
+            "train_batch_size": 1024 *  10
+            }
+config.update(ppo_conf)
 ModelCatalog.register_custom_action_dist("my_dist", MyActionDist)
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 1
 config['env_config'] = envconf
-config['model'] = {"custom_model": 'deepdrug3d'}
 config['horizon'] = envconf['max_steps']
-config['model'] = {"custom_model": 'deepdrug3d', "custom_action_dist": 'my_dist'}
-# trainer = ppo.PPOTrainer(config=config, env='lactamase_docking')
-# # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
-# policy = trainer.get_policy()
-# print(policy.model.base_model.summary())
-#
+config['model'] = {"custom_model": 'deepdrug3d'}
+trainer = ppo.PPOTrainer(config=config, env='lactamase_docking')
+# trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
+policy = trainer.get_policy()
+print(policy.model.base_model.summary())
+
 
 config['env'] = 'lactamase_docking'
-#
-# for i in range(250):
-#     result = trainer.train()
-#
-#     if i % 1 == 0:
-#         print(pretty_print(result))
-#
-#     if i % 25 == 0:
-#         checkpoint = trainer.save()
-#         print("checkpoint saved at", checkpoint)
 
-ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
-        "kl_coeff": ray.tune.uniform(0.3, 1),
-        "sgd_minibatch_size": ray.tune.randint(32, 48),
-        "shuffle_sequences": tune.grid_search([True, False]),
-    "num_sgd_iter": ray.tune.randint(2, 32),
-    "lr": ray.tune.loguniform(5e-6, 0.003),
-    "lr_schedule": None,
-    "vf_share_layers": False,
-    "vf_loss_coeff": ray.tune.uniform(0.5, 1.0),
-    "entropy_coeff": ray.tune.loguniform(5e-6, 0.01),
-    "entropy_coeff_schedule": None,
-    "clip_param": tune.grid_search([0.1, 0.2, 0.3]),
-    "vf_clip_param": ray.tune.uniform(1, 15),
-    "grad_clip": ray.tune.uniform(5, 15),
-    "kl_target": ray.tune.uniform(0.003, 0.03),
-    "gamma" : ray.tune.uniform(0.8, 0.9997)
-            }
-config.update(ppo_conf)
+for i in range(250):
+    result = trainer.train()
+
+    if i % 1 == 0:
+        print(pretty_print(result))
+
+    if i % 25 == 0:
+        checkpoint = trainer.save()
+        print("checkpoint saved at", checkpoint)
+#
+# ppo_conf = {"lambda": ray.tune.uniform(0.9, 1.0),
+#         "kl_coeff": ray.tune.uniform(0.3, 1),
+#         "sgd_minibatch_size": ray.tune.randint(32, 48),
+#         "shuffle_sequences": tune.grid_search([True, False]),
+#     "num_sgd_iter": ray.tune.randint(2, 32),
+#     "lr": ray.tune.loguniform(5e-6, 0.003),
+#     "lr_schedule": None,
+#     "vf_share_layers": False,
+#     "vf_loss_coeff": ray.tune.uniform(0.5, 1.0),
+#     "entropy_coeff": ray.tune.loguniform(5e-6, 0.01),
+#     "entropy_coeff_schedule": None,
+#     "clip_param": tune.grid_search([0.1, 0.2, 0.3]),
+#     "vf_clip_param": ray.tune.uniform(1, 15),
+#     "grad_clip": ray.tune.uniform(5, 15),
+#     "kl_target": ray.tune.uniform(0.003, 0.03),
+#     "gamma" : ray.tune.uniform(0.8, 0.9997)
+#             }
+# config.update(ppo_conf)
 #
 #
 #
@@ -300,12 +298,12 @@ config.update(ppo_conf)
 # # policy = trainer.get_policy()
 # # print(policy.model.base_model.summary())
 #
-config['env'] = 'lactamase_docking'
-tune.run(
-    "PPO",
-    config=config,
-    name='phase2PPOSearch',
-    checkpoint_freq=5,
-    checkpoint_at_end=True,
-    num_samples=192,
-    scheduler=AsyncHyperBandScheduler(time_attr='time_total_s', metric='episode_reward_mean', mode='max', max_t=3000)) # 30 minutes for each
+# config['env'] = 'lactamase_docking'
+# tune.run(
+#     "PPO",
+#     config=config,
+#     name='phase2PPOSearch',
+#     checkpoint_freq=5,
+#     checkpoint_at_end=True,
+#     num_samples=192,
+#     scheduler=AsyncHyperBandScheduler(time_attr='time_total_s', metric='episode_reward_mean', mode='max', max_t=3000)) # 30 minutes for each
