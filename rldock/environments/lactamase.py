@@ -146,9 +146,10 @@ class LactamaseDocking(gym.Env):
     def isRotationMatrix(M, eps = 1e-2):
         tag = False
         I = np.identity(M.shape[0])
-        if np.all( np.abs(np.matmul(M, M.T) - I) <= eps) and (np.abs(np.linalg.det(M) - 1) <= eps): tag = True
-        else:
-            print('fail', M, np.abs(np.matmul(M, M.T) - I), np.abs(np.linalg.det(M) - 1))
+        if np.all( np.abs(np.matmul(M, M.T) - I) <= eps) and (np.abs(np.linalg.det(M) - 1) <= eps):
+            tag = True
+        # else:
+        #     print('fail', M, np.abs(np.matmul(M, M.T) - I), np.abs(np.linalg.det(M) - 1))
         return tag
 
         #https: // arxiv.org / pdf / 1812.07035.pdf
@@ -165,7 +166,6 @@ class LactamaseDocking(gym.Env):
         if self.isRotationMatrix(M):
             return M.astype(np.float32)
         else:
-            print("Error. :(")
             return np.identity(M.shape[0], dtype=np.float32)
 
     def step(self, action):

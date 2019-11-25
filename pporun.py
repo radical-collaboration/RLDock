@@ -310,7 +310,6 @@ config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'INFO'
 
 ppo_conf = {"lambda": 0.95,
-            'eager' : True,
             "kl_coeff": 0.3,
              "sgd_minibatch_size": 48,
             "shuffle_sequences": True,
