@@ -39,8 +39,8 @@ class LactamaseDocking(gym.Env):
         self.use_random = True
 
         if config['discrete']:
-            self.actions_multiplier = np.array([config['action_space_d'][i] / (config['K_trans'] - 1) for i in range(3)]
-                                               + [config['action_space_r'][i] for i in range(6)], dtype=np.float32)
+            self.actions_multiplier = np.array([1.0 / (config['K_trans'] - 1) for i in range(3)]
+                                               + [1.0 / (config['K_theta'] - 1) for i in range(6)], dtype=np.float32)
             self.action_space = spaces.MultiDiscrete([config['K_trans']] * 3 + [config['K_theta']] * 6)
 
 
@@ -246,17 +246,12 @@ class LactamaseDocking(gym.Env):
             x,y,z, = self.random_space_init.sample().flatten().ravel() * float(random)
             x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * float(random)
             self.trans = [x,y,z]
-            self.trans_ = [x, y, z]
-            self.rot_ = [x_theta, y_theta, z_theta]
             random_pos = start_atom.translate(x,y,z)
             random_pos = random_pos.rotate(theta_x=x_theta, theta_y=y_theta, theta_z=z_theta)
         else:
             self.trans = [0,0,0]
-            self.trans_ = [0,0,0]
-            self.rot_ = [0, 0, 0]
             random_pos = start_atom
 
-        self.trans = [0, 0, 0]
         self.cur_atom = random_pos
         self.last_score = self.oe_score_combine(self.oe_scorer(self.cur_atom.toPDB()))
         self.steps = 0
@@ -339,7 +334,7 @@ class LactamaseDocking(gym.Env):
         pass
 
     def check_atom_in_box(self):
-        return self.random_space_init.contains(self.trans_)
+        return self.random_space_init.contains(self.trans)
 
     def disable_random(self):
         self.use_random = False

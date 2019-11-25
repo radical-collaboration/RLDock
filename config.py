@@ -6,8 +6,8 @@ discrete_theta = 50.0
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
     'discrete' : True,
-    'K_trans' : 11,
-    'K_theta' : 11,
+    'K_trans' : 7,
+    'K_theta' : 7,
     'discrete_theta' : discrete_theta,
     'discrete_trans' : discrete_trans,
     'action_space_d' : (19.15, 19.51, 20.8),
