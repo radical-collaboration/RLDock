@@ -214,7 +214,7 @@ class DeepDrug3D(TFModelV2):
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
         clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=1, clip_value_max=100)
         layer_out = tf.keras.layers.Dense(
-            99,
+            num_outputs,
             name="my_out",
             activation=None,
             kernel_initializer=normc_initializer(0.25))(layer_5p)
