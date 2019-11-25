@@ -39,8 +39,8 @@ class LactamaseDocking(gym.Env):
         self.use_random = True
 
         if config['discrete']:
-            self.actions_multiplier = np.array([1.0 / (config['K_trans'] - 1) for i in range(3)]
-                                               + [1.0 / (config['K_theta'] - 1) for i in range(6)], dtype=np.float32)
+            self.actions_multiplier = np.array([0.3 / (config['K_trans'] - 1) for i in range(3)]
+                                               + [0.5 / (config['K_theta'] - 1) for i in range(6)], dtype=np.float32)
             self.action_space = spaces.MultiDiscrete([config['K_trans']] * 3 + [config['K_theta']] * 6)
 
 
