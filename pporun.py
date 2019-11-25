@@ -307,7 +307,7 @@ def env_creator(env_config):
 register_env("lactamase_docking", env_creator)
 
 config = ppo.DEFAULT_CONFIG.copy()
-config['log_level'] = 'DEBUG'
+config['log_level'] = 'INFO'
 
 ppo_conf = {"lambda": 0.95,
             'eager' : True,
