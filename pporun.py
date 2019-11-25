@@ -27,6 +27,113 @@ from resnet import Resnet3DBuilder
 
 tf = try_import_tf()
 
+class Ordinal(TFActionDistribution):
+    """Categorical distribution for discrete action spaces."""
+
+    def __init__(self, inputs, model=None):
+        self.inputs = inputs
+        L = tf.sigmoid(self.inputs)
+        l_minus = tf.log(1 - tf.identity(L))
+        L = tf.log(L)
+
+        ascend = tf.dtypes.cast(tf.expand_dims(tf.range(1, L.shape[-1] + 1), 0), tf.float32)
+        desend = tf.dtypes.cast(tf.expand_dims(tf.reverse(tf.range(L.shape[-1]), axis=[0]), 0), tf.float32)
+
+        L_prime = ascend * L + desend * l_minus
+        self.inputs = tf.nn.softmax(L_prime, axis=-1)
+
+        super(Ordinal, self).__init__(self.inputs, model)
+
+    @override(ActionDistribution)
+    def logp(self, x):
+        return -tf.nn.sparse_softmax_cross_entropy_with_logits(
+            logits=self.inputs, labels=tf.cast(x, tf.int32))
+
+    @override(ActionDistribution)
+    def entropy(self):
+        a0 = self.inputs - tf.reduce_max(
+            self.inputs, reduction_indices=[1], keep_dims=True)
+        ea0 = tf.exp(a0)
+        z0 = tf.reduce_sum(ea0, reduction_indices=[1], keep_dims=True)
+        p0 = ea0 / z0
+        return tf.reduce_sum(p0 * (tf.log(z0) - a0), reduction_indices=[1])
+
+    @override(ActionDistribution)
+    def kl(self, other):
+        a0 = self.inputs - tf.reduce_max(
+            self.inputs, reduction_indices=[1], keep_dims=True)
+        a1 = other.inputs - tf.reduce_max(
+            other.inputs, reduction_indices=[1], keep_dims=True)
+        ea0 = tf.exp(a0)
+        ea1 = tf.exp(a1)
+        z0 = tf.reduce_sum(ea0, reduction_indices=[1], keep_dims=True)
+        z1 = tf.reduce_sum(ea1, reduction_indices=[1], keep_dims=True)
+        p0 = ea0 / z0
+        return tf.reduce_sum(
+            p0 * (a0 - tf.log(z0) - a1 + tf.log(z1)), reduction_indices=[1])
+
+    @override(TFActionDistribution)
+    def _build_sample_op(self):
+        return tf.squeeze(tf.multinomial(self.inputs, 1), axis=1)
+
+    @staticmethod
+    @override(ActionDistribution)
+    def required_model_output_shape(action_space, model_config):
+        return action_space.n
+
+
+class MultiOrdinal(TFActionDistribution):
+    """MultiCategorical distribution for MultiDiscrete action spaces."""
+
+    def __init__(self, inputs, model, input_lens=([envconf['K_trans']] * 3 + [envconf['K_theta']]  * 6)):
+        # skip TFActionDistribution init
+        ActionDistribution.__init__(self, inputs, model)
+        self.cats = [
+            Ordinal(input_, model)
+            for input_ in tf.split(inputs, input_lens, axis=1)
+        ]
+        self.sample_op = self._build_sample_op()
+
+    @override(ActionDistribution)
+    def logp(self, actions):
+        # If tensor is provided, unstack it into list
+        if isinstance(actions, tf.Tensor):
+            actions = tf.unstack(tf.cast(actions, tf.int32), axis=1)
+        logps = tf.stack(
+            [cat.logp(act) for cat, act in zip(self.cats, actions)])
+        return tf.math.reduce_sum(logps, axis=0)
+
+    @override(ActionDistribution)
+    def multi_entropy(self):
+        return tf.stack([cat.entropy() for cat in self.cats], axis=1)
+
+    @override(ActionDistribution)
+    def entropy(self):
+        return tf.math.reduce_sum(self.multi_entropy(), axis=1)
+
+    @override(ActionDistribution)
+    def multi_kl(self, other):
+
+        ress = []
+        for cat, oth_cat in zip(self.cats, other.cats):
+            res = tf.expand_dims(cat.kl(oth_cat), 1)
+            ress.append(res)
+        return ress
+
+    @override(ActionDistribution)
+    def kl(self, other):
+        kls = tf.concat(self.multi_kl(other), axis=-1)
+        t = tf.math.reduce_sum(kls, axis=-1, keepdims=True)
+        return t
+
+    @override(TFActionDistribution)
+    def _build_sample_op(self):
+        return tf.stack([cat.sample() for cat in self.cats], axis=1)
+
+    @staticmethod
+    @override(ActionDistribution)
+    def required_model_output_shape(action_space, model_config):
+        return np.sum(action_space.nvec)
 
 class MyActionDist(TFActionDistribution):
     def __init__(self, inputs, model):
@@ -107,7 +214,7 @@ class DeepDrug3D(TFModelV2):
         layer_5v = tf.keras.layers.Dense(64, activation=lrelu, name='ftv3')(layer_4v)
         clipped_relu = lambda x: tf.clip_by_value(x, clip_value_min=1, clip_value_max=100)
         layer_out = tf.keras.layers.Dense(
-            num_outputs,
+            99,
             name="my_out",
             activation=None,
             kernel_initializer=normc_initializer(0.25))(layer_5p)
@@ -203,6 +310,7 @@ config = ppo.DEFAULT_CONFIG.copy()
 config['log_level'] = 'DEBUG'
 
 ppo_conf = {"lambda": 0.95,
+            'eager' : True,
             "kl_coeff": 0.3,
              "sgd_minibatch_size": 48,
             "shuffle_sequences": True,
@@ -217,17 +325,17 @@ ppo_conf = {"lambda": 0.95,
             "grad_clip": 5.0,
             "gamma": 0.999,
             "sample_batch_size": 128,
-            "train_batch_size": 1024 *  10
+            "train_batch_size": 1024
             }
 config.update(ppo_conf)
-ModelCatalog.register_custom_action_dist("my_dist", MyActionDist)
+ModelCatalog.register_custom_action_dist("my_dist", MultiOrdinal)
 
 config["num_gpus"] = args.ngpu  # used for trainer process
 config["num_workers"] = args.ncpu
 config['num_envs_per_worker'] = 1
 config['env_config'] = envconf
 config['horizon'] = envconf['max_steps']
-config['model'] = {"custom_model": 'deepdrug3d'}
+config['model'] = {"custom_model": 'deepdrug3d', 'custom_action_dist' : 'my_dist'}
 trainer = ppo.PPOTrainer(config=config, env='lactamase_docking')
 # trainer.restore('/homes/aclyde11/ray_results/PPO_lactamase_docking_2019-11-22_16-34-28igjfjjyh/checkpoint_1052/checkpoint-1052')
 policy = trainer.get_policy()
