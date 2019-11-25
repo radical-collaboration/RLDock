@@ -405,7 +405,7 @@ config.update(ppo_conf)
 # # policy = trainer.get_policy()
 # # print(policy.model.base_model.summary())
 #
-# config['env'] = 'lactamase_docking'
+config['env'] = 'lactamase_docking'
 tune.run(
     "PPO",
     config=config,
