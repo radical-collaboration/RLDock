@@ -7,7 +7,7 @@ path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
     'discrete' : True,
     'K_trans' : 5,
-    'K_theta' : 10,
+    'K_theta' : 5,
     'discrete_theta' : discrete_theta,
     'discrete_trans' : discrete_trans,
     'action_space_d' : (19.15, 19.51, 20.8),

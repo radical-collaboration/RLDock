@@ -74,7 +74,9 @@ class Ordinal(TFActionDistribution):
 
     @override(TFActionDistribution)
     def _build_sample_op(self):
-        return tf.squeeze(tf.multinomial(self.inputs, 1), axis=1)
+        t =  tf.squeeze(tf.multinomial(self.inputs, 1), axis=1)
+
+        return t
 
     @staticmethod
     @override(ActionDistribution)
