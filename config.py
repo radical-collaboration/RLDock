@@ -1,13 +1,13 @@
 import os
 import math
 
-discrete_trans = 50.0
-discrete_theta = 50.0
+discrete_trans = 100.0
+discrete_theta = 100.0
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
     'discrete' : True,
-    'K_trans' : 5,
-    'K_theta' : 5,
+    'K_trans' : 4,
+    'K_theta' : 4,
     'discrete_theta' : discrete_theta,
     'discrete_trans' : discrete_trans,
     'action_space_d' : (19.15, 19.51, 20.8),
