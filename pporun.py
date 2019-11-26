@@ -409,8 +409,8 @@ config['env'] = 'lactamase_docking'
 tune.run(
     "PPO",
     config=config,
-    name='phase2PPOSearch',
-    checkpoint_freq=5,
+    name='phase4PPOSearch',
+    checkpoint_freq=100,
     checkpoint_at_end=True,
-    num_samples=192,
-    scheduler=AsyncHyperBandScheduler(time_attr='time_total_s', metric='episode_reward_mean', mode='max', max_t=3000)) # 30 minutes for each
+    num_samples=300,
+    scheduler=AsyncHyperBandScheduler(time_attr='timesteps', metric='episode_reward_mean', mode='max', max_t=2000000)) # 30 minutes for each
