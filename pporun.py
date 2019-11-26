@@ -75,7 +75,7 @@ class Ordinal(TFActionDistribution):
     @override(TFActionDistribution)
     def _build_sample_op(self):
         t =  tf.squeeze(tf.multinomial(self.inputs, 1), axis=1)
-        tf.clip_by_value(t, clip_value_min=0, clip_value_max=4)
+        t = tf.clip_by_value(t, clip_value_min=0, clip_value_max=envconf['K_trans'] - 1)
         return t
 
     @staticmethod
