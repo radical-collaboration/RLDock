@@ -414,5 +414,4 @@ tune.run(
     name='phase4PPOSearch',
     checkpoint_freq=100,
     checkpoint_at_end=True,
-    num_samples=300,
-    scheduler=AsyncHyperBandScheduler(time_attr='timesteps', metric='episode_reward_mean', mode='max', max_t=2000000)) # 30 minutes for each
+    scheduler=AsyncHyperBandScheduler(time_attr='training_iteration', metric='episode_reward_mean', mode='max', max_t=10000)) # 30 minutes for each
