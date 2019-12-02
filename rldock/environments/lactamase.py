@@ -50,13 +50,15 @@ class LactamaseDocking(gym.Env):
                                            dtype=np.float32)
 
 
-        self.observation_space = spaces.Dict({"image" : spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
-                                                dtype=np.float32),
-                                              "state_vector" : spaces.Box(low=np.array([-31, 0], dtype=np.float32),
-                                                                          high=np.array([31, 1.1], dtype=np.float32))
-                                            }
-                                        )
-
+        # self.observation_space = spaces.Dict({"image" : spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
+        #                                         dtype=np.float32),
+        #                                       "state_vector" : spaces.Box(low=np.array([-31, 0], dtype=np.float32),
+        #                                                                   high=np.array([31, 1.1], dtype=np.float32))
+        #                                     }
+        #                                 )
+        # self.observation_space  = spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
+        #                                         dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=2, shape=(26, 27, 28, 8), dtype=np.float32)
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
         self.oe_scorer = MultiScorer(config['oe_box']) # takes input as pdb string of just ligand
         self.minmaxs = [MinMax(-278, -8.45), MinMax(-1.3, 306.15), MinMax(-17.52, 161.49), MinMax(-2, 25.3)]
@@ -203,8 +205,6 @@ class LactamaseDocking(gym.Env):
         self.last_reward = reward
         self.cur_reward_sum += reward
 
-        obs = {'image' : obs, 'state_vector' : self.get_state_vector()}
-
         return obs,\
                reward,\
                reset, \
@@ -259,7 +259,7 @@ class LactamaseDocking(gym.Env):
         self.last_reward = 0
         self.next_exit = False
         self.decay_v = 1.0
-        return {'image' : self.get_obs(), 'state_vector' : self.get_state_vector()}
+        return self.get_obs()
 
     def get_obs(self, quantity='all'):
         x= self.voxelizer(self.cur_atom.toPDB(), quantity=quantity).squeeze(0).astype(np.float32)
