@@ -9,6 +9,8 @@ import numpy as np
 import random
 import argparse
 from config import config as envconf
+from ray.rllib.agents.ppo import ppo
+from ray.tune.logger import pretty_print
 
 import ray
 from ray import tune
@@ -174,22 +176,38 @@ if __name__ == "__main__":
     ModelCatalog.register_custom_model("rnn", MyKerasRNN)
     register_env("RepeatAfterMeEnv", lambda c: RepeatAfterMeEnv(c))
     register_env("RepeatInitialEnv", lambda _: RepeatInitialEnv())
-    tune.run(
-        args.run,
-        stop={"episode_reward_mean": args.stop},
-        config={
+
+    d = {
             "env": 'lactamase_docking',
             'log_level' : "INFO",
             "env_config": envconf,
             "gamma": 0.9,
-            "num_gpus" : 1,
-            "num_workers": 8,
-            "num_envs_per_worker": 2,
+            'eager' : False,
+            "num_gpus" : 0,
+        "train_batch_size" : 100,
+        "sample_batch_size" : 100,
+        'sgd_minibatch_size' : 4,
+            "num_workers": 1,
+            "num_envs_per_worker": 1,
             "entropy_coeff": 0.001,
-            "num_sgd_iter": 5,
+            "num_sgd_iter": 2,
             "vf_loss_coeff": 1e-5,
             "model": {
                 "custom_model": "rnn",
-                "max_seq_len": 20,
-            },
-        })
+                "max_seq_len": 9,
+            }}
+    ppo_config = ppo.DEFAULT_CONFIG
+    ppo_config.update(d)
+
+
+    trainer = ppo.PPOTrainer(config=ppo_config, env='lactamase_docking')
+
+    for i in range(250):
+        result = trainer.train()
+
+        if i % 1 == 0:
+            print(pretty_print(result))
+
+        if i % 25 == 0:
+            checkpoint = trainer.save()
+            print("checkpoint saved at", checkpoint)
