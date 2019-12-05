@@ -5,7 +5,7 @@ discrete_trans = 100.0
 discrete_theta = 100.0
 path = os.path.dirname(os.path.abspath(__file__)) + "/"
 config = {
-    'discrete' : True,
+    'discrete' : False,
     'K_trans' : 2,
     'K_theta' : 2,
     'discrete_theta' : discrete_theta,

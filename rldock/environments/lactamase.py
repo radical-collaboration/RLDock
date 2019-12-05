@@ -31,8 +31,8 @@ class LactamaseDocking(gym.Env):
                                            dtype=np.float32,
                                            shape=(3,1))
 
-        lows = -1 * np.array([1] * 9, dtype=np.float32)
-        highs = np.array([1] * 9, dtype=np.float32)
+        lows = -1 * np.array([2] * 9, dtype=np.float32)
+        highs = np.array([2] * 9, dtype=np.float32)
 
 
 
@@ -197,8 +197,8 @@ class LactamaseDocking(gym.Env):
         obs = self.get_obs()
 
         w1 = float(1.0)
-        w2 = 0
-        w3 = 0
+        w2 = 0.1
+        w3 = 0.1
 
         reward = w1 * (-1.0 * oe_score) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
 

@@ -46,23 +46,25 @@ class MyKerasRNN(RecurrentTFModelV2):
         print(obs_space.shape)
         # Define input layers
         input_layer = tf.keras.layers.Input(
-            shape=(None, 26, 27, 28,8), name="inputs")
-        state_in_h = tf.keras.layers.Input(shape=(cell_size, ), name="h")
-        state_in_c = tf.keras.layers.Input(shape=(cell_size, ), name="c")
+            shape=(None, 26, 27, 28, 8), name="inputs")
+        state_in_h = tf.keras.layers.Input(shape=(cell_size,), name="h")
+        state_in_c = tf.keras.layers.Input(shape=(cell_size,), name="c")
         seq_in = tf.keras.layers.Input(shape=(), name="seq_in", dtype=tf.int32)
 
         # Preprocess observation with a hidden layer and send to LSTM cell
-        h = tf.keras.layers.Reshape([-1,26,27,28,8])(input_layer)
+        h = tf.keras.layers.Reshape([-1, 26, 27, 28, 8])(input_layer)
 
-        h = tf.keras.layers.TimeDistributed(tf.keras.layers.Conv3D(filters=32, kernel_size=6, padding='valid', name='notconv1'))(h)
+        h = tf.keras.layers.TimeDistributed(
+            tf.keras.layers.Conv3D(filters=32, kernel_size=6, padding='valid', name='notconv1'))(h)
         h = tf.keras.layers.BatchNormalization()(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.TimeDistributed(tf.keras.layers.Conv3D(64, 6, padding='valid', name='conv3d_2'))(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.TimeDistributed(tf.keras.layers.MaxPooling3D(pool_size=(2, 2, 2),
-                                         strides=None,
-                                         padding='valid'))(h)
-        h = tf.keras.layers.TimeDistributed(tf.keras.layers.Conv3D(filters=64, kernel_size=3, padding='valid', name='notconv12'))(h)
+                                                                         strides=None,
+                                                                         padding='valid'))(h)
+        h = tf.keras.layers.TimeDistributed(
+            tf.keras.layers.Conv3D(filters=64, kernel_size=3, padding='valid', name='notconv12'))(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
         h = tf.keras.layers.TimeDistributed(tf.keras.layers.Conv3D(32, 3, padding='valid', name='conv3d_22'))(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
@@ -74,9 +76,9 @@ class MyKerasRNN(RecurrentTFModelV2):
             hiddens_size, activation=tf.nn.relu, name="dense1")(h)
         lstm_out, state_h, state_c = tf.keras.layers.LSTM(
             cell_size, return_sequences=True, return_state=True, name="lstm")(
-                inputs=dense1,
-                mask=tf.sequence_mask(seq_in),
-                initial_state=[state_in_h, state_in_c])
+            inputs=dense1,
+            mask=tf.sequence_mask(seq_in),
+            initial_state=[state_in_h, state_in_c])
 
         # Postprocess LSTM output with another hidden layer and compute values
         logits = tf.keras.layers.Dense(
@@ -164,12 +166,14 @@ class RepeatAfterMeEnv(gym.Env):
         self.history.append(token)
         return token
 
+
 def env_creator(env_config):
     return LactamaseDocking(env_config)
     # return an env instance
+
+
 if __name__ == "__main__":
     register_env("lactamase_docking", env_creator)
-
 
     ray.init()
     args = parser.parse_args()
@@ -178,27 +182,27 @@ if __name__ == "__main__":
     register_env("RepeatInitialEnv", lambda _: RepeatInitialEnv())
 
     d = {
-            "env": 'lactamase_docking',
-            'log_level' : "INFO",
-            "env_config": envconf,
-            "gamma": 0.9,
-            'eager' : False,
-            "num_gpus" : 0,
-        "train_batch_size" : 100,
-        "sample_batch_size" : 100,
-        'sgd_minibatch_size' : 4,
-            "num_workers": 1,
-            "num_envs_per_worker": 1,
-            "entropy_coeff": 0.001,
-            "num_sgd_iter": 2,
-            "vf_loss_coeff": 1e-5,
-            "model": {
-                "custom_model": "rnn",
-                "max_seq_len": 9,
-            }}
+        "env": 'lactamase_docking',
+        'log_level': "INFO",
+        "env_config": envconf,
+        "gamma": 0.9,
+        'eager': False,
+        "num_gpus": 0,
+        "train_batch_size": 100,
+        "sample_batch_size": 100,
+        'sgd_minibatch_size': 2,
+        "num_workers": 1,
+        "num_envs_per_worker": 1,
+        "entropy_coeff": 0.001,
+        "num_sgd_iter": 2,
+        "vf_loss_coeff": 1e-5,
+       'vf_share_layers' : True,
+        "model": {
+            "custom_model": "rnn",
+            "max_seq_len": 5,
+        }}
     ppo_config = ppo.DEFAULT_CONFIG
     ppo_config.update(d)
-
 
     trainer = ppo.PPOTrainer(config=ppo_config, env='lactamase_docking')
 
