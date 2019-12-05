@@ -175,7 +175,10 @@ def env_creator(env_config):
 if __name__ == "__main__":
     register_env("lactamase_docking", env_creator)
 
-    ray.init()
+    # ray.init()
+    memory_story = 256.00  * 1e+9
+    obj_store = 128.00 * 1e+9
+    ray.init(memory=memory_story, object_store_memory=obj_store)
     args = parser.parse_args()
     ModelCatalog.register_custom_model("rnn", MyKerasRNN)
     register_env("RepeatAfterMeEnv", lambda c: RepeatAfterMeEnv(c))
@@ -188,11 +191,11 @@ if __name__ == "__main__":
         "gamma": 0.9,
         'eager': False,
         "num_gpus": 1,
-        "train_batch_size": 200,
-        "sample_batch_size": 4000,
+        "train_batch_size": 248,
+        "sample_batch_size": 1024,
         'sgd_minibatch_size': 32,
-        "num_workers": 16,
-        "num_envs_per_worker": 2,
+        "num_workers": 32,
+        "num_envs_per_worker": 1,
         "entropy_coeff": 0.001,
         "num_sgd_iter": 10,
         "vf_loss_coeff": 5e-2,
