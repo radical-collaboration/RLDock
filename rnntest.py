@@ -187,19 +187,19 @@ if __name__ == "__main__":
         "env_config": envconf,
         "gamma": 0.9,
         'eager': False,
-        "num_gpus": 0,
+        "num_gpus": 1,
         "train_batch_size": 100,
         "sample_batch_size": 100,
-        'sgd_minibatch_size': 2,
-        "num_workers": 1,
+        'sgd_minibatch_size': 32,
+        "num_workers": 10,
         "num_envs_per_worker": 1,
         "entropy_coeff": 0.001,
-        "num_sgd_iter": 2,
-        "vf_loss_coeff": 1e-5,
+        "num_sgd_iter": 10,
+        "vf_loss_coeff": 1e-2,
        'vf_share_layers' : True,
         "model": {
             "custom_model": "rnn",
-            "max_seq_len": 5,
+            "max_seq_len": 10,
         }}
     ppo_config = ppo.DEFAULT_CONFIG
     ppo_config.update(d)
