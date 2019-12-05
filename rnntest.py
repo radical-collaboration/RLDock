@@ -113,59 +113,6 @@ class MyKerasRNN(RecurrentTFModelV2):
         return tf.reshape(self._value_out, [-1])
 
 
-class RepeatInitialEnv(gym.Env):
-    """Simple env in which the policy learns to repeat the initial observation
-    seen at timestep 0."""
-
-    def __init__(self):
-        self.observation_space = Discrete(2)
-        self.action_space = Discrete(2)
-        self.token = None
-        self.num_steps = 0
-
-    def reset(self):
-        self.token = random.choice([0, 1])
-        self.num_steps = 0
-        return self.token
-
-    def step(self, action):
-        if action == self.token:
-            reward = 1
-        else:
-            reward = -1
-        self.num_steps += 1
-        done = self.num_steps > 100
-        return 0, reward, done, {}
-
-
-class RepeatAfterMeEnv(gym.Env):
-    """Simple env in which the policy learns to repeat a previous observation
-    token after a given delay."""
-
-    def __init__(self, config):
-        self.observation_space = Discrete(2)
-        self.action_space = Discrete(2)
-        self.delay = config["repeat_delay"]
-        assert self.delay >= 1, "delay must be at least 1"
-        self.history = []
-
-    def reset(self):
-        self.history = [0] * self.delay
-        return self._next_obs()
-
-    def step(self, action):
-        if action == self.history[-(1 + self.delay)]:
-            reward = 1
-        else:
-            reward = -1
-        done = len(self.history) > 100
-        return self._next_obs(), reward, done, {}
-
-    def _next_obs(self):
-        token = random.choice([0, 1])
-        self.history.append(token)
-        return token
-
 
 def env_creator(env_config):
     return LactamaseDocking(env_config)
@@ -181,8 +128,6 @@ if __name__ == "__main__":
     ray.init(memory=memory_story, object_store_memory=obj_store)
     args = parser.parse_args()
     ModelCatalog.register_custom_model("rnn", MyKerasRNN)
-    register_env("RepeatAfterMeEnv", lambda c: RepeatAfterMeEnv(c))
-    register_env("RepeatInitialEnv", lambda _: RepeatInitialEnv())
 
     d = {
         "env": 'lactamase_docking',
@@ -197,7 +142,7 @@ if __name__ == "__main__":
         "num_workers": 32,
         "num_envs_per_worker": 1,
         "entropy_coeff": 0.001,
-        "num_sgd_iter": 10,
+        "num_sgd_iter": 16,
         "vf_loss_coeff": 5e-2,
        'vf_share_layers' : True,
         "model": {
