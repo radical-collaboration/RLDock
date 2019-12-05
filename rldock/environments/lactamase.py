@@ -230,7 +230,7 @@ class LactamaseDocking(gym.Env):
         return np.array([float(np.clip(self.last_score, -30, 30)), max_steps]).astype(np.float32)
 
 
-    def reset(self, random=0.2, many_ligands = False):
+    def reset(self, random=0.3, many_ligands = True):
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
