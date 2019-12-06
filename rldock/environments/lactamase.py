@@ -31,6 +31,16 @@ class LactamaseDocking(gym.Env):
                                            dtype=np.float32,
                                            shape=(3,1))
 
+        self.random_space_init_reset = spaces.Box(low=-0.5 * dims,
+                                            high=0.5 * dims,
+                                            dtype=np.float32)
+
+        # rotations from 0 to 2pi
+        self.random_space_rot_reset = spaces.Box(low=0,
+                                           high=2 * 3.1415926,
+                                           dtype=np.float32,
+                                           shape=(3, 1))
+
         lows = -1 * np.array([2] * 9, dtype=np.float32)
         highs = np.array([2] * 9, dtype=np.float32)
 
@@ -61,7 +71,8 @@ class LactamaseDocking(gym.Env):
         self.observation_space = spaces.Box(low=0, high=2, shape=(26, 27, 28, 8), dtype=np.float32)
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
         self.oe_scorer = MultiScorer(config['oe_box']) # takes input as pdb string of just ligand
-        self.minmaxs = [MinMax(-278, -8.45), MinMax(-1.3, 306.15), MinMax(-17.52, 161.49), MinMax(-2, 25.3)]
+        # self.minmaxs = [MinMax(-278, -8.45), MinMax(-1.3, 306.15), MinMax(-17.52, 161.49), MinMax(-2, 25.3)]
+        self.minmaxs = [MinMax(0,1), MinMax(0,1), MinMax(0,1), MinMax(0,1)]
 
 
         self.reference_ligand = LigandPDB.parse(config['ligand'])
@@ -197,8 +208,8 @@ class LactamaseDocking(gym.Env):
         obs = self.get_obs()
 
         w1 = float(1.0)
-        w2 = 0.1
-        w3 = 0.1
+        w2 = 0.01
+        w3 = 0.01
 
         reward = w1 * (-1.0 * oe_score) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
 
@@ -230,7 +241,16 @@ class LactamaseDocking(gym.Env):
         return np.array([float(np.clip(self.last_score, -30, 30)), max_steps]).astype(np.float32)
 
 
-    def reset(self, random=0.15, many_ligands = True):
+    def reset(self, random=None, many_ligands = False, random_dcd=False):
+        if random_dcd:
+            import random as rs
+            listings = glob.glob('resources/rscores/*.pdb')
+            pdb_file_name = rs.choice(listings)
+            pdb_without_ligand_file = pdb_file_name
+            oe_receptor_file =  pdb_file_name.split(".")[0] + ".oeb"
+            self.voxelizer = Voxelizer(pdb_without_ligand_file, self.config)
+            self.oe_scorer = MultiScorer(oe_receptor_file)  # takes input as pdb string of just ligand
+
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
             start_atom = copy.deepcopy(self.rligands[idz])
@@ -243,14 +263,15 @@ class LactamaseDocking(gym.Env):
             start_atom = copy.deepcopy(self.atom_center)
 
         if random is not None and float(random) != 0:
-            x,y,z, = self.random_space_init.sample().flatten().ravel() * float(random)
-            x_theta, y_theta, z_theta = self.random_space_rot.sample().flatten().ravel() * float(random)
+            x,y,z, = self.random_space_init_reset.sample().flatten().ravel() * float(random)
+            x_theta, y_theta, z_theta = self.random_space_rot_reset.sample().flatten().ravel() * float(random)
             self.trans = [x,y,z]
             random_pos = start_atom.translate(x,y,z)
             random_pos = random_pos.rotate(theta_x=x_theta, theta_y=y_theta, theta_z=z_theta)
         else:
-            self.trans = [0,0,0]
-            random_pos = start_atom
+            self.trans = [0,0,15]
+            # random_pos = start_atom
+            random_pos = start_atom.translate(0, 0, 15)
 
         self.cur_atom = random_pos
         self.last_score = self.oe_score_combine(self.oe_scorer(self.cur_atom.toPDB()))
@@ -312,9 +333,9 @@ class LactamaseDocking(gym.Env):
         except:
             pass
 
-        ax.set_xlim(0,25)
-        ax.set_ylim(0,26)
-        ax.set_zlim(0,27)
+        ax.set_xlim(0,40)
+        ax.set_ylim(0,40)
+        ax.set_zlim(0,40)
         # fig.show()
         canvas.draw()  # draw the canvas, cache the renderer
         width , height = fig.get_size_inches() * fig.get_dpi()
