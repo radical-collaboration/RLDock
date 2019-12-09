@@ -1,4 +1,3 @@
-
 import argparse
 import os
 import time
@@ -10,7 +9,8 @@ from rldock.environments.lactamase import LactamaseDocking
 
 best_mean_reward, n_steps = -np.inf, 0
 
-def  make_dir(path):
+
+def make_dir(path):
     try:
         os.mkdir(path)
     except OSError:
@@ -25,31 +25,40 @@ def getargs():
 
 
 if __name__ == '__main__':
-    # rn = Resnet3DBuilder.build_resnet_34((26,26,26,8), 400)
-    # Create log dir
 
-    # # Create and wrap the environment
-    # args = getargs()
-    # # print(args)
-    # #
     env = LactamaseDocking(config)
-    # envs = SubprocVecEnv([lambda: LactamaseDocking(config)] * 1)
 
-    # model = PPO2(CustomPolicy, envs, verbose=2, tensorboard_log="tensorlogs/")
-    # model = DistributedPPO2(CustomPolicy, env, comm=COMM, verbose=2, tensorboard_log="tensorlogs/")
-    # model.learn(total_timesteps=3000)
     iters = 1000
     start = time.time()
     obs = env.reset()
-    for i in range(iters):
-        action = [env.action_space.sample()]
-        obs, rewards, done, info = env.step(action)
-        env.render(mode='human')
-        print(rewards)
-        if done:
-            obs = env.reset()
-    end = time.time()
-    print("iters", iters / (end - start))
+    name = 'ligand'
+    fp_path = '/Users/austin/PycharmProjects/RLDock/'
+    with open('run.pml', 'w') as fp:
+        i = 0
+        with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+            cur_m  = env.cur_atom
+            f.write(cur_m.toPDB())
+        fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+        fp.write(", ligand" + name + ", " + str(i + 1) + "\n")
+        i_adjust = 0
+        for i in range(1, 100):
+            action = env.action_space.sample()
+            obs, rewards, done, info = env.step(action)
+            print(action, rewards, done)
+            env.render(mode='human')
 
+            atom = env.cur_atom
 
-    env.close()
+            if done:
+                obs = env.reset()
+                atom = env.cur_atom
+
+            with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+                f.write(atom.toPDB())
+            fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+            fp.write(", ligand" + name + ", " + str(i + 1 - i_adjust) + "\n")
+
+end = time.time()
+print("iters", iters / (end - start))
+
+env.close()

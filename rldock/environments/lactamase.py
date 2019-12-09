@@ -68,7 +68,7 @@ class LactamaseDocking(gym.Env):
         #                                 )
         # self.observation_space  = spaces.Box(low=0, high=2, shape=config['output_size'], #shape=(29, 24, 27, 16),
         #                                         dtype=np.float32)
-        self.observation_space = spaces.Box(low=0, high=2, shape=(26, 27, 28, 8), dtype=np.float32)
+        self.observation_space = spaces.Box(low=0, high=2, shape=config['output_size'], dtype=np.float32)
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
         self.oe_scorer = MultiScorer(config['oe_box']) # takes input as pdb string of just ligand
         # self.minmaxs = [MinMax(-278, -8.45), MinMax(-1.3, 306.15), MinMax(-17.52, 161.49), MinMax(-2, 25.3)]
