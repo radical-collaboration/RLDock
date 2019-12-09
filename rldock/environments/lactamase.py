@@ -252,10 +252,13 @@ class LactamaseDocking(gym.Env):
             if pdb_file_name in self.voxelcache:
                 self.voxelizer, self.oe_scorer = self.voxelcache[pdb_file_name]
             else:
-                self.voxelizer = Voxelizer(pdb_without_ligand_file, self.config)
-                self.oe_scorer = MultiScorerFromBox(pdb_file_name, self.config['bp_max'][0], self.config['bp_max'][1], self.config['bp_max'][2],
-                                                    self.config['bp_min'][0],self.config['bp_min'][1],self.config['bp_min'][2])  # takes input as pdb string of just ligand
-                self.voxelcache[pdb_file_name] = (self.voxelizer, self.oe_scorer)
+                try:
+                    self.voxelizer = Voxelizer(pdb_without_ligand_file, self.config)
+                    self.oe_scorer = MultiScorerFromBox(pdb_file_name, self.config['bp_max'][0], self.config['bp_max'][1], self.config['bp_max'][2],
+                                                        self.config['bp_min'][0],self.config['bp_min'][1],self.config['bp_min'][2])  # takes input as pdb string of just ligand
+                    self.voxelcache[pdb_file_name] = (self.voxelizer, self.oe_scorer)
+                except:
+                    print("Error, not change.")
 
 
         if many_ligands and self.rligands != None and self.use_random:
