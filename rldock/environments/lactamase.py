@@ -279,9 +279,11 @@ class LactamaseDocking(gym.Env):
             random_pos = start_atom.translate(x,y,z)
             random_pos = random_pos.rotate(theta_x=x_theta, theta_y=y_theta, theta_z=z_theta)
         else:
+            import random
             self.trans = [0,0,15]
+
             # random_pos = start_atom
-            random_pos = start_atom.translate(0, 0, 15)
+            random_pos = start_atom.translate(random.random(), random.random(), random.random() * 5 + 12.5)
 
         self.cur_atom = random_pos
         self.last_score = self.oe_score_combine(self.oe_scorer(self.cur_atom.toPDB()))
