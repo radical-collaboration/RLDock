@@ -244,10 +244,12 @@ class LactamaseDocking(gym.Env):
     def reset(self, random=None, many_ligands = False, random_dcd=False):
         if random_dcd:
             import random as rs
-            listings = glob.glob('resources/rscores/*.pdb')
+            listings = glob.glob(self.config['protein_state_folder'])
             pdb_file_name = rs.choice(listings)
             pdb_without_ligand_file = pdb_file_name
             oe_receptor_file =  pdb_file_name.split(".")[0] + ".oeb"
+
+
             self.voxelizer = Voxelizer(pdb_without_ligand_file, self.config)
             self.oe_scorer = MultiScorer(oe_receptor_file)  # takes input as pdb string of just ligand
 

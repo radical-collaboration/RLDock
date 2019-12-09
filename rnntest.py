@@ -46,13 +46,13 @@ class MyKerasRNN(RecurrentTFModelV2):
         print(obs_space.shape)
         # Define input layers
         input_layer = tf.keras.layers.Input(
-            shape=(None, 40, 40, 40, 8), name="inputs")
+            shape=(None, envconf['output_size'][0], envconf['output_size'][1], envconf['output_size'][2], envconf['output_size'][3]), name="inputs")
         state_in_h = tf.keras.layers.Input(shape=(cell_size,), name="h")
         state_in_c = tf.keras.layers.Input(shape=(cell_size,), name="c")
         seq_in = tf.keras.layers.Input(shape=(), name="seq_in", dtype=tf.int32)
 
         # Preprocess observation with a hidden layer and send to LSTM cell
-        h = tf.keras.layers.Reshape([-1, 40, 40, 40, 8])(input_layer)
+        h = tf.keras.layers.Reshape([-1] + list(envconf['output_size']))(input_layer)
 
         h = tf.keras.layers.TimeDistributed(
             tf.keras.layers.Conv3D(filters=32, kernel_size=6, padding='valid', name='notconv1'))(h)
@@ -69,8 +69,8 @@ class MyKerasRNN(RecurrentTFModelV2):
         h = tf.keras.layers.TimeDistributed(tf.keras.layers.Conv3D(32, 3, padding='valid', name='conv3d_22'))(h)
         h = tf.keras.layers.LeakyReLU(alpha=0.1)(h)
 
-        print(h.shape)
-        h = tf.keras.layers.Reshape([-1, 4 * 4 * 5 * 32])(h)
+        print('prior', h.shape)
+        h = tf.keras.layers.Reshape([-1, 11 * 11 * 11 * 32])(h)
         print(h.shape)
         dense1 = tf.keras.layers.Dense(
             hiddens_size, activation=tf.nn.relu, name="dense1")(h)
@@ -122,10 +122,10 @@ def env_creator(env_config):
 if __name__ == "__main__":
     register_env("lactamase_docking", env_creator)
 
-    # ray.init()
-    memory_story = 256.00  * 1e+9
-    obj_store = 128.00 * 1e+9
-    ray.init(memory=memory_story, object_store_memory=obj_store)
+    ray.init()
+    # memory_story = 256.00  * 1e+9
+    # obj_store = 128.00 * 1e+9
+    # ray.init(memory=memory_story, object_store_memory=obj_store)
     args = parser.parse_args()
     ModelCatalog.register_custom_model("rnn", MyKerasRNN)
 
@@ -135,8 +135,8 @@ if __name__ == "__main__":
         "env_config": envconf,
         "gamma": 0.9,
         'eager': False,
-        "num_gpus": 1,
-        "train_batch_size": 2048,
+        "num_gpus": 0,
+        "train_batch_size": 64,
         "sample_batch_size": 64,
         'sgd_minibatch_size': 32,
         "num_workers": 32,

@@ -13,7 +13,7 @@ config = {
     'discrete_trans' : discrete_trans,
     'action_space_d' : (19.15, 19.51, 20.8),
     'action_space_r' : (1, 1, 1, 1, 1, 1),
-    'protein_wo_ligand' : path + '/gpcr_without_ligand.pdb',
+    'protein_wo_ligand' :  path + '/test3.pdb',
     'ligand' : path + '/gpcr_ligand.pdb',
     'oe_box' : path +'/gpcr.oeb',
     'bp_dimension': [40, 40, 40],
@@ -27,5 +27,6 @@ config = {
     'random_ligand_folder' :     path + '/rligands',
     'random_ligand_folder_test' : path + '/rligands_eval',
     'voxel_method' : 'C',
-    'debug' : False
+    'debug' : False,
+    'protein_state_folder' : path + '/state_folder/'
 }
