@@ -241,7 +241,7 @@ class LactamaseDocking(gym.Env):
         return np.array([float(np.clip(self.last_score, -30, 30)), max_steps]).astype(np.float32)
 
 
-    def reset(self, random=None, many_ligands = False, random_dcd=True):
+    def reset(self, random=None, many_ligands = False, random_dcd=False):
         if random_dcd:
             import random as rs
             listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
