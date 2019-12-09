@@ -28,5 +28,5 @@ config = {
     'random_ligand_folder_test' : path + '/rligands_eval',
     'voxel_method' : 'C',
     'debug' : False,
-    'protein_state_folder' : path + '/state_folder/'
+    'protein_state_folder' :  '/Users/austin/gpcr/structs/'
 }

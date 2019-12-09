@@ -6,7 +6,7 @@ from gym import spaces
 import random
 from random import randint
 from rldock.environments.LPDB import LigandPDB
-from rldock.environments.utils import MultiScorer, Voxelizer, l2_action, MinMax
+from rldock.environments.utils import MultiScorerFromBox, MultiScorer,Voxelizer, l2_action, MinMax
 import glob
 import math
 
@@ -45,7 +45,7 @@ class LactamaseDocking(gym.Env):
         highs = np.array([2] * 9, dtype=np.float32)
 
 
-
+        self.voxelcache= {}
         self.use_random = True
 
         if config['discrete']:
@@ -241,17 +241,22 @@ class LactamaseDocking(gym.Env):
         return np.array([float(np.clip(self.last_score, -30, 30)), max_steps]).astype(np.float32)
 
 
-    def reset(self, random=None, many_ligands = False, random_dcd=False):
+    def reset(self, random=None, many_ligands = False, random_dcd=True):
         if random_dcd:
             import random as rs
-            listings = glob.glob(self.config['protein_state_folder'])
+            listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
             pdb_file_name = rs.choice(listings)
+            print("Using", pdb_file_name)
             pdb_without_ligand_file = pdb_file_name
-            oe_receptor_file =  pdb_file_name.split(".")[0] + ".oeb"
 
+            if pdb_file_name in self.voxelcache:
+                self.voxelizer, self.oe_scorer = self.voxelcache[pdb_file_name]
+            else:
+                self.voxelizer = Voxelizer(pdb_without_ligand_file, self.config)
+                self.oe_scorer = MultiScorerFromBox(pdb_file_name, self.config['bp_max'][0], self.config['bp_max'][1], self.config['bp_max'][2],
+                                                    self.config['bp_min'][0],self.config['bp_min'][1],self.config['bp_min'][2])  # takes input as pdb string of just ligand
+                self.voxelcache[pdb_file_name] = (self.voxelizer, self.oe_scorer)
 
-            self.voxelizer = Voxelizer(pdb_without_ligand_file, self.config)
-            self.oe_scorer = MultiScorer(oe_receptor_file)  # takes input as pdb string of just ligand
 
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
