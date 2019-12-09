@@ -9,6 +9,7 @@ config = {
     'discrete' : False,
     'K_trans' : 2,
     'K_theta' : 2,
+    'normalize' : True,
     'discrete_theta' : discrete_theta,
     'discrete_trans' : discrete_trans,
     'action_space_d' : (19.15, 19.51, 20.8),

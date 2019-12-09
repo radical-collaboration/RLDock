@@ -138,10 +138,12 @@ class LactamaseDocking(gym.Env):
         for i in range(len(oescores)):
             self.minmaxs[i].update(oescores[i])
             mins,maxs = self.minmaxs[i]()
-            if oescores[i] > self.minmaxs[i].eps:
+            if self.config['normalize'] and oescores[i] > self.minmaxs[i].eps:
                 norm_score = 0
-            else:
+            elif self.config['normalize']:
                 norm_score = (oescores[i] - maxs) / (maxs - mins)
+            else:
+                norm_score = oescores[i]
             r += norm_score
 
         if average:
@@ -211,7 +213,10 @@ class LactamaseDocking(gym.Env):
         w2 = 0.01
         w3 = 0.01
 
-        reward = w1 * (-1.0 * oe_score) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
+        if self.config['normalize']:
+            reward = w1 * (-1.0 * oe_score) - w2 * l2_action(action) - w3 * self.get_penalty_from_overlap(obs)
+        else:
+            reward = oe_score
 
         self.last_reward = reward
         self.cur_reward_sum += reward
