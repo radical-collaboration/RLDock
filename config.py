@@ -25,7 +25,7 @@ config = {
     'max_steps' : 100,
     'decay' : 0.93, # ^25 = 0.001,
     'voxel_method' : 'C',
-    'debug' : False,
+    'debug' : True,
 
     'random' : None, # randomly place ligand around protein
     'many_ligands' : False, # use many ligands from the random_ligand_folder
@@ -34,6 +34,9 @@ config = {
     'random_dcd' : True, # use random protein states from folder
     'protein_state_folder': '/Users/austin/gpcr/structs/',  #*.pdbs used randomly
     'load_num' : 3,  # used for speed, set number of states each env uses for training.
+    'cache' : '/Users/austin/gpcr/cache/',
+    'use_cache_voxels' : True,
 
-    'ref_ligand_move' : [0, 0, 15] #move GPCR ligand out of reference pocket
+    'ref_ligand_move' : [0, 0, 15], #move GPCR ligand out of reference pocket
+    'movie_mode' : True
 }

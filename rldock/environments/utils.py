@@ -40,6 +40,25 @@ class RosettaScorer:
 
 ## Basic scorer, loads pdb from file
 
+class MultiScorerFromReceptor:
+    def __init__(self, receptor):
+        self.receptor = oechem.OEGraphMol()
+        self.scorers = [oedocking.OEScore(oedocking.OEScoreType_Shapegauss),
+                        oedocking.OEScore(oedocking.OEScoreType_Chemscore),
+                        oedocking.OEScore(oedocking.OEScoreType_Chemgauss3),
+                        oedocking.OEScore(oedocking.OEScoreType_Chemgauss4),
+                        ]
+
+        for score in self.scorers:
+            score.Initialize(receptor)
+
+    def __call__(self, item : str):
+        ligand = oechem.OEGraphMol()
+        ligand_name = oechem.oemolistream()
+        ligand_name.openstring(item)
+        oechem.OEReadPDBFile(ligand_name, ligand)
+
+        return [scorer.ScoreLigand(ligand) for scorer in self.scorers]
 
 class MultiScorerFromBox:
     def __init__(self, pdb_file, xmax,ymax,zmax,xmin,ymin,zmin):
@@ -143,19 +162,30 @@ from moleculekit.smallmol.smallmol import SmallMol
 
 class Voxelizer:
 
-    def __init__(self, pdb_structure, config):
+    def __init__(self, pdb_structure, config, use_cache=None, write_cache=True):
         from moleculekit.molecule import Molecule
         from moleculekit.tools.atomtyper import prepareProteinForAtomtyping
+        import os.path
+
         self.config = config
-        prot = Molecule(pdb_structure)
 
-        prot = prepareProteinForAtomtyping(prot, verbose=False)
-        prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
-                                                     center=config['bp_centers'], validitychecks=False)
-        nchannels = prot_vox.shape[1]
+        use_cache_voxels = use_cache or config['use_cache_voxels']
+        file_name = str(os.path.basename(pdb_structure))
+        check_oeb = self.config['cache'] + file_name.split(".")[0] + ".npy"
+        if use_cache_voxels and os.path.isfile(check_oeb):
+                self.prot_vox_t = np.load(check_oeb)
+        else:
+            prot = Molecule(pdb_structure)
 
-        self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
+            prot = prepareProteinForAtomtyping(prot, verbose=False)
+            prot_vox, prot_centers, prot_N = getVoxelDescriptors(prot, buffer=0, voxelsize=config['voxelsize'], boxsize=config['bp_dimension'],
+                                                         center=config['bp_centers'], validitychecks=False)
+            nchannels = prot_vox.shape[1]
 
+            self.prot_vox_t = prot_vox.transpose().reshape([1, nchannels, prot_N[0], prot_N[1], prot_N[2]])
+
+            if write_cache or use_cache_voxels:
+                np.save(check_oeb, self.prot_vox_t)
 
     def __call__(self, lig_pdb, quantity='all'):
 

@@ -35,11 +35,11 @@ if __name__ == '__main__':
     fp_path = '/Users/austin/PycharmProjects/RLDock/'
     with open('run.pml', 'w') as fp:
         i = 0
-        with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
-            cur_m  = env.cur_atom
-            f.write(cur_m.toPDB())
-        fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
-        fp.write(", ligand" + name + ", " + str(i + 1) + "\n")
+        # with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+        #     cur_m  = env.cur_atom
+        #     f.write(cur_m.toPDB())
+        # fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+        # fp.write(", ligand" + name + ", " + str(i + 1) + "\n")
         i_adjust = 0
         for i in range(1, 100):
             action = env.action_space.sample()
@@ -55,8 +55,13 @@ if __name__ == '__main__':
 
             with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
                 f.write(atom.toPDB())
+            with open('pdbs_traj/test_p' + str(i) + '.pdb', 'w') as f:
+                with open(env.receptor_refereence_file_name, 'r')as tfs:
+                    f.writelines(tfs.readlines())
             fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
             fp.write(", ligand" + name + ", " + str(i + 1 - i_adjust) + "\n")
+            fp.write("load " + fp_path + 'pdbs_traj/test_p' + str(i) + '.pdb ')
+            fp.write(", protein" + name + ", " + str(i + 1 - i_adjust) + "\n")
 
 end = time.time()
 print("iters", iters / (end - start))

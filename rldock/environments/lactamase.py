@@ -6,7 +6,7 @@ from gym import spaces
 import random
 from random import randint
 from rldock.environments.LPDB import LigandPDB
-from rldock.environments.utils import MultiScorerFromBox, MultiScorer, Voxelizer, l2_action, MinMax
+from rldock.environments.utils import MultiScorerFromBox, MultiScorerFromReceptor, MultiScorer, Voxelizer, l2_action, MinMax
 import glob
 import math
 
@@ -77,8 +77,7 @@ class LactamaseDocking(gym.Env):
 
         self.voxelizer = Voxelizer(config['protein_wo_ligand'], config)
         if self.config['oe_box'] is None:
-            self.logmessage("NO OEBOX, creating recetpor on fly for base protein")
-            self.oe_scorer = MultiScorerFromBox(config['protein_wo_ligand'], *config['bp_max'], *config['bp_min'])
+            self.oe_scorer = MultiScorerFromReceptor(self.make_receptor(self.config['protein_wo_ligand']))
         else:
             self.logmessage("Found OE BOx for recetpor")
             self.oe_scorer = MultiScorer(config['oe_box'])
@@ -105,6 +104,17 @@ class LactamaseDocking(gym.Env):
         self.last_score = 0
         self.cur_reward_sum = 0
         self.name = ""
+
+        self.receptor_refereence_file_name = None
+
+        self.ordered_recept_voxels = None
+        if self.config['movie_mode']:
+            import os.path
+            listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
+            ordering = np.array(map(lambda x : int(str(os.path.basename(x)).split('.')[0].split("_")[-1]), listings))
+            ordering = np.argsort(ordering)
+            self.ordered_recept_voxels = [listings[i] for i in ordering]
+
 
     def reset_ligand(self, newlig):
         """
@@ -233,6 +243,9 @@ class LactamaseDocking(gym.Env):
         self.last_reward = reward
         self.cur_reward_sum += reward
 
+        if self.config['movie_mode']:
+            self.movie_step(self.steps)
+
         return obs, \
                reward, \
                reset, \
@@ -249,15 +262,41 @@ class LactamaseDocking(gym.Env):
         if self.config['debug']:
             print(*args, **kwargs)
 
+    def reset_random_recep(self):
+        import random as rs
+        self.receptor_refereence_file_name = list(self.voxelcache.keys())[rs.randint(0, len(self.voxelcache) - 1)]
+        self.voxelizer, self.oe_scorer = self.voxelcache[self.receptor_refereence_file_name]
+
+    def movie_step(self, step=0):
+        self.receptor_refereence_file_name = self.ordered_recept_voxels[step]
+        self.voxelizer = self.voxelcache[self.receptor_refereence_file_name]
+
+        pdb_file_name = self.receptor_refereence_file_name
+
+        if pdb_file_name in self.voxelcache:
+            self.voxelizer, self.oe_scorer = self.voxelcache[pdb_file_name]
+        else:
+            try:
+                self.logmessage("Not in cache, making....", pdb_file_name)
+                self.voxelizer = Voxelizer(pdb_file_name, self.config, write_cache=True)
+                recept = self.make_receptor(pdb_file_name)
+                self.oe_scorer = MultiScorerFromReceptor(recept)
+                self.voxelcache[pdb_file_name] = (self.voxelizer, self.oe_scorer)
+            except:
+                print("Error, not change.")
+
     def reset(self, random=None, many_ligands=None, random_dcd=None, load_num=None):
         random = random or self.config['random']
         many_ligands = many_ligands or self.config['many_ligands']
         random_dcd = random_dcd or self.config['random_dcd']
         load_num = load_num or self.config['load_num']
 
-        if random_dcd:
+        if self.config['movie_mode']:
             import random as rs
+            self.movie_step(rs.randint(0, 1500))
 
+        elif random_dcd:
+            import random as rs
             if len(self.voxelcache) < load_num:
                 self.logmessage("Voxel cache is empty or with size", len(self.voxelcache))
                 listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
@@ -269,14 +308,15 @@ class LactamaseDocking(gym.Env):
                         self.voxelizer, self.oe_scorer = self.voxelcache[pdb_file_name]
                     else:
                         try:
-                            self.logmessage("Creating recetpor for", pdb_file_name)
-                            self.voxelizer = Voxelizer(pdb_file_name, self.config)
-                            self.oe_scorer = MultiScorerFromBox(pdb_file_name, *self.config['bp_max'], *self.config['bp_min'])
+                            self.logmessage("Not in cache, making....", pdb_file_name)
+                            self.voxelizer = Voxelizer(pdb_file_name, self.config, write_cache=True)
+                            recept = self.make_receptor(pdb_file_name)
+                            self.oe_scorer = MultiScorerFromReceptor(recept)
                             self.voxelcache[pdb_file_name] = (self.voxelizer, self.oe_scorer)
                         except:
                             print("Error, not change.")
 
-            self.voxelizer, self.oe_scorer = self.voxelcache[list(self.voxelcache.keys())[rs.randint(0, load_num - 1)]]
+            self.reset_random_recep()
 
         if many_ligands and self.rligands != None and self.use_random:
             idz = randint(0, len(self.rligands) - 1)
@@ -317,6 +357,39 @@ class LactamaseDocking(gym.Env):
         if self.config['debug']:
             print("SHAPE", x.shape)
         return x
+
+    def make_receptor(self, pdb):
+        from openeye import oedocking, oechem
+        import os.path
+
+        file_name = str(os.path.basename(pdb))
+        check_oeb = self.config['cache'] + file_name.split(".")[0] + ".oeb"
+        if os.path.isfile(check_oeb):
+            self.logmessage("Using stored receptor", check_oeb)
+
+            ifs = oechem.oemolistream(check_oeb)
+            ifs.SetFormat(oechem.OEFormat_OEB)
+            g = oechem.OEGraphMol()
+            oechem.OEReadMolecule(ifs, g)
+            return g
+        else:
+            self.logmessage("NO OEBOX, creating recetpor on fly for base protein", check_oeb, pdb)
+
+            proteinStructure = oechem.OEGraphMol()
+            ifs = oechem.oemolistream(pdb)
+            ofs = oechem.oemolostream(check_oeb)
+            ifs.SetFormat(oechem.OEFormat_PDB)
+            ofs.SetFormat(oechem.OEFormat_OEB)
+            oechem.OEReadMolecule(ifs, proteinStructure)
+
+            box = oedocking.OEBox(*self.config['bp_max'], *self.config['bp_min'])
+
+            receptor = oechem.OEGraphMol()
+            s = oedocking.OEMakeReceptor(receptor, proteinStructure, box)
+            assert(s != False)
+            oechem.OEWriteMolecule(ofs, receptor)
+            ofs.close()
+            return receptor
 
     def render(self, mode='human'):
         from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
