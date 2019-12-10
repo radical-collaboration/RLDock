@@ -11,7 +11,6 @@ from config import config as envconf
 from rldock.environments.lactamase import LactamaseDocking
 from rnntest import MyKerasRNN
 
-env = LactamaseDocking(envconf)
 
 checkpoint = "/Users/austin/PPO_lactamase_docking_2019-12-09_15-09-10t3qmcnrc/checkpoint_1/checkpoint-1"
 
@@ -24,7 +23,6 @@ def get_args():
 
 
 def env_creator(env_config):
-    print(env_config)
     return LactamaseDocking(env_config)
     # return an env instance
 
@@ -38,6 +36,15 @@ if __name__ == '__main__':
     # ray.init(memory=memory_story, object_store_memory=obj_store)
     args = get_args()
     ModelCatalog.register_custom_model("rnn", MyKerasRNN)
+
+
+    envconf['normalize'] = False
+    # envconf['protein_wo_ligand'] = args.i
+    # envconf['oe_box'] = None
+    # envconf['random'] = False
+    # envconf['random_dcd'] = False
+    envconf['debug'] = True
+
 
     d = {
         "env": 'lactamase_docking',
@@ -62,15 +69,12 @@ if __name__ == '__main__':
     ppo_config = ppo.DEFAULT_CONFIG
     ppo_config.update(d)
 
-
     get_dock_marks = []
-    envconf['normalize'] = False
-    workers = RolloutWorker(env_creator,  ppo.PPOTFPolicy,env_config=envconf, policy_config=d)
-    # workers.restore(open(checkpoint, 'rb'))
-    obs = env.reset()
+
+    workers = RolloutWorker(env_creator,  ppo.PPOTFPolicy, env_config=envconf, policy_config=d)
+
     with open(args.o, 'w') as f:
         for i in workers.sample()['rewards']:
             f.write(str(i) + "\n")
 
 
-    env.close()

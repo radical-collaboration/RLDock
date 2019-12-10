@@ -42,7 +42,7 @@ class RosettaScorer:
 
 
 class MultiScorerFromBox:
-    def __init__(self, pdb_file, xmin,xmax,ymin,ymax,zmin,zmax):
+    def __init__(self, pdb_file, xmax,ymax,zmax,xmin,ymin,zmin):
         self.receptor = oechem.OEGraphMol()
         self.scorers = [oedocking.OEScore(oedocking.OEScoreType_Shapegauss),
                         oedocking.OEScore(oedocking.OEScoreType_Chemscore),
@@ -50,17 +50,16 @@ class MultiScorerFromBox:
                         oedocking.OEScore(oedocking.OEScoreType_Chemgauss4),
                         ]
 
+        proteinStructure = oechem.OEGraphMol()
+        ifs = oechem.oemolistream(pdb_file)
+        ifs.SetFormat(oechem.OEFormat_PDB)
+        oechem.OEReadMolecule(ifs, proteinStructure)
 
+        box = oedocking.OEBox(xmax, ymax, zmax, xmin, ymin, zmin)
+
+        receptor = oechem.OEGraphMol()
+        s = oedocking.OEMakeReceptor(receptor, proteinStructure, box)
         for score in self.scorers:
-            proteinStructure = oechem.OEGraphMol()
-            oechem.OEReadMolecule(oechem.oemolistream(pdb_file), proteinStructure)
-
-            print(proteinStructure.GetAtoms())
-
-            box = oedocking.OEBox(xmax, ymax, zmax, xmin, ymin, zmin)
-
-            receptor = oechem.OEGraphMol()
-            s = oedocking.OEMakeReceptor(receptor, proteinStructure, box)
             assert(s != False)
             score.Initialize(receptor)
 
