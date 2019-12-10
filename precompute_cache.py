@@ -46,5 +46,5 @@ listings = glob.glob(conf['protein_state_folder'] + "*.pdb")
 res = []
 with Pool(5) as p:
     its = p.imap_unordered(putincache, listings)
-    for res in tqdm(its):
-        res.append(res)
+    for rest in tqdm(its):
+        res.append(rest)
