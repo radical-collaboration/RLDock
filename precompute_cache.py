@@ -2,6 +2,7 @@ from config import config as conf
 import glob as glob
 from tqdm import tqdm
 from rldock.environments.utils import Voxelizer, MultiScorerFromReceptor
+from multiprocessing import Pool
 
 def make_receptor( pdb):
     from openeye import oedocking, oechem
@@ -34,8 +35,16 @@ def make_receptor( pdb):
         ofs.close()
         return receptor
 
-listings = glob.glob(conf['protein_state_folder'] + "*.pdb")
-for pdb_file_name in tqdm(listings):
+def putincache(pdb_file_name):
     voxelizer = Voxelizer(pdb_file_name, conf, write_cache=True)
     recept = make_receptor(pdb_file_name)
     oe_scorer = MultiScorerFromReceptor(recept)
+    return 1
+
+listings = glob.glob(conf['protein_state_folder'] + "*.pdb")
+
+res = []
+with Pool(5) as p:
+    its = p.imap_unordered(putincache, listings)
+    for res in tqdm(its):
+        res.append(res)
