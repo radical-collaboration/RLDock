@@ -268,7 +268,12 @@ class LactamaseDocking(gym.Env):
         self.voxelizer, self.oe_scorer = self.voxelcache[self.receptor_refereence_file_name]
 
     def movie_step(self, step=0):
-        self.receptor_refereence_file_name = self.ordered_recept_voxels[step]
+        try:
+            self.receptor_refereence_file_name = self.ordered_recept_voxels[step]
+        except:
+            print("Error length...", len(self.ordered_recept_voxels))
+            exit()
+
         self.voxelizer = self.voxelcache[self.receptor_refereence_file_name]
 
         pdb_file_name = self.receptor_refereence_file_name
