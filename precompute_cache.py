@@ -16,6 +16,8 @@ def make_receptor( pdb):
         ifs.SetFormat(oechem.OEFormat_OEB)
         g = oechem.OEGraphMol()
         oechem.OEReadMolecule(ifs, g)
+
+
         return g
     else:
         proteinStructure = oechem.OEGraphMol()
@@ -35,6 +37,7 @@ def putincache(pdb_file_name):
     voxelizer = Voxelizer(pdb_file_name, conf, write_cache=True)
     recept = make_receptor(pdb_file_name)
     oe_scorer = MultiScorerFromReceptor(recept)
+    assert(oe_scorer.scorers[0].IsInitialized())
     return 1
 
 import numpy as np
