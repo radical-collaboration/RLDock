@@ -374,27 +374,22 @@ class LactamaseDocking(gym.Env):
         if os.path.isfile(check_oeb):
             self.logmessage("Using stored receptor", check_oeb)
 
-            ifs = oechem.oemolistream(check_oeb)
             g = oechem.OEGraphMol()
-            oechem.OEReadMolecule(ifs, g)
+            oedocking.OEReadReceptorFile(g, check_oeb)
             return g
         else:
             self.logmessage("NO OEBOX, creating recetpor on fly for base protein", check_oeb, pdb)
 
             proteinStructure = oechem.OEGraphMol()
             ifs = oechem.oemolistream(pdb)
-            ofs = oechem.oemolostream(check_oeb)
             ifs.SetFormat(oechem.OEFormat_PDB)
-            ofs.SetFormat(oechem.OEFormat_OEB)
             oechem.OEReadMolecule(ifs, proteinStructure)
 
             box = oedocking.OEBox(*self.config['bp_max'], *self.config['bp_min'])
 
             receptor = oechem.OEGraphMol()
             s = oedocking.OEMakeReceptor(receptor, proteinStructure, box)
-            assert(s != False)
-            oechem.OEWriteMolecule(ofs, receptor)
-            ofs.close()
+            oedocking.OEWriteReceptorFile(receptor, check_oeb)
             return receptor
 
     def render(self, mode='human'):

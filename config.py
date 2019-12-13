@@ -38,5 +38,5 @@ config = {
     'use_cache_voxels' : True,
 
     'ref_ligand_move' : [0, 0, 15], #move GPCR ligand out of reference pocket
-    'movie_mode' : True
+    'movie_mode' : False
 }

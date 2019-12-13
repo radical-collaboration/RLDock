@@ -11,13 +11,8 @@ def make_receptor( pdb):
     file_name = str(os.path.basename(pdb))
     check_oeb = conf['cache'] + file_name.split(".")[0] + ".oeb"
     if os.path.isfile(check_oeb):
-
-        ifs = oechem.oemolistream(check_oeb)
-        ifs.SetFormat(oechem.OEFormat_OEB)
         g = oechem.OEGraphMol()
-        oechem.OEReadMolecule(ifs, g)
-
-
+        oedocking.OEReadReceptorFile(g, check_oeb)
         return g
     else:
         proteinStructure = oechem.OEGraphMol()
@@ -29,7 +24,7 @@ def make_receptor( pdb):
 
         receptor = oechem.OEGraphMol()
         s = oedocking.OEMakeReceptor(receptor, proteinStructure, box)
-        oedocking.OEWriteReceptorFile(check_oeb)
+        oedocking.OEWriteReceptorFile(receptor, check_oeb)
         assert (s != False)
         return receptor
 
