@@ -112,7 +112,9 @@ class LactamaseDocking(gym.Env):
             import os.path
             listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
             ordering = np.array(map(lambda x : int(str(os.path.basename(x)).split('.')[0].split("_")[-1]), listings))
-            ordering = np.argsort(ordering)[:800]
+            ordering = np.argsort(ordering)[:700]
+            print("Making ordering....")
+            print(listings[0], len(listings))
             self.ordered_recept_voxels = [listings[i] for i in ordering]
 
 
