@@ -1,5 +1,5 @@
 import argparse
-
+import shutil
 import ray
 from ray.rllib.evaluation import RolloutWorker
 from ray.rllib.agents.ppo import ppo
@@ -41,9 +41,9 @@ if __name__ == '__main__':
     envconf['normalize'] = False
     # envconf['protein_wo_ligand'] = args.i
     # envconf['oe_box'] = None
-    # envconf['random'] = False
-    # envconf['random_dcd'] = False
-    envconf['debug'] = True
+    envconf['random'] = False
+    envconf['random_dcd'] = False
+    envconf['debug'] = False
 
 
     d = {
@@ -73,8 +73,20 @@ if __name__ == '__main__':
 
     workers = RolloutWorker(env_creator,  ppo.PPOTFPolicy, env_config=envconf, policy_config=d)
 
-    with open(args.o, 'w') as f:
-        for i in workers.sample()['rewards']:
-            f.write(str(i) + "\n")
+    fp_path = "/Users/austin/PycharmProjects/RLDock/"
+    with open("log.pml") as fp:
+        with open(args.o, 'w') as f:
+            rs = workers.sample()
+            for i, info in enumerate(rs):
+                ligand_pdb = info['atom']
+                protein_pdb_link = info['protein']
 
+                with open(fp_path + 'pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+                    f.write(ligand_pdb)
+                shutil.copyfile(protein_pdb_link, fp_path + 'pdbs_traj/test_p' + str(i) + '.pdb')
+
+                fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
+                fp.write(", ligand" + ", " + str(i ) + "\n")
+                fp.write("load " + fp_path + 'pdbs_traj/test_p' + str(i) + '.pdb ')
+                fp.write(", protein" + ", " + str(i ) + "\n")
 

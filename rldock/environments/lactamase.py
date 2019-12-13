@@ -105,14 +105,14 @@ class LactamaseDocking(gym.Env):
         self.cur_reward_sum = 0
         self.name = ""
 
-        self.receptor_refereence_file_name = None
+        self.receptor_refereence_file_name = config['protein_wo_ligand']
 
         self.ordered_recept_voxels = None
         if self.config['movie_mode']:
             import os.path
             listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
             ordering = np.array(map(lambda x : int(str(os.path.basename(x)).split('.')[0].split("_")[-1]), listings))
-            ordering = np.argsort(ordering)
+            ordering = np.argsort(ordering)[:800]
             self.ordered_recept_voxels = [listings[i] for i in ordering]
 
 
@@ -249,7 +249,7 @@ class LactamaseDocking(gym.Env):
         return obs, \
                reward, \
                reset, \
-               {}
+               {'atom' : self.cur_atom.toPDB(), 'protein' : self.receptor_refereence_file_name}
 
     def decide_reset(self, score):
         return (self.steps > self.config['max_steps']) or (not self.check_atom_in_box())
@@ -293,7 +293,7 @@ class LactamaseDocking(gym.Env):
 
         if self.config['movie_mode']:
             import random as rs
-            self.movie_step(rs.randint(0, 1500))
+            self.movie_step(rs.randint(0, 500))
 
         elif random_dcd:
             import random as rs
