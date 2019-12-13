@@ -277,7 +277,6 @@ class LactamaseDocking(gym.Env):
             print("Error length...", len(self.ordered_recept_voxels))
             exit()
 
-        self.voxelizer = self.voxelcache[self.receptor_refereence_file_name]
 
         pdb_file_name = self.receptor_refereence_file_name
 
