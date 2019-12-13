@@ -18,21 +18,17 @@ def make_receptor( pdb):
         oechem.OEReadMolecule(ifs, g)
         return g
     else:
-
         proteinStructure = oechem.OEGraphMol()
         ifs = oechem.oemolistream(pdb)
-        ofs = oechem.oemolostream(check_oeb)
         ifs.SetFormat(oechem.OEFormat_PDB)
-        ofs.SetFormat(oechem.OEFormat_OEB)
         oechem.OEReadMolecule(ifs, proteinStructure)
 
         box = oedocking.OEBox(*conf['bp_max'], *conf['bp_min'])
 
         receptor = oechem.OEGraphMol()
         s = oedocking.OEMakeReceptor(receptor, proteinStructure, box)
+        oedocking.OEWriteReceptorFile(check_oeb)
         assert (s != False)
-        oechem.OEWriteMolecule(ofs, receptor)
-        ofs.close()
         return receptor
 
 def putincache(pdb_file_name):
@@ -41,7 +37,15 @@ def putincache(pdb_file_name):
     oe_scorer = MultiScorerFromReceptor(recept)
     return 1
 
+import numpy as np
+import os.path
 listings = glob.glob(conf['protein_state_folder'] + "*.pdb")
+print("listing len", len(listings))
+ordering = list(map(lambda x : int(str(os.path.basename(x)).split('.')[0].split("_")[-1]), listings))
+ordering = np.argsort(ordering)[:700]
+print("Making ordering....")
+print(listings[0], len(listings))
+listings = [listings[i] for i in ordering][:200]
 
 res = []
 with Pool(5) as p:

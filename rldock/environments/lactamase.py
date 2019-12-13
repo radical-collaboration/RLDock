@@ -113,7 +113,7 @@ class LactamaseDocking(gym.Env):
             listings = glob.glob(self.config['protein_state_folder'] + "*.pdb")
             print("listing len", len(listings))
             ordering = list(map(lambda x : int(str(os.path.basename(x)).split('.')[0].split("_")[-1]), listings))
-            ordering = np.argsort(ordering)[:700]
+            ordering = np.argsort(ordering)[:200]
             print("Making ordering....")
             print(listings[0], len(listings))
             self.ordered_recept_voxels = [listings[i] for i in ordering]
@@ -300,7 +300,7 @@ class LactamaseDocking(gym.Env):
 
         if self.config['movie_mode']:
             import random as rs
-            self.movie_step(rs.randint(0, 500))
+            self.movie_step(rs.randint(0, 50))
 
         elif random_dcd:
             import random as rs
@@ -375,7 +375,6 @@ class LactamaseDocking(gym.Env):
             self.logmessage("Using stored receptor", check_oeb)
 
             ifs = oechem.oemolistream(check_oeb)
-            ifs.SetFormat(oechem.OEFormat_OEB)
             g = oechem.OEGraphMol()
             oechem.OEReadMolecule(ifs, g)
             return g
