@@ -1,22 +1,17 @@
-from continuumio/miniconda
+from aclyde11/rldock
 # is based on debian:latest
 
 ARG conda_env=RLDock
 
-# $ docker build . -t aclyde11/rldock
-
-# gcc and mpi for mdanalysis libdcd, mpi4py, and vmstat for ray
-RUN apt-get update && apt-get install -y git \
-    g++ \
-    libopenmpi-dev \
-    sysstat \
-    procps
-
-RUN git clone https://github.com/radical-collaboration/RLDock.git $HOME/$conda_env && \
-    cd $HOME/RLDock && git checkout lstm && \
-    conda env create -f environment.yml
+# $ docker build . -t aclyde11/rldock_rct
 
 ENV PATH /opt/conda/envs/$conda_env/bin:$PATH
 ENV CONDA_DEFAULT_ENV $conda_env
 
-ENTRYPOINT [ "python", "$HOME/$conda_env/runner.py" ]
+RUN pip install -y radical.saga radical.utils radical.pilot radical.entk
+
+ENV RMQ_HOSTNAME=two.radical-project.org
+ENV RMQ_PORT=33239
+
+#ENTRYPOINT [ "python", "$HOME/$conda_env/.py" ]
+CMD [ "/bin/bash" ]
