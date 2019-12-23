@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rldock-jobsubmit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rldock-jobsubmit
+  template:
+    metadata:
+      annotations:
+        ccs.ornl.gov/batchScheduler: "true"
+        ccs.ornl.gov/fs: olcf
+      labels:
+        app: rldock-jobsubmit
+    spec:
+      containers:
+      - args:
+        - -i test0.pdb -o output.score
+        image: docker-registry.default.svc:5000/aclyde11/rldock:latest
+        imagePullPolicy: IfNotPresent
+        stdin: true
+        stdinOnce: true
+        name: rldock-jobsubmit

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: rldock
+  name: rldock
+spec:
+  containers:
+  - image: aclyde11/rldock:latest
+    imagePullPolicy: IfNotPresent
+    name: rldock
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
