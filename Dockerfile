@@ -13,10 +13,13 @@ RUN apt-get update && apt-get install -y git \
     procps
 
 RUN git clone https://github.com/radical-collaboration/RLDock.git $HOME/$conda_env && \
-    cd $HOME/RLDock && git checkout lstm && \
+    cd $HOME/$conda_env && git checkout lstm && \
     conda env create -f environment.yml
 
 ENV PATH /opt/conda/envs/$conda_env/bin:$PATH
 ENV CONDA_DEFAULT_ENV $conda_env
 
-ENTRYPOINT [ "python", "$HOME/$conda_env/runner.py" ]
+RUN echo "#!/bin/bash\nconda run -n $CONDA_DEFAULT_ENV python $HOME/$CONDA_DEFAULT_ENV/runner.py $@" > /docker-entrypoint.sh
+RUN chmod 700 /docker-entrypoint.sh
+
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
