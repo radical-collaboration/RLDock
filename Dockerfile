@@ -2,6 +2,7 @@ from continuumio/miniconda
 # is based on debian:latest
 
 ARG conda_env=RLDock
+ENV NCCS_PRJ_PATH=/gpfs/alpine/proj-shared/lrn005/$conda_env
 
 # $ docker build . -t aclyde11/rldock
 
@@ -12,6 +13,7 @@ RUN apt-get update && apt-get install -y git \
     sysstat \
     procps
 
+RUN mkdir -p /PycharmProjects/$conda_env
 RUN git clone https://github.com/radical-collaboration/RLDock.git $HOME/$conda_env && \
     cd $HOME/$conda_env && git checkout lstm && \
     conda env create -f environment.yml

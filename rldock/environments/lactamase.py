@@ -400,8 +400,8 @@ class LactamaseDocking(gym.Env):
 
         obs = (self.get_obs(quantity='ligand')[:, :, :, -1]).squeeze()
         obs1 = (self.get_obs(quantity='protein')[:, :, :, -1]).squeeze()
-        # np.save("/Users/austin/obs.npy", obs)
-        # np.save("/Users/austin/pro.npy", obs1)
+        # np.save("/PycharmProjects/RLDock/obs.npy", obs)
+        # np.save("/PycharmProjects/RLDock/pro.npy", obs1)
         print(obs.shape)
         fig = plt.figure(figsize=(10, 10), dpi=100)
         ax = fig.gca(projection='3d')

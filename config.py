@@ -32,9 +32,9 @@ config = {
     'random_ligand_folder': path + '/rligands',
     'random_ligand_folder_test': path + '/rligands_eval', #use train_ligands() or eval_ligands() to switch, default train_ligands called if manyligands not false
     'random_dcd' : True, # use random protein states from folder
-    'protein_state_folder': '/Users/austin/gpcr/structs/',  #*.pdbs used randomly
+    'protein_state_folder': '/PycharmProjects/RLDock/gpcr/structs/',  #*.pdbs used randomly
     'load_num' : 3,  # used for speed, set number of states each env uses for training.
-    'cache' : '/Users/austin/gpcr/cache/',
+    'cache' : '/PycharmProjects/RLDock/gpcr/cache/',
     'use_cache_voxels' : True,
 
     'ref_ligand_move' : [0, 0, 15], #move GPCR ligand out of reference pocket

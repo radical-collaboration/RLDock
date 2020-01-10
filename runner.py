@@ -11,8 +11,9 @@ from config import config as envconf
 from rldock.environments.lactamase import LactamaseDocking
 from rnntest import MyKerasRNN
 
+import os
 
-checkpoint = "/Users/austin/PPO_lactamase_docking_2019-12-09_15-09-10t3qmcnrc/checkpoint_1/checkpoint-1"
+checkpoint = "/PycharmProjects/RLDock/PPO_lactamase_docking_2019-12-09_15-09-10t3qmcnrc/checkpoint_1/checkpoint-1"
 
 
 def get_args():
@@ -73,7 +74,7 @@ if __name__ == '__main__':
 
     workers = RolloutWorker(env_creator,  ppo.PPOTFPolicy, env_config=envconf, policy_config=d)
 
-    fp_path = "/Users/austin/PycharmProjects/RLDock/"
+    fp_path = os.getenv("NCCS_PRJ_PATH", "/gpfs/alpine/proj-shared/lrn005/RLDock/")
     with open("log.pml") as fp:
         with open(args.o, 'w') as f:
             rs = workers.sample()

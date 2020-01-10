@@ -71,7 +71,7 @@ if __name__ == '__main__':
 
     env.reset()
 
-    fp_path = '/Users/austin/PycharmProjects/RLDock/'
+    fp_path = '/PycharmProjects/RLDock/'
     with open('run.pml', 'w') as fp:
         i = 0
         with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:

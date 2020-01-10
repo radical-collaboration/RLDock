@@ -42,7 +42,7 @@ if __name__ == '__main__':
     obs = env.reset()
     ligand_counter = 0
     lignad_name = 0
-    fp_path = '/Users/austin/PycharmProjects/RLDock/'
+    fp_path = '/PycharmProjects/RLDock/'
     with open('run.pml', 'w') as fp:
         i = 0
         with open('pdbs_traj/test' + str(i) + '.pdb', 'w') as f:

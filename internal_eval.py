@@ -187,7 +187,7 @@ config['horizon'] = envconf['max_steps']
 from ray.rllib.agents.registry import get_agent_class
 # trainer = impala.ImpalaTrainer(config=config, env='lactamase_docking')
 #trainer = ppo.PPOTrainer(config=config, env="lactamase_docking")
-checkpoint = '/Users/austin/checkpoint_951/checkpoint-951'
+checkpoint = '/PycharmProjects/RLDock/checkpoint_951/checkpoint-951'
 #policy = trainer.get_policy()
 #print(policy.model.base_model.summary())
 
@@ -203,7 +203,7 @@ header = None
 obs = env.reset()
 ligand_counter = 0
 lignad_name = 0
-fp_path = '/Users/austin/PycharmProjects/RLDock/'
+fp_path = '/PycharmProjects/RLDock/'
 
 with open('run.pml', 'w') as fp:
     i = 0
