@@ -21,6 +21,9 @@ RUN git clone https://github.com/radical-collaboration/RLDock.git $HOME/$conda_e
 ENV PATH /opt/conda/envs/$conda_env/bin:$PATH
 ENV CONDA_DEFAULT_ENV $conda_env
 
+COPY oe_license.txt /PycharmProjects/$conda_env/oe_license.txt
+ENV OE_LICENSE /PycharmProjects/$conda_env/oe_license.txt
+
 RUN echo "#!/bin/bash\nconda run -n $CONDA_DEFAULT_ENV python $HOME/$CONDA_DEFAULT_ENV/runner.py $@" > /docker-entrypoint.sh
 RUN chmod 700 /docker-entrypoint.sh
 
