@@ -75,7 +75,7 @@ if __name__ == '__main__':
     workers = RolloutWorker(env_creator,  ppo.PPOTFPolicy, env_config=envconf, policy_config=d)
 
     fp_path = os.getenv("NCCS_PRJ_PATH", "/gpfs/alpine/proj-shared/lrn005/RLDock/")
-    with open("log.pml") as fp:
+    with open("log.pml", "w") as fp:
         with open(args.o, 'w') as f:
             rs = workers.sample()
             for i, info in enumerate(rs):
