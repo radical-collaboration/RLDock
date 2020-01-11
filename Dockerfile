@@ -1,6 +1,7 @@
 from continuumio/miniconda
 # is based on debian:latest
 
+ARG prj_name=PycharmProjects
 ARG conda_env=RLDock
 ENV NCCS_PRJ_PATH=/gpfs/alpine/proj-shared/lrn005/$conda_env
 
@@ -13,7 +14,7 @@ RUN apt-get update && apt-get install -y git \
     sysstat \
     procps
 
-RUN mkdir -p /PycharmProjects/$conda_env
+RUN mkdir -p /$prj_name/$conda_env
 RUN git clone https://github.com/radical-collaboration/RLDock.git $HOME/$conda_env && \
     cd $HOME/$conda_env && git checkout lstm && \
     conda env create -f environment.yml
@@ -21,8 +22,8 @@ RUN git clone https://github.com/radical-collaboration/RLDock.git $HOME/$conda_e
 ENV PATH /opt/conda/envs/$conda_env/bin:$PATH
 ENV CONDA_DEFAULT_ENV $conda_env
 
-COPY oe_license.txt /PycharmProjects/$conda_env/oe_license.txt
-ENV OE_LICENSE /PycharmProjects/$conda_env/oe_license.txt
+COPY oe_license.txt /$prj_name/$conda_env/oe_license.txt
+ENV OE_LICENSE /$prj_name/$conda_env/oe_license.txt
 
 RUN echo "#!/bin/bash\nconda run -n $CONDA_DEFAULT_ENV python $HOME/$CONDA_DEFAULT_ENV/runner.py $@" > /docker-entrypoint.sh
 RUN chmod 700 /docker-entrypoint.sh
