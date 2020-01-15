@@ -8,9 +8,11 @@ while True:
     if len(l) > 0:
         for i in l:
             with open(i) as f:
-                cmd = f.readlines()[0]
+                cmd = f.readlines()[0].split()
+                executable = cmd[0]
+                params = cmd[1:]
                 cmds = ["python", os.getenv("local_prj_path",
-                    "/PycharmProjects/RLDock/src")] + cmd.split()
+                    "/PycharmProjects/RLDock/src") + "/" + executable] + params
                 output = subprocess.check_output(cmds, shell=True,
                         stderr=subprocess.STDOUT)
                 print(cmds, output)
