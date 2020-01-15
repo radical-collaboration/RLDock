@@ -9,12 +9,13 @@ while True:
         for i in l:
             with open(i) as f:
                 cmd = f.readlines()[0]
-                cmds = [
-                    "python",
-                    "{}/{}".format(os.getenv("local_prj_path", "/PycharmProjects/RLDock/src"), cmd)]
+                cmds = ["python", os.getenv("local_prj_path",
+                    "/PycharmProjects/RLDock/src")] + cmd.split()
                 output = subprocess.check_output(cmds, shell=True,
                         stderr=subprocess.STDOUT)
                 print(cmds, output)
+                with open("{}/debug.log".format(os.getenv("NCCS_PRJ_PATH")), "a+") as fdebug:
+                    fdebug.write("{}:{}\n".format(cmds, output))
             os.unlink("{}".format(i))
     else:
         time.sleep(5)

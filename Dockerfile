@@ -32,7 +32,7 @@ RUN mkdir -p /$prj_name/$conda_env/gpcr/cache
 RUN echo "#!/bin/bash\n. /opt/conda/etc/profile.d/conda.sh\nconda activate $CONDA_DEFAULT_ENV\ncd $prj_name\npython /watch.py" > /docker-entrypoint.sh
 RUN chmod 755 /docker-entrypoint.sh
 
-RUN git clone https://github.com/radical-collaboration/RLDock.git /$prj_name/$conda_env/src/ && cd /$prj_name/$conda_env/src && git checkout lstm
+RUN git clone https://github.com/radical-collaboration/RLDock.git /$prj_name/$conda_env/src && cd /$prj_name/$conda_env/src && git checkout lstm
 
 RUN chown -R 15798:27061 /opt/conda/envs/$conda_env
 RUN chown -R 15798:27061 /$prj_name
