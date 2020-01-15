@@ -83,9 +83,9 @@ if __name__ == '__main__':
                 ligand_pdb = info['atom']
                 protein_pdb_link = info['protein']
 
-                with open(fp_path + 'pdbs_traj/test' + str(i) + '.pdb', 'w') as f:
+                with open(os.path.join(fp_path, 'pdbs_traj/test{}.pdb'.format(i)), 'w') as f:
                     f.write(ligand_pdb)
-                shutil.copyfile(protein_pdb_link, fp_path + 'pdbs_traj/test_p' + str(i) + '.pdb')
+                shutil.copyfile(protein_pdb_link, fp_path + '/pdbs_traj/test_p' + str(i) + '.pdb')
 
                 fp.write("load " + fp_path + 'pdbs_traj/test' + str(i) + '.pdb ')
                 fp.write(", ligand" + ", " + str(i ) + "\n")
