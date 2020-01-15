@@ -76,9 +76,10 @@ if __name__ == '__main__':
 
     fp_path = os.getenv("NCCS_PRJ_PATH", "/gpfs/alpine/proj-shared/lrn005/RLDock/")
     with open("log.pml", "w") as fp:
-        with open(args.o, 'w') as f:
+        with open(args.o, 'w') as fx:
             rs = workers.sample()
-            for i, info in enumerate(rs):
+            rwards = rs['rewards']
+            for i, info in enumerate(rs['infos']):
                 ligand_pdb = info['atom']
                 protein_pdb_link = info['protein']
 
@@ -90,4 +91,5 @@ if __name__ == '__main__':
                 fp.write(", ligand" + ", " + str(i ) + "\n")
                 fp.write("load " + fp_path + 'pdbs_traj/test_p' + str(i) + '.pdb ')
                 fp.write(", protein" + ", " + str(i ) + "\n")
+                fx.write(str(rwards[i]) + '\n')
 
